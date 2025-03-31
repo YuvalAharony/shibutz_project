@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace shibutz_project
 {
+<<<<<<< HEAD
     public class Population
     {
         public List<Chromosome> Chromoshomes { get; set; }
@@ -18,4 +19,11 @@ namespace shibutz_project
         }
     }
 
+=======
+    class Population
+    {
+        public List<Chromosome> Chromoshomes { get; set; }
+        public int Size;
+    }
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
 }

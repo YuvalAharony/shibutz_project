@@ -1,21 +1,37 @@
+<<<<<<< HEAD
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace shibutz_project
+=======
+﻿using shibutz_project;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+namespace EmployeeSchedulingApp
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
 {
     public partial class ViewShiftsPage : Form
     {
         private Branch selectedBranch;
+<<<<<<< HEAD
         private DataGridView shiftsDataGridView;
         // מערך של ימות השבוע – יש להתאים לשפה/פורמט הרצוי
         private readonly string[] daysOfWeek = new string[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+=======
+        private ListView shiftsListView;
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
 
         public ViewShiftsPage(Branch branch)
         {
             selectedBranch = branch;
+<<<<<<< HEAD
             InitializeComponent();
+=======
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
             SetupUI();
             LoadShifts();
         }
@@ -23,6 +39,7 @@ namespace shibutz_project
         private void SetupUI()
         {
             this.Text = $"סידור משמרות - {selectedBranch.Name}";
+<<<<<<< HEAD
             this.Size = new System.Drawing.Size(800, 600);
 
             Label titleLabel = new Label()
@@ -59,10 +76,38 @@ namespace shibutz_project
 
             this.Controls.Add(titleLabel);
             this.Controls.Add(shiftsDataGridView);
+=======
+            this.Size = new System.Drawing.Size(500, 400);
+
+            Label titleLabel = new Label()
+            {
+                Text = $"סידור משמרות עבור {selectedBranch.Name}",
+                AutoSize = true,
+                Font = new System.Drawing.Font("Arial", 14, System.Drawing.FontStyle.Bold),
+                Location = new System.Drawing.Point(120, 20)
+            };
+
+            shiftsListView = new ListView()
+            {
+                Location = new System.Drawing.Point(50, 80),
+                Size = new System.Drawing.Size(400, 250),
+                View = View.Details,
+                FullRowSelect = true,
+                GridLines = true
+            };
+
+            shiftsListView.Columns.Add("מזהה משמרת", 100);
+            shiftsListView.Columns.Add("תאריך", 150);
+            shiftsListView.Columns.Add("עובדים שובצו", 150);
+
+            this.Controls.Add(titleLabel);
+            this.Controls.Add(shiftsListView);
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
         }
 
         private void LoadShifts()
         {
+<<<<<<< HEAD
             shiftsDataGridView.Rows.Clear();
 
             // קריאה ישירה לפונקציה הסטטית
@@ -113,3 +158,21 @@ namespace shibutz_project
         }
     }
 }
+=======
+            shiftsListView.Items.Clear();
+
+            foreach (var shift in selectedBranch.Shifts)
+            {
+                string employees = string.Join(", ", shift.AssignedEmployees);
+                ListViewItem item = new ListViewItem(new string[]
+                {
+                    shift.Id.ToString(),
+                    shift.TimeSlot,
+                    employees
+                });
+                shiftsListView.Items.Add(item);
+            }
+        }
+    }
+}
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74

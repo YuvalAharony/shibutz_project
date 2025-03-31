@@ -2,7 +2,10 @@
 using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
+<<<<<<< HEAD
 using System.Linq;
+=======
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
 
 namespace EmployeeSchedulingApp
 {
@@ -33,7 +36,11 @@ namespace EmployeeSchedulingApp
                 Size = new System.Drawing.Size(150, 40),
                 Location = new System.Drawing.Point(300, 500)
             };
+<<<<<<< HEAD
             generateShiftsButton.Click += (sender, e) => { Program.createSceduele(); };
+=======
+           // generateShiftsButton.Click += (sender, e) => { GenerateShifts(); };
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
 
             this.Controls.Add(generateShiftsButton);
 
@@ -91,6 +98,7 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(addEmployeeButton);
             this.Controls.Add(branchesListView);
             this.Controls.Add(employeesListView);
+<<<<<<< HEAD
             employeesListView.MouseDoubleClick += EmployeesListView_MouseDoubleClick;
 
         }
@@ -119,10 +127,22 @@ namespace EmployeeSchedulingApp
             {
                 ListViewItem item = new ListViewItem(emp.Name);
                 item.SubItems.Add(emp.Roles.FirstOrDefault() ?? "לא מוגדר"); // מציג את התפקיד הראשון
+=======
+        }
+
+        public void LoadEmployees()
+        {
+
+            foreach (Employee emp in EmployeesList)
+            {
+                ListViewItem item = new ListViewItem(emp.Name);
+                item.SubItems.Add(emp.Roles[0]); // מציג את התפקיד הראשון
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
                 employeesListView.Items.Add(item);
             }
         }
 
+<<<<<<< HEAD
 
         private void LoadBranches()
         {
@@ -147,12 +167,30 @@ namespace EmployeeSchedulingApp
             
         }
 
+=======
+        public void LoadBranches()
+        {
+
+            foreach (Branch br in BranchesList)
+            {
+                ListViewItem item = new ListViewItem(br.Name);
+               
+                branchesListView.Items.Add(item);
+                item.Tag = br; 
+
+            }
+        }
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
 
 
         private void OpenAddBranchPage()
          {
              AddBranchPage addBranch = new AddBranchPage();
+<<<<<<< HEAD
              addBranch.FormClosed += (sender, e) => { LoadBranches(); };
+=======
+            addBranch.FormClosed += (sender, e) => { LoadBranches(); };
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
 
             addBranch.Show();
          }

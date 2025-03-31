@@ -64,9 +64,12 @@
     </Compile>
     <Compile Include="Chromosome.cs" />
     <Compile Include="DB.cs" />
+<<<<<<< HEAD
     <Compile Include="EditEmployeePage.cs">
       <SubType>Form</SubType>
     </Compile>
+=======
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
     <Compile Include="Employee.cs" />
     <Compile Include="HomePage.cs">
       <SubType>Form</SubType>
@@ -99,9 +102,12 @@
     <Compile Include="ViewShiftsPage.Designer.cs">
       <DependentUpon>ViewShiftsPage.cs</DependentUpon>
     </Compile>
+<<<<<<< HEAD
     <EmbeddedResource Include="AddBranc.resx">
       <DependentUpon>AddBranc.cs</DependentUpon>
     </EmbeddedResource>
+=======
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
     <EmbeddedResource Include="AddEmployeePage.resx">
       <DependentUpon>AddEmployeePage.cs</DependentUpon>
     </EmbeddedResource>

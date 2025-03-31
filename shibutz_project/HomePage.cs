@@ -58,7 +58,10 @@ namespace EmployeeSchedulingApp
             register.Show();
             this.Hide();
         }
+<<<<<<< HEAD
 
    
+=======
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
     }
 }

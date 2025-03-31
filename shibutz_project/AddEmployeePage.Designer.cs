@@ -37,6 +37,10 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Name = "AddEmployeePage";
             this.Text = "AddEmployeePage";
+<<<<<<< HEAD
+=======
+//            this.Load += new System.EventHandler(this.AddEmployeePage_Load);
+>>>>>>> 19e2b8d4529dc0491c2c2b3681ed44f2ecf7ab74
             this.ResumeLayout(false);
 
         }
