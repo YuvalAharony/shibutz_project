@@ -164,7 +164,18 @@ namespace EmployeeSchedulingApp
             addEmployee.Show();
         }
 
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // MainPage
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "MainPage";
+            this.ResumeLayout(false);
 
+        }
 
+     
     }
 }

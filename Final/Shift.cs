@@ -23,13 +23,14 @@ namespace Final
 
         public bool IsBusy { get; set; }
 
-        public HashSet<int> AssignedEmployees { get; set; }
+        public Dictionary<String,List<Employee>> AssignedEmployees { get; set; }
 
         public string EventType { get; set; }
 
         public Shift() { }
 
-        public Shift(int id, string branch, string timeSlot, string day, Dictionary<string, int> requiredRoles, bool isBusy, HashSet<int> assignedEmployees, string eventType)
+        public Shift(int id, string branch, string timeSlot, string day, Dictionary<string, int> requiredRoles, bool isBusy, Dictionary<String,List<Employee>
+           > assignedEmployees, string eventType)
         {
             this.Id = id;
             this.branch = branch;

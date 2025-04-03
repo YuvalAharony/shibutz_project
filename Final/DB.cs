@@ -11,106 +11,106 @@ namespace Final
         {
             #region shifts
             List<Shift> Branch1Shifts = new List<Shift>
-             {
-                 new Shift(101, "Branch 1", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(102, "Branch 1", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(103, "Branch 1", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(104, "Branch 1", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(105, "Branch 1", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(106, "Branch 1", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(107, "Branch 1", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(108, "Branch 1", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(109, "Branch 1", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(110, "Branch 1", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(111, "Branch 1", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(112, "Branch 1", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(113, "Branch 1", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(114, "Branch 1", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour")
-             };
+{
+    new Shift(101, "Branch 1", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(102, "Branch 1", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(103, "Branch 1", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(104, "Branch 1", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(105, "Branch 1", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(106, "Branch 1", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(107, "Branch 1", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(108, "Branch 1", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(109, "Branch 1", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(110, "Branch 1", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(111, "Branch 1", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(112, "Branch 1", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(113, "Branch 1", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(114, "Branch 1", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour")
+};
 
             // ----------------------------------------------------
             // BRANCH 2
             // ----------------------------------------------------
             List<Shift> Branch2Shifts = new List<Shift>
-             {
-                 new Shift(201, "Branch 2", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(202, "Branch 2", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(203, "Branch 2", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(204, "Branch 2", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(205, "Branch 2", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(206, "Branch 2", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(207, "Branch 2", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(208, "Branch 2", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(209, "Branch 2", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(210, "Branch 2", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(211, "Branch 2", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(212, "Branch 2", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(213, "Branch 2", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(214, "Branch 2", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour")
-             };
+{
+    new Shift(201, "Branch 2", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(202, "Branch 2", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(203, "Branch 2", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(204, "Branch 2", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(205, "Branch 2", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(206, "Branch 2", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(207, "Branch 2", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(208, "Branch 2", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(209, "Branch 2", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(210, "Branch 2", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(211, "Branch 2", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(212, "Branch 2", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(213, "Branch 2", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(214, "Branch 2", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour")
+};
 
             // ----------------------------------------------------
             // BRANCH 3
             // ----------------------------------------------------
             List<Shift> Branch3Shifts = new List<Shift>
-             {
-                 new Shift(301, "Branch 3", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(302, "Branch 3", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(303, "Branch 3", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(304, "Branch 3", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(305, "Branch 3", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(306, "Branch 3", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(307, "Branch 3", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(308, "Branch 3", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(309, "Branch 3", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(310, "Branch 3", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(311, "Branch 3", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(312, "Branch 3", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(313, "Branch 3", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(314, "Branch 3", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour")
-             };
+{
+    new Shift(301, "Branch 3", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(302, "Branch 3", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(303, "Branch 3", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(304, "Branch 3", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(305, "Branch 3", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(306, "Branch 3", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(307, "Branch 3", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(308, "Branch 3", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(309, "Branch 3", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(310, "Branch 3", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(311, "Branch 3", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(312, "Branch 3", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(313, "Branch 3", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(314, "Branch 3", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour")
+};
 
             // ----------------------------------------------------
             // BRANCH 4
             // ----------------------------------------------------
             List<Shift> Branch4Shifts = new List<Shift>
-             {
-                 new Shift(401, "Branch 4", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(402, "Branch 4", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(403, "Branch 4", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(404, "Branch 4", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(405, "Branch 4", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(406, "Branch 4", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(407, "Branch 4", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(408, "Branch 4", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(409, "Branch 4", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(410, "Branch 4", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(411, "Branch 4", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(412, "Branch 4", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(413, "Branch 4", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(414, "Branch 4", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour")
-             };
+{
+    new Shift(401, "Branch 4", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(402, "Branch 4", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(403, "Branch 4", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(404, "Branch 4", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(405, "Branch 4", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(406, "Branch 4", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(407, "Branch 4", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(408, "Branch 4", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(409, "Branch 4", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(410, "Branch 4", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(411, "Branch 4", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(412, "Branch 4", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(413, "Branch 4", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(414, "Branch 4", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour")
+};
 
             // ----------------------------------------------------
             // BRANCH 5
             // ----------------------------------------------------
             List<Shift> Branch5Shifts = new List<Shift>
-             {
-                 new Shift(501, "Branch 5", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(502, "Branch 5", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(503, "Branch 5", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(504, "Branch 5", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(505, "Branch 5", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(506, "Branch 5", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(507, "Branch 5", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(508, "Branch 5", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Regular"),
-                 new Shift(509, "Branch 5", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(510, "Branch 5", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(511, "Branch 5", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Special Event"),
-                 new Shift(512, "Branch 5", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(513, "Branch 5", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour"),
-                 new Shift(514, "Branch 5", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new HashSet<int>(), "Peak Hour")
-             };
+{
+    new Shift(501, "Branch 5", "Morning", "Sunday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(502, "Branch 5", "Evening", "Sunday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(503, "Branch 5", "Morning", "Monday", new Dictionary<string, int>{{"Waiter", 2}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(504, "Branch 5", "Evening", "Monday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(505, "Branch 5", "Morning", "Tuesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 2}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(506, "Branch 5", "Evening", "Tuesday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(507, "Branch 5", "Morning", "Wednesday", new Dictionary<string, int>{{"Waiter", 3}, {"Chef", 3}, {"Bartender", 1}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(508, "Branch 5", "Evening", "Wednesday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Regular"),
+    new Shift(509, "Branch 5", "Morning", "Thursday", new Dictionary<string, int>{{"Waiter", 4}, {"Chef", 2}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(510, "Branch 5", "Evening", "Thursday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(511, "Branch 5", "Morning", "Friday", new Dictionary<string, int>{{"Waiter", 5}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Special Event"),
+    new Shift(512, "Branch 5", "Evening", "Friday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 4}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(513, "Branch 5", "Morning", "Saturday", new Dictionary<string, int>{{"Waiter", 6}, {"Chef", 3}, {"Bartender", 2}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour"),
+    new Shift(514, "Branch 5", "Evening", "Saturday", new Dictionary<string, int>{{"Waiter", 7}, {"Chef", 4}, {"Bartender", 3}, {"Manager", 1}}, false, new Dictionary<String, List<Employee>>(), "Peak Hour")
+};
             #endregion
 
             #region branches
