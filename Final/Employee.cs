@@ -22,9 +22,9 @@ namespace Final
         public HashSet<int> requestedShiftsBackup { get; set; }
 
 
-        public Employee(int iD, string name, List<string> roles, HashSet<int> requestedShifts, double rate, int hourlySalary, int assignedHours, bool isMentor, List<string> branches)
+        public Employee(int ID, string name, List<string> roles, HashSet<int> requestedShifts, double rate, int hourlySalary, int assignedHours, bool isMentor, List<string> branches)
         {
-            ID = iD;
+            ID = ID;
             Name = name;
             Roles = roles;
             this.requestedShifts = requestedShifts;

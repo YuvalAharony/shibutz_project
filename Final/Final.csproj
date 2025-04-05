@@ -66,6 +66,7 @@
       <DependentUpon>BranchManagmentPage.cs</DependentUpon>
     </Compile>
     <Compile Include="Chromosome.cs" />
+    <Compile Include="DataBaseHelper.cs" />
     <Compile Include="DB.cs" />
     <Compile Include="EditEmployeePage.cs">
       <SubType>Form</SubType>

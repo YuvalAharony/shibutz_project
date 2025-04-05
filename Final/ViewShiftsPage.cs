@@ -70,6 +70,7 @@ namespace Final
 
             // קריאה ישירה לפונקציה הסטטית
             Chromosome bestChromosome = Program.GetBestChromosome();
+            Console.WriteLine($"Displaying chromosome with fitness: {bestChromosome.Fitness}");
 
             if (bestChromosome == null)
             {
@@ -167,6 +168,6 @@ namespace Final
             return selectedBranch.Shifts.FirstOrDefault(s => s.Id.ToString() == shiftId);
         }
 
-    
+        
     }
 }

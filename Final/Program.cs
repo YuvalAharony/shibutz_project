@@ -22,12 +22,14 @@ namespace Final
 
         public static void createSceduele()
         {
+            Console.WriteLine("Creating new schedule at: " + DateTime.Now);
+
             pop.Chromoshomes.Clear();
         
 
             pop = initializeFirstPopulation(pop);
      
-
+            MessageBox.Show("סידור עבודה נוצר בהצלחה!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         public static Population initializeFirstPopulation(Population pop)
@@ -201,7 +203,7 @@ namespace Final
             }
             #endregion
 
-            for (int i = 0; i < ChromosomesEachGene; i++)
+            for (int i = 0; i < 10; i++)
             {
                 foreach (Employee emp in Employees)
                 {
