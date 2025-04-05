@@ -16,6 +16,12 @@ namespace Final
             Chromoshomes = chromoshomes;
             Size = size;
         }
+
+        public Population(int size)
+        {
+            Size = size;
+            this.Chromoshomes=new List<Chromosome>();
+        }
     }
 
 }

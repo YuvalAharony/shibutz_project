@@ -23,36 +23,14 @@ namespace Final
         public static void createSceduele()
         {
             pop.Chromoshomes.Clear();
-            #region inline
+        
 
-            {
-                // עבור על כל הסניפים
-                foreach (Branch branch in Branches)
-                {
-                    // עבור על כל המשמרות בכל סניף
-                    foreach (Shift shift in branch.Shifts)
-                    {
-                        // אפס את רשימת העובדים המשובצים
-                        shift.AssignedEmployees.Clear();
-                    }
-                }
-            }
-            #endregion
-
-            pop=initializeFirstPopulation();
-            //for (int i = 0; i < ChromosomesEachGene; i++)
-            //{
-            //    pop= Crossover(pop);
-            //    pop = Mutation(pop);
-            //    pop.Chromoshomes = pop.Chromoshomes
-            //    .OrderByDescending(c => c.Fitness)
-            //    .Take(ChromosomesEachGene)
-            //    .ToList();
-            //}
+            pop = initializeFirstPopulation(pop);
+     
 
         }
 
-        public static Population initializeFirstPopulation()
+        public static Population initializeFirstPopulation(Population pop)
         {
             Random random = new Random();
 
@@ -423,398 +401,115 @@ namespace Final
 
         public static Population Crossover(Population pop)
         {
+            
             Random random = new Random();
-            double crossoverRate = 0.8; // 80% chance of crossover
-            int initialPopulationSize = pop.Chromoshomes.Count;
-            int numberOfOffspringToCreate = ChromosomesEachGene; // כמה צאצאים ליצור
-
-            // מצא את הכרומוזומים עם הכושר הגבוה ביותר
-            List<Chromosome> sortedChromosomes = pop.Chromoshomes
-                .OrderByDescending(c => c.Fitness)
-                .ToList();
-
-            // יצור צאצאים ולהוסיף אותם לאוכלוסייה הקיימת
-            int offspringCreated = 0;
-
-            while (offspringCreated < numberOfOffspringToCreate)
+            #region inLine
+            Chromosome createSonFromTwoParents(Chromosome ch1,Chromosome ch2)
             {
-                // בחר שני הורים באמצעות טורניר
-                Chromosome parent1 = TournamentSelection(sortedChromosomes);
-                Chromosome parent2 = TournamentSelection(sortedChromosomes);
+               
 
-                // החלט אם לבצע הכלאה
-                if (random.NextDouble() < crossoverRate)
+                // Create a new chromosome for the offspring
+                Chromosome child = new Chromosome();
+                child.Shifts = new Dictionary<string, List<Shift>>();
+
+                // Get the union of branch names from both parents
+                HashSet<string> allBranchNames = new HashSet<string>();
+                foreach (string branchName in ch1.Shifts.Keys) allBranchNames.Add(branchName);
+                foreach (string branchName in ch2.Shifts.Keys) allBranchNames.Add(branchName);
+
+                // For each branch, randomly choose shifts from either parent
+                foreach (string branchName in allBranchNames)
                 {
-                    // בצע הכלאה ליצירת שני צאצאים
-                    Tuple<Chromosome, Chromosome> children = PerformCrossover(parent1, parent2);
+                    child.Shifts[branchName] = new List<Shift>();
 
-                    // חשב את ערך הכושר לכרומוזומים החדשים
-                    children.Item1.Fitness = calaulateChoromosomeFitness(children.Item1);
-                    children.Item2.Fitness = calaulateChoromosomeFitness(children.Item2);
+                    // Get the shifts for this branch from both parents
+                    List<Shift> shiftsParent1 = ch1.Shifts.ContainsKey(branchName) ? ch1.Shifts[branchName] : new List<Shift>();
+                    List<Shift> shiftsParent2 = ch2.Shifts.ContainsKey(branchName) ? ch2.Shifts[branchName] : new List<Shift>();
 
-                    // הוסף את הצאצאים לאוכלוסייה הגלובלית
-                    pop.Chromoshomes.Add(children.Item1);
-                    offspringCreated++;
+                    // Create a set of all shift IDs
+                    HashSet<int> allShiftIds = new HashSet<int>();
+                    foreach (Shift shift in shiftsParent1) allShiftIds.Add(shift.Id);
+                    foreach (Shift shift in shiftsParent2) allShiftIds.Add(shift.Id);
 
-                    // הוסף את הצאצא השני רק אם עדיין צריך יותר כרומוזומים
-                    if (offspringCreated < numberOfOffspringToCreate)
+                    // For each shift ID, choose parent to take it from
+                    foreach (int shiftId in allShiftIds)
                     {
-                        pop.Chromoshomes.Add(children.Item2);
-                        offspringCreated++;
-                    }
-                }
-            }
+                        // Find the shift in both parents
+                        Shift shiftParent1 = shiftsParent1.FirstOrDefault(s => s.Id == shiftId);
+                        Shift shiftParent2 = shiftsParent2.FirstOrDefault(s => s.Id == shiftId);
 
-            return pop; // החזר את האוכלוסייה המעודכנת שכוללת הורים וצאצאים
-        }
+                        // Choose which parent to take from
+                        bool takeFromParent1 = random.Next(2) == 0;
 
-        // פונקציית עזר לבחירת טורניר
-        private static Chromosome TournamentSelection(List<Chromosome> chromosomes)
-        {
-            Random random = new Random();
-            int tournamentSize = 3; // בחר מתוך 3 כרומוזומים אקראיים
-
-            List<Chromosome> tournament = new List<Chromosome>();
-
-            // בחר כרומוזומים אקראיים לטורניר
-            for (int i = 0; i < tournamentSize && i < chromosomes.Count; i++)
-            {
-                int index = random.Next(chromosomes.Count);
-                tournament.Add(chromosomes[index]);
-            }
-
-            // החזר את הכרומוזום עם הכושר הגבוה ביותר
-            return tournament.OrderByDescending(c => c.Fitness).First();
-        }
-
-        // פונקציית עזר לביצוע הכלאה
-        private static Tuple<Chromosome, Chromosome> PerformCrossover(Chromosome parent1, Chromosome parent2)
-        {
-            Random random = new Random();
-
-            // צור שני כרומוזומים חדשים עבור הצאצאים
-            Chromosome child1 = new Chromosome() { Shifts = new Dictionary<string, List<Shift>>() };
-            Chromosome child2 = new Chromosome() { Shifts = new Dictionary<string, List<Shift>>() };
-
-            // קבל את כל שמות הסניפים משני ההורים
-            HashSet<string> allBranchNames = new HashSet<string>();
-            foreach (string branchName in parent1.Shifts.Keys) allBranchNames.Add(branchName);
-            foreach (string branchName in parent2.Shifts.Keys) allBranchNames.Add(branchName);
-
-            // עבור כל סניף, בחר משמרות מהורה 1 או הורה 2
-            foreach (string branchName in allBranchNames)
-            {
-                // החלט באופן אקראי מאיזה הורה לקחת את הסניף הזה עבור כל צאצא
-                bool takeFromParent1ForChild1 = random.Next(2) == 0;
-
-                // עבור צאצא 1
-                if (takeFromParent1ForChild1 && parent1.Shifts.ContainsKey(branchName))
-                {
-                    // קח מהורה 1
-                    child1.Shifts[branchName] = DeepCopyShifts(parent1.Shifts[branchName]);
-                }
-                else if (parent2.Shifts.ContainsKey(branchName))
-                {
-                    // קח מהורה 2
-                    child1.Shifts[branchName] = DeepCopyShifts(parent2.Shifts[branchName]);
-                }
-
-                // עבור צאצא 2 (קח מההורה ההפוך)
-                if (!takeFromParent1ForChild1 && parent1.Shifts.ContainsKey(branchName))
-                {
-                    // קח מהורה 1
-                    child2.Shifts[branchName] = DeepCopyShifts(parent1.Shifts[branchName]);
-                }
-                else if (parent2.Shifts.ContainsKey(branchName))
-                {
-                    // קח מהורה 2
-                    child2.Shifts[branchName] = DeepCopyShifts(parent2.Shifts[branchName]);
-                }
-            }
-
-            return new Tuple<Chromosome, Chromosome>(child1, child2);
-        }
-
-        // פונקציית עזר ליצירת עותק עמוק של רשימת משמרות
-        private static List<Shift> DeepCopyShifts(List<Shift> originalShifts)
-        {
-            List<Shift> copies = new List<Shift>();
-
-            foreach (Shift originalShift in originalShifts)
-            {
-                Shift shiftCopy = new Shift
-                {
-                    Id = originalShift.Id,
-                    day = originalShift.day,
-                    TimeSlot = originalShift.TimeSlot,
-                    RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
-                    AssignedEmployees = new Dictionary<string, List<Employee>>(),
-                    IsBusy = originalShift.IsBusy,
-                    branch = originalShift.branch,
-                    EventType = originalShift.EventType
-                };
-
-                // העתק את מבנה ה-AssignedEmployees
-                foreach (var roleEntry in originalShift.AssignedEmployees)
-                {
-                    string role = roleEntry.Key;
-                    List<Employee> employees = roleEntry.Value;
-
-                    shiftCopy.AssignedEmployees[role] = new List<Employee>(employees);
-                }
-
-                copies.Add(shiftCopy);
-            }
-
-            return copies;
-        }
-
-
-        public static Population Mutation(Population pop)
-        {
-            Random random = new Random();
-            double mutationRate = 0.2; // 20% chance of mutation
-
-            // Create a copy of the population
-            Population mutatedPopulation = new Population(new List<Chromosome>(), ChromosomesEachGene);
-
-            foreach (Chromosome chromosome in pop.Chromoshomes)
-            {
-                // Decide if this chromosome should undergo mutation
-                if (random.NextDouble() < mutationRate)
-                {
-                    // Create a deep copy of the chromosome
-                    Chromosome mutatedChromosome = new Chromosome();
-                    mutatedChromosome.Shifts = new Dictionary<string, List<Shift>>();
-
-                    // Copy and potentially mutate each branch
-                    foreach (var entry in chromosome.Shifts)
-                    {
-                        string branchName = entry.Key;
-                        List<Shift> shifts = new List<Shift>();
-
-                        // Copy all shifts
-                        foreach (Shift originalShift in entry.Value)
+                        Shift sourceShift = null;
+                        if (takeFromParent1 && shiftParent1 != null)
                         {
-                            Shift shiftCopy = new Shift
-                            {
-                                Id = originalShift.Id,
-                                day = originalShift.day,
-                                TimeSlot = originalShift.TimeSlot,
-                                RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
-                                AssignedEmployees = new Dictionary<string, List<Employee>>(),
-                                IsBusy = originalShift.IsBusy,
-                                branch = originalShift.branch,
-                                EventType = originalShift.EventType
-                            };
+                            sourceShift = shiftParent1;
+                        }
+                        else if (shiftParent2 != null)
+                        {
+                            sourceShift = shiftParent2;
+                        }
+                        else if (shiftParent1 != null)
+                        {
+                            sourceShift = shiftParent1;
+                        }
 
-                            // העתק את מבנה ה-AssignedEmployees
-                            foreach (var roleEntry in originalShift.AssignedEmployees)
+                        if (sourceShift != null)
+                        {
+                            // Create a deep copy of the shift
+                            Shift childShift = new Shift();
+                            childShift.Id = sourceShift.Id;
+                            childShift.day = sourceShift.day;
+                            childShift.TimeSlot = sourceShift.TimeSlot;
+                            childShift.branch = sourceShift.branch;
+                            childShift.IsBusy = sourceShift.IsBusy;
+                            childShift.EventType = sourceShift.EventType;
+
+                            // Copy the required roles
+                            childShift.RequiredRoles = new Dictionary<string, int>();
+                            foreach (var roleEntry in sourceShift.RequiredRoles)
+                            {
+                                childShift.RequiredRoles[roleEntry.Key] = roleEntry.Value;
+                            }
+
+                            // Copy the assigned employees
+                            childShift.AssignedEmployees = new Dictionary<string, List<Employee>>();
+                            foreach (var roleEntry in sourceShift.AssignedEmployees)
                             {
                                 string role = roleEntry.Key;
                                 List<Employee> employees = roleEntry.Value;
 
-                                shiftCopy.AssignedEmployees[role] = new List<Employee>(employees);
+                                // Create a new list for the role
+                                childShift.AssignedEmployees[role] = new List<Employee>();
+
+                                // Copy all employees (references only, not deep copies)
+                                foreach (Employee emp in employees)
+                                {
+                                    childShift.AssignedEmployees[role].Add(emp);
+                                }
                             }
 
-                            shifts.Add(shiftCopy);
+                            child.Shifts[branchName].Add(childShift);
                         }
-
-                        // Perform mutation: randomly select a shift
-                        if (shifts.Count > 0)
-                        {
-                            int shiftIndex = random.Next(shifts.Count);
-                            Shift selectedShift = shifts[shiftIndex];
-
-                            // Choose mutation type
-                            int mutationType = random.Next(3);
-
-                            switch (mutationType)
-                            {
-                                case 0: // Add a random employee
-                                    AddRandomEmployee(selectedShift);
-                                    break;
-
-                                case 1: // Remove a random employee
-                                    RemoveRandomEmployee(selectedShift);
-                                    break;
-
-                                case 2: // Swap two employees
-                                    SwapEmployees(shifts);
-                                    break;
-                            }
-                        }
-
-                        mutatedChromosome.Shifts.Add(branchName, shifts);
-                    }
-
-                    // Calculate fitness for the mutated chromosome
-                    mutatedChromosome.Fitness = calaulateChoromosomeFitness(mutatedChromosome);
-                    mutatedPopulation.Chromoshomes.Add(mutatedChromosome);
-                }
-                else
-                {
-                    // No mutation, just add the original chromosome
-                    mutatedPopulation.Chromoshomes.Add(chromosome);
-                }
-            }
-
-            return mutatedPopulation;
-        }
-
-        // פונקציות עזר למוטציות
-
-        // הוספת עובד אקראי למשמרת
-        private static void AddRandomEmployee(Shift shift)
-        {
-            Random random = new Random();
-
-            // קבל את כל העובדים שכבר משובצים למשמרת
-            HashSet<int> assignedEmployeeIds = new HashSet<int>();
-            foreach (var employeeList in shift.AssignedEmployees.Values)
-            {
-                foreach (var emp in employeeList)
-                {
-                    assignedEmployeeIds.Add(emp.ID);
-                }
-            }
-
-            // מצא עובדים שאינם משובצים למשמרת זו
-            List<Employee> availableEmployees = Employees
-                .Where(emp => !assignedEmployeeIds.Contains(emp.ID))
-                .ToList();
-
-            if (availableEmployees.Count > 0)
-            {
-                // בחר עובד אקראי
-                int index = random.Next(availableEmployees.Count);
-                Employee selectedEmployee = availableEmployees[index];
-
-                // בחר תפקיד אקראי מהתפקידים הנדרשים
-                List<string> availableRoles = shift.RequiredRoles.Keys.ToList();
-
-                if (availableRoles.Count > 0)
-                {
-                    string selectedRole = availableRoles[random.Next(availableRoles.Count)];
-
-                    // ודא שהרשימה עבור תפקיד זה קיימת
-                    if (!shift.AssignedEmployees.ContainsKey(selectedRole))
-                    {
-                        shift.AssignedEmployees[selectedRole] = new List<Employee>();
-                    }
-
-                    // הוסף את העובד לתפקיד
-                    shift.AssignedEmployees[selectedRole].Add(selectedEmployee);
-                }
-            }
-        }
-
-        // הסרת עובד אקראי ממשמרת
-        private static void RemoveRandomEmployee(Shift shift)
-        {
-            Random random = new Random();
-
-            // צור רשימה של כל התפקידים שיש בהם עובדים
-            List<string> rolesWithEmployees = shift.AssignedEmployees
-                .Where(kv => kv.Value != null && kv.Value.Count > 0)
-                .Select(kv => kv.Key)
-                .ToList();
-
-            if (rolesWithEmployees.Count > 0)
-            {
-                // בחר תפקיד אקראי
-                string selectedRole = rolesWithEmployees[random.Next(rolesWithEmployees.Count)];
-                List<Employee> employees = shift.AssignedEmployees[selectedRole];
-
-                if (employees.Count > 0)
-                {
-                    // בחר עובד אקראי מהתפקיד
-                    int employeeIndex = random.Next(employees.Count);
-
-                    // הסר את העובד
-                    employees.RemoveAt(employeeIndex);
-
-                    // אם הרשימה ריקה, הסר את התפקיד
-                    if (employees.Count == 0)
-                    {
-                        shift.AssignedEmployees.Remove(selectedRole);
                     }
                 }
+
+                // Calculate fitness for the child
+                child.Fitness = calaulateChoromosomeFitness(child);
+
+                return child;
             }
-        }
-
-        // החלפת עובדים בין שתי משמרות
-        private static void SwapEmployees(List<Shift> shifts)
-        {
-            if (shifts.Count < 2)
-                return;
-
-            Random random = new Random();
-
-            // בחר שתי משמרות שונות
-            int shift1Index = random.Next(shifts.Count);
-            int shift2Index;
-            do
-            {
-                shift2Index = random.Next(shifts.Count);
-            } while (shift1Index == shift2Index);
-
-            Shift shift1 = shifts[shift1Index];
-            Shift shift2 = shifts[shift2Index];
-
-            // בדוק ששתי המשמרות יש להן עובדים משובצים
-            bool shift1HasEmployees = shift1.AssignedEmployees.Any(kv => kv.Value != null && kv.Value.Count > 0);
-            bool shift2HasEmployees = shift2.AssignedEmployees.Any(kv => kv.Value != null && kv.Value.Count > 0);
-
-            if (!shift1HasEmployees || !shift2HasEmployees)
-                return;
-
-            // בחר תפקיד אקראי מכל משמרת
-            List<string> roles1WithEmployees = shift1.AssignedEmployees
-                .Where(kv => kv.Value != null && kv.Value.Count > 0)
-                .Select(kv => kv.Key)
-                .ToList();
-
-            List<string> roles2WithEmployees = shift2.AssignedEmployees
-                .Where(kv => kv.Value != null && kv.Value.Count > 0)
-                .Select(kv => kv.Key)
-                .ToList();
-
-            string role1 = roles1WithEmployees[random.Next(roles1WithEmployees.Count)];
-            string role2 = roles2WithEmployees[random.Next(roles2WithEmployees.Count)];
-
-            // בחר עובד אקראי מכל תפקיד
-            List<Employee> employees1 = shift1.AssignedEmployees[role1];
-            List<Employee> employees2 = shift2.AssignedEmployees[role2];
-
-            if (employees1.Count == 0 || employees2.Count == 0)
-                return;
-
-            int emp1Index = random.Next(employees1.Count);
-            int emp2Index = random.Next(employees2.Count);
-
-            Employee employee1 = employees1[emp1Index];
-            Employee employee2 = employees2[emp2Index];
-
-            // החלף את העובדים
-            employees1.RemoveAt(emp1Index);
-            employees2.RemoveAt(emp2Index);
-
-            employees1.Add(employee2);
-            employees2.Add(employee1);
-
-            // אם אחת הרשימות התרוקנה, הסר את התפקיד מהמילון
-            if (employees1.Count == 0)
-            {
-                shift1.AssignedEmployees.Remove(role1);
+            #endregion
+           
+            pop.Chromoshomes.OrderBy(x => random.Next()).ToList();
+            int chromosomesPreviousGene = pop.Chromoshomes.Count;
+            for (int i = 0; i < chromosomesPreviousGene; i+=2) {
+                pop.Chromoshomes.Add(createSonFromTwoParents(pop.Chromoshomes[i], pop.Chromoshomes[i+1]));
             }
-
-            if (employees2.Count == 0)
-            {
-                shift2.AssignedEmployees.Remove(role2);
-            }
-        }
-
+            return pop;
+        } 
+     
         static void Main()
         {
             Branches = DB.addBranches();
