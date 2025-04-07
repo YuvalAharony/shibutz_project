@@ -29,20 +29,19 @@ public static class DataBaseHelper
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     Employee employee = new Employee
-                    {
-                        ID = Convert.ToInt32(reader["EmployeeID"]),
-                        Name = reader["Name"].ToString(),
-                        Roles = new List<string>(),
-                        requestedShifts = new HashSet<int>(),
-                        backUprequestedShifts =new HashSet<int>(),
-                        Rate = reader["Rate"] != DBNull.Value ? Convert.ToInt32(reader["Rate"]) : 0,
-                        HourlySalary = (int)Convert.ToDecimal(reader["HourlySalary"]),
-                        AssignedHours = reader["AssignedHours"] != DBNull.Value ? Convert.ToInt32(reader["AssignedHours"]) : 0,
-                        isMentor = Convert.ToBoolean(reader["IsMentor"]),
-                        Branches=null,
-                        
-                        
-                    };
+                    (
+                        Convert.ToInt32(reader["EmployeeID"]),
+                        reader["Name"].ToString(),
+                        new List<string>(),
+                        new HashSet<int>(),
+                        reader["Rate"] != DBNull.Value ? Convert.ToInt32(reader["Rate"]) : 0,
+                        Convert.ToInt32(reader["HourlySalary"]),
+                        Convert.ToInt32(reader["AssignedHours"]),
+                        Convert.ToBoolean(reader["IsMentor"]),
+                        null
+
+
+                    );
 
                     employees.Add(employee);
                     
@@ -58,7 +57,7 @@ public static class DataBaseHelper
                     JOIN Roles r ON er.RoleID = r.RoleID
                     WHERE er.EmployeeID = @EmployeeID";
 
-                employee.Roles = new List<string>();
+                employee.roles = new List<string>();
 
                 using (SqlCommand command = new SqlCommand(rolesQuery, connection))
                 {
@@ -67,7 +66,7 @@ public static class DataBaseHelper
                     {
                         while (reader.Read())
                         {
-                            employee.Roles.Add(reader["RoleName"].ToString());
+                            employee.roles.Add(reader["RoleName"].ToString());
                         }
                     }
                 }

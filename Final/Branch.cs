@@ -21,6 +21,6 @@ public class Branch
         this.Shifts = shifts ?? new List<Shift>();
     }
 
-    // שיטה ליצירת העתק
+    
 
 }

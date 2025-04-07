@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Data.SqlClient;
+
 
 namespace EmployeeSchedulingApp
 {
     public partial class LoginPage : Form
     {
+        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+
         public LoginPage()
         {
             SetupUI();
@@ -47,22 +51,42 @@ namespace EmployeeSchedulingApp
 
         private void PerformLogin(string username, string password)
         {
-            if (username == "1" && password == "1") // דוגמה לבדיקה בסיסית
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                MessageBox.Show("התחברות מוצלחת!");
-                MainPage main = new MainPage();
-                main.Show();
-                this.Hide();
+                connection.Open();
+
+                string query = "SELECT UserID, FullName FROM Users WHERE Username = @Username AND Password = @Password AND IsActive = 1";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Username", username);
+                    command.Parameters.AddWithValue("@Password", password);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read()) // אם נמצא משתמש מתאים
+                        {
+                            int userId = reader.GetInt32(0);
+                            string fullName = reader.GetString(1);
+
+                            MessageBox.Show($"ברוך הבא, {fullName}!");
+
+                            MainPage main = new MainPage(username);
+                            main.Show();
+                            this.Hide();
+                        }
+                        else
+                        {
+                            MessageBox.Show("שם משתמש או סיסמה שגויים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
             }
-            else
-            {
-                MessageBox.Show("שם משתמש או סיסמה שגויים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+
+
         }
 
-        private void LoginPage_Load(object sender, EventArgs e)
-        {
 
-        }
     }
 }

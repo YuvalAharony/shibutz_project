@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
@@ -11,17 +12,372 @@ namespace Final
 {
     public class Program
     {
+        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+
         #region Data
-        public static List<Employee> Employees = new List<Employee>();
-        public static List<Branch> Branches = new List<Branch>();
+        public static List<Employee> Employees{  get; set; }   
+        public static List<Branch> Branches{  get; set; }  
         public static DB myDB = new DB();
         public const int ChromosomesEachGene = 100;
 
         public static Population pop = new Population(new List<Chromosome>(), ChromosomesEachGene);
         #endregion
 
-        public static void createSceduele()
+
+        #region SQL
+
+        
+        // מתודה חדשה לטעינת הנתונים
+        public static void LoadDataForUser(string username)
         {
+            if (string.IsNullOrEmpty(username))
+            {
+                Employees = new List<Employee>();
+                Branches = new List<Branch>();
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // טעינת הסניפים של המשתמש
+                    Branches = LoadUserBranches(username, connection);
+
+                    // טעינת העובדים של המשתמש
+                    Employees = LoadUserEmployees(username, connection);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"שגיאה בטעינת נתוני המשתמש: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // יצירת רשימות ריקות במקרה של שגיאה
+                Employees = new List<Employee>();
+                Branches = new List<Branch>();
+            }
+        }
+
+        // טעינת הסניפים של המשתמש
+        private static List<Branch> LoadUserBranches(string username, SqlConnection connection)
+        {
+            List<Branch> branches = new List<Branch>();
+
+            string query = @"
+        SELECT b.BranchID, b.Name 
+        FROM Branches b
+        INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
+        INNER JOIN Users u ON ub.UserID = u.UserID
+        WHERE u.Username = @Username";
+
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Username", username);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int branchId = reader.GetInt32(0);
+                        string branchName = reader.GetString(1);
+
+                        Branch branch = new Branch
+                        {
+                            ID = branchId,
+                            Name = branchName
+                        };
+
+                        branches.Add(branch);
+                    }
+                }
+            }
+
+            // טעינת המשמרות לכל סניף
+            foreach (Branch branch in branches)
+            {
+                branch.Shifts = LoadBranchShifts(branch.ID, connection);
+            }
+
+            return branches;
+        }
+
+        // טעינת העובדים של המשתמש
+        private static List<Employee> LoadUserEmployees(string username, SqlConnection connection)
+        {
+            List<Employee> employees = new List<Employee>();
+
+            string query = @"
+        SELECT DISTINCT e.EmployeeID, e.Name, e.Phone, e.Email, e.HourlySalary, e.Rate, e.IsMentor, e.AssignedHours
+        FROM Employees e
+        INNER JOIN EmployeeBranches eb ON e.EmployeeID = eb.BranchID
+        INNER JOIN UserBranches ub ON eb.BranchID = ub.BranchID
+        INNER JOIN Users u ON ub.UserID = u.UserID
+        WHERE u.Username = @Username";
+
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Username", username);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int employeeId = reader.GetInt32(0);
+                        string name = reader.GetString(1);
+                        string phone = reader.IsDBNull(2) ? null : reader.GetString(2);
+                        string email = reader.IsDBNull(3) ? null : reader.GetString(3);
+                        decimal hourlySalary = reader.GetDecimal(4);
+                        int rate = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
+                        bool isMentor = reader.GetBoolean(6);
+                        int assignedHours = reader.GetInt32(7);
+
+                        // טעינת תפקידים והעדפות משמרות
+                        List<string> roles = LoadEmployeeRoles(employeeId, connection);
+                        HashSet<int> requestedShifts = LoadEmployeePreferredShifts(employeeId, connection);
+                        List<string> branches = LoadEmployeeBranches(employeeId, connection);
+
+                        Employee employee = new Employee(
+                            employeeId,
+                            name,
+                            roles,
+                            requestedShifts,
+                            rate,
+                            (int)hourlySalary,
+                            assignedHours,
+                            isMentor,
+                            branches
+                        );
+
+                        employees.Add(employee);
+                    }
+                }
+            }
+
+            return employees;
+        }
+        // טעינת המשמרות של סניף
+        private static List<Shift> LoadBranchShifts(int branchId, SqlConnection connection)
+        {
+            List<Shift> shifts = new List<Shift>();
+
+            try
+            {
+                string query = @"
+            SELECT s.ShiftID, s.TimeSlot, s.DayOfWeek, st.TypeName, s.IsBusy
+            FROM Shifts s
+            INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
+            WHERE s.BranchID = @BranchID";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@BranchID", branchId);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int shiftId = reader.GetInt32(0);
+                            string timeSlot = reader.GetString(1);
+                            string dayOfWeek = reader.GetString(2);
+                            string shiftType = reader.GetString(3);
+                            bool isBusy = reader.GetBoolean(4);
+
+                            // טעינת דרישות תפקידים למשמרת
+                            Dictionary<string, int> requiredRoles = LoadShiftRequiredRoles(shiftId, connection);
+
+                            // יצירת אובייקט משמרת
+                            Shift shift = new Shift(
+                                shiftId,
+                                "Branch " + branchId, // או להחליף עם שם סניף אמיתי
+                                timeSlot,
+                                dayOfWeek,
+                                requiredRoles,
+                                isBusy,
+                                new Dictionary<string, List<Employee>>(),
+                                shiftType
+                            );
+
+                            shifts.Add(shift);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading branch shifts: " + ex.Message);
+            }
+
+            return shifts;
+        }
+
+        // טעינת דרישות התפקידים למשמרת
+        private static Dictionary<string, int> LoadShiftRequiredRoles(int shiftId, SqlConnection connection)
+        {
+            Dictionary<string, int> requiredRoles = new Dictionary<string, int>();
+
+            try
+            {
+                // יצירת חיבור חדש כי אנחנו בתוך קורא נתונים
+                using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+                {
+                    newConnection.Open();
+
+                    string query = @"
+                SELECT r.RoleName, sr.RequiredCount
+                FROM ShiftRequiredRoles sr
+                INNER JOIN Roles r ON sr.RoleID = r.RoleID
+                WHERE sr.ShiftID = @ShiftID";
+
+                    using (SqlCommand command = new SqlCommand(query, newConnection))
+                    {
+                        command.Parameters.AddWithValue("@ShiftID", shiftId);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string roleName = reader.GetString(0);
+                                int requiredCount = reader.GetInt32(1);
+
+                                requiredRoles[roleName] = requiredCount;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading shift required roles: " + ex.Message);
+            }
+
+            return requiredRoles;
+        }
+
+        // טעינת התפקידים של עובד
+        private static List<string> LoadEmployeeRoles(int employeeId, SqlConnection connection)
+        {
+            List<string> roles = new List<string>();
+
+            try
+            {
+                // יצירת חיבור חדש כי אנחנו בתוך קורא נתונים
+                using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+                {
+                    newConnection.Open();
+
+                    string query = @"
+                SELECT r.RoleName
+                FROM EmployeeRoles er
+                INNER JOIN Roles r ON er.RoleID = r.RoleID
+                WHERE er.EmployeeID = @EmployeeID";
+
+                    using (SqlCommand command = new SqlCommand(query, newConnection))
+                    {
+                        command.Parameters.AddWithValue("@EmployeeID", employeeId);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                roles.Add(reader.GetString(0));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading employee roles: " + ex.Message);
+            }
+
+            return roles;
+        }
+
+        // טעינת המשמרות המועדפות של עובד
+        private static HashSet<int> LoadEmployeePreferredShifts(int employeeId, SqlConnection connection)
+        {
+            HashSet<int> preferredShifts = new HashSet<int>();
+
+            try
+            {
+                // יצירת חיבור חדש כי אנחנו בתוך קורא נתונים
+                using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+                {
+                    newConnection.Open();
+
+                    string query = @"
+                SELECT ShiftID
+                FROM EmployeePreferredShifts
+                WHERE EmployeeID = @EmployeeID";
+
+                    using (SqlCommand command = new SqlCommand(query, newConnection))
+                    {
+                        command.Parameters.AddWithValue("@EmployeeID", employeeId);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                preferredShifts.Add(reader.GetInt32(0));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading employee preferred shifts: " + ex.Message);
+            }
+
+            return preferredShifts;
+        }
+
+        // טעינת הסניפים של עובד
+        private static List<string> LoadEmployeeBranches(int employeeId, SqlConnection connection)
+        {
+            List<string> branches = new List<string>();
+
+            try
+            {
+                // יצירת חיבור חדש כי אנחנו בתוך קורא נתונים
+                using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+                {
+                    newConnection.Open();
+
+                    string query = @"
+                SELECT b.Name
+                FROM EmployeeBranches eb
+                INNER JOIN Branches b ON eb.BranchID = b.BranchID
+                WHERE eb.EmployeeID = @EmployeeID";
+
+                    using (SqlCommand command = new SqlCommand(query, newConnection))
+                    {
+                        command.Parameters.AddWithValue("@EmployeeID", employeeId);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                branches.Add(reader.GetString(0));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading employee branches: " + ex.Message);
+            }
+
+            return branches;
+        }
+
+        // יתר המתודות העזר לטעינת המשמרות, התפקידים והעדפות המשמרות
+        #endregion
+        public static void createSceduele(string username)
+        {
+            LoadDataForUser(username);
             Console.WriteLine("Creating new schedule at: " + DateTime.Now);
 
             pop.Chromoshomes.Clear();
@@ -67,35 +423,56 @@ namespace Final
                 Dictionary<string, List<Employee>> mappingEmployeesByRole()
                 {
                     return Employees
-                        .SelectMany(emp => emp.Roles, (emp, role) => new { role, emp }) // יצירת צמדים של תפקיד + עובד
+                        .SelectMany(emp => emp.roles, (emp, role) => new { role, emp }) // יצירת צמדים של תפקיד + עובד
                         .GroupBy(entry => entry.role) // קיבוץ לפי תפקיד
                         .ToDictionary(group => group.Key, group => group.Select(entry => entry.emp).ToList()); // המרה למילון
                 }
 
                 List<int> UpdateOverlappingShifts(Employee employee, Shift assignedShift)
                 {
+                    #region inLine
+                     Shift FindShiftById(int shiftId)
+                    {
+                        // עבור כל סניף, בדוק את כל המשמרות
+                        foreach (Branch branch in Program.Branches)
+                        {
+                            foreach (Shift shift in branch.Shifts)
+                            {
+                                if (shift.Id == shiftId)
+                                {
+                                    return shift;
+                                }
+                            }
+                        }
+
+                        return null;
+                    }
+                    #endregion
                     if (employee == null || assignedShift == null)
                         return null;
 
-                    // קבל את ה"שארית" של מזהה המשמרת (החלק המשותף לכל הסניפים)
-                    int shiftSuffix = assignedShift.Id % 100;  // לדוגמא: 101 -> 01, 201 -> 01
+                    // רשימה לשמירת המזהים של המשמרות שנוסיר
                     List<int> idsToRemove = new List<int>();
 
-                    foreach (int id in employee.requestedShifts)
+                    // הסרת משמרות שחופפות באותו יום ושעה (זמן)
+                    foreach (int shiftId in employee.requestedShifts)
                     {
-                        if (id % 100 == shiftSuffix)
+                        // מציאת המשמרת המלאה מתוך הרשימה הכללית של המשמרות
+                        Shift shift = FindShiftById(shiftId);
+
+                        // אם מצאנו את המשמרת ויש לה את אותו יום ואותה שעה כמו המשמרת המשובצת
+                        if (shift != null &&
+                            shift.day == assignedShift.day &&
+                            shift.TimeSlot == assignedShift.TimeSlot)
                         {
-                            idsToRemove.Add(id);
+                            // הוספת המזהה לרשימת המשמרות להסרה
+                            idsToRemove.Add(shiftId);
                         }
                     }
-                    foreach (int id in idsToRemove)
-                    {
-                        employee.requestedShifts.Remove(id);
-                    }
                     return idsToRemove;
-                }
+                     }
 
-                List<Shift> fill_brach_shifts(Branch br)
+                    List<Shift> fill_brach_shifts(Branch br)
                 {
 
                     List<Shift> shuffledShifts = br.Shifts.OrderBy(x => random.Next()).ToList();
@@ -401,117 +778,7 @@ namespace Final
             return pop.Chromoshomes.OrderByDescending(ch => ch.Fitness).FirstOrDefault();
         }
 
-        public static Population Crossover(Population pop)
-        {
-            
-            Random random = new Random();
-            #region inLine
-            Chromosome createSonFromTwoParents(Chromosome ch1,Chromosome ch2)
-            {
-               
-
-                // Create a new chromosome for the offspring
-                Chromosome child = new Chromosome();
-                child.Shifts = new Dictionary<string, List<Shift>>();
-
-                // Get the union of branch names from both parents
-                HashSet<string> allBranchNames = new HashSet<string>();
-                foreach (string branchName in ch1.Shifts.Keys) allBranchNames.Add(branchName);
-                foreach (string branchName in ch2.Shifts.Keys) allBranchNames.Add(branchName);
-
-                // For each branch, randomly choose shifts from either parent
-                foreach (string branchName in allBranchNames)
-                {
-                    child.Shifts[branchName] = new List<Shift>();
-
-                    // Get the shifts for this branch from both parents
-                    List<Shift> shiftsParent1 = ch1.Shifts.ContainsKey(branchName) ? ch1.Shifts[branchName] : new List<Shift>();
-                    List<Shift> shiftsParent2 = ch2.Shifts.ContainsKey(branchName) ? ch2.Shifts[branchName] : new List<Shift>();
-
-                    // Create a set of all shift IDs
-                    HashSet<int> allShiftIds = new HashSet<int>();
-                    foreach (Shift shift in shiftsParent1) allShiftIds.Add(shift.Id);
-                    foreach (Shift shift in shiftsParent2) allShiftIds.Add(shift.Id);
-
-                    // For each shift ID, choose parent to take it from
-                    foreach (int shiftId in allShiftIds)
-                    {
-                        // Find the shift in both parents
-                        Shift shiftParent1 = shiftsParent1.FirstOrDefault(s => s.Id == shiftId);
-                        Shift shiftParent2 = shiftsParent2.FirstOrDefault(s => s.Id == shiftId);
-
-                        // Choose which parent to take from
-                        bool takeFromParent1 = random.Next(2) == 0;
-
-                        Shift sourceShift = null;
-                        if (takeFromParent1 && shiftParent1 != null)
-                        {
-                            sourceShift = shiftParent1;
-                        }
-                        else if (shiftParent2 != null)
-                        {
-                            sourceShift = shiftParent2;
-                        }
-                        else if (shiftParent1 != null)
-                        {
-                            sourceShift = shiftParent1;
-                        }
-
-                        if (sourceShift != null)
-                        {
-                            // Create a deep copy of the shift
-                            Shift childShift = new Shift();
-                            childShift.Id = sourceShift.Id;
-                            childShift.day = sourceShift.day;
-                            childShift.TimeSlot = sourceShift.TimeSlot;
-                            childShift.branch = sourceShift.branch;
-                            childShift.IsBusy = sourceShift.IsBusy;
-                            childShift.EventType = sourceShift.EventType;
-
-                            // Copy the required roles
-                            childShift.RequiredRoles = new Dictionary<string, int>();
-                            foreach (var roleEntry in sourceShift.RequiredRoles)
-                            {
-                                childShift.RequiredRoles[roleEntry.Key] = roleEntry.Value;
-                            }
-
-                            // Copy the assigned employees
-                            childShift.AssignedEmployees = new Dictionary<string, List<Employee>>();
-                            foreach (var roleEntry in sourceShift.AssignedEmployees)
-                            {
-                                string role = roleEntry.Key;
-                                List<Employee> employees = roleEntry.Value;
-
-                                // Create a new list for the role
-                                childShift.AssignedEmployees[role] = new List<Employee>();
-
-                                // Copy all employees (references only, not deep copies)
-                                foreach (Employee emp in employees)
-                                {
-                                    childShift.AssignedEmployees[role].Add(emp);
-                                }
-                            }
-
-                            child.Shifts[branchName].Add(childShift);
-                        }
-                    }
-                }
-
-                // Calculate fitness for the child
-                child.Fitness = calaulateChoromosomeFitness(child);
-
-                return child;
-            }
-            #endregion
-           
-            pop.Chromoshomes.OrderBy(x => random.Next()).ToList();
-            int chromosomesPreviousGene = pop.Chromoshomes.Count;
-            for (int i = 0; i < chromosomesPreviousGene; i+=2) {
-                pop.Chromoshomes.Add(createSonFromTwoParents(pop.Chromoshomes[i], pop.Chromoshomes[i+1]));
-            }
-            return pop;
-        } 
-     
+        
         static void Main()
         {
             Branches = DB.addBranches();

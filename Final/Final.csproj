@@ -68,6 +68,12 @@
     <Compile Include="Chromosome.cs" />
     <Compile Include="DataBaseHelper.cs" />
     <Compile Include="DB.cs" />
+    <Compile Include="EditBranchShift.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditBranchShift.Designer.cs">
+      <DependentUpon>EditBranchShift.cs</DependentUpon>
+    </Compile>
     <Compile Include="EditEmployeePage.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -123,6 +129,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="BranchManagmentPage.resx">
       <DependentUpon>BranchManagmentPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditBranchShift.resx">
+      <DependentUpon>EditBranchShift.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditEmployeePage.resx">
       <DependentUpon>EditEmployeePage.cs</DependentUpon>

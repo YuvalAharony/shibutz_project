@@ -3,6 +3,8 @@ using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using System.Data.SqlClient;
 
 namespace EmployeeSchedulingApp
 {
@@ -12,12 +14,16 @@ namespace EmployeeSchedulingApp
         private ListView employeesListView;
         private List<Branch> BranchesList;
         private ListView branchesListView;
+        private string currentUserName;
+        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
 
-        public MainPage()
+
+        public MainPage(string UserName)
         {
-            EmployeesList = Program.Employees;
-            BranchesList = Program.Branches;
+            currentUserName = UserName;
+            BranchesList=LoadUserBranches(UserName);
+            EmployeesList=LoadUserEmployees(UserName);  
             SetupUI();
             LoadEmployees();
             LoadBranches();
@@ -33,7 +39,7 @@ namespace EmployeeSchedulingApp
                 Size = new System.Drawing.Size(150, 40),
                 Location = new System.Drawing.Point(300, 500)
             };
-            generateShiftsButton.Click += (sender, e) => { Program.createSceduele(); };
+            generateShiftsButton.Click += (sender, e) => { Program.createSceduele(currentUserName); };
 
             this.Controls.Add(generateShiftsButton);
 
@@ -61,6 +67,28 @@ namespace EmployeeSchedulingApp
             };
             addEmployeeButton.Click += (sender, e) => { OpenAddEmployeePage(); };
 
+            // כפתור חדש לעריכת משמרות סניף
+            Button editBranchShiftsButton = new Button()
+            {
+                Text = "ערוך משמרות סניף",
+                Size = new System.Drawing.Size(150, 40),
+                Location = new System.Drawing.Point(390, 80)
+            };
+            editBranchShiftsButton.Click += (sender, e) =>
+            {
+                if (branchesListView.SelectedItems.Count > 0)
+                {
+                    Branch selectedBranch = (Branch)branchesListView.SelectedItems[0].Tag;
+                    EditBranchShift editPage = new EditBranchShift(selectedBranch);
+                    editPage.Show();
+                }
+                else
+                {
+                    MessageBox.Show("אנא בחר סניף תחילה", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+            this.Controls.Add(editBranchShiftsButton);
+
             branchesListView = new ListView()
             {
                 Location = new System.Drawing.Point(50, 150),
@@ -84,41 +112,190 @@ namespace EmployeeSchedulingApp
             employeesListView.Columns.Add("שם העובד", 150);
             employeesListView.Columns.Add("תפקיד", 150);
 
-
-
             this.Controls.Add(titleLabel);
             this.Controls.Add(addBranchButton);
             this.Controls.Add(addEmployeeButton);
             this.Controls.Add(branchesListView);
             this.Controls.Add(employeesListView);
             employeesListView.MouseDoubleClick += EmployeesListView_MouseDoubleClick;
-
         }
+        private void SetupEmployeesListViewDoubleClick()
+        {
+            // וודא שאירוע הלחיצה הכפולה מחובר
+            employeesListView.MouseDoubleClick -= EmployeesListView_MouseDoubleClick; // למנוע חיבור כפול
+            employeesListView.MouseDoubleClick += EmployeesListView_MouseDoubleClick;
+        }
+
         private void EmployeesListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (employeesListView.SelectedItems.Count > 0)
             {
                 string selectedName = employeesListView.SelectedItems[0].Text;
-                Employee selectedEmployee = Program.Employees.FirstOrDefault(emp => emp.Name == selectedName);
+
+                // מציאת העובד שנבחר לפי שמו
+                Employee selectedEmployee = EmployeesList.FirstOrDefault(emp => emp.Name == selectedName);
 
                 if (selectedEmployee != null)
                 {
+                    // פתיחת טופס עריכת העובד
                     EditEmployeePage editPage = new EditEmployeePage(selectedEmployee);
-                    editPage.FormClosed += (s, args) => LoadEmployees(); // רענון הרשימה לאחר סגירה
+
+                    // הוספת אירוע שיתרחש כאשר הטופס נסגר - רענון רשימת העובדים
+                    editPage.FormClosed += (s, args) =>
+                    {
+                        // רענון רשימת העובדים מבסיס הנתונים
+                        EmployeesList = LoadUserEmployees(currentUserName);
+
+                        // עדכון תצוגת העובדים
+                        LoadEmployees();
+                    };
+
                     editPage.Show();
                 }
             }
         }
 
+        private List<Branch> LoadUserBranches(string username)
+        {
+            List<Branch> userBranches = new List<Branch>();
 
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // שאילתה שמביאה את הסניפים המשויכים למשתמש
+                    string query = @"
+                SELECT b.BranchID, b.Name 
+                FROM Branches b
+                INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
+                INNER JOIN Users u ON ub.UserID = u.UserID
+                WHERE u.Username = @Username";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Username", username);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Branch branch = new Branch
+                                {
+                                    ID = reader.GetInt32(0),
+                                    Name = reader.GetString(1),
+                                };
+
+                                userBranches.Add(branch);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("אירעה שגיאה בטעינת הסניפים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return userBranches;
+        }
+
+        private List<Employee> LoadUserEmployees(string username)
+        {
+            List<Employee> userEmployees = new List<Employee>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // שאילתה שמביאה את העובדים המשויכים לסניפים של המשתמש
+                    string query = @"
+                     SELECT DISTINCT e.EmployeeID, e.Name, e.Phone, e.Email, e.HourlySalary, e.Rate, 
+                    e.IsMentor, e.AssignedHours
+                    FROM Employees e
+                    INNER JOIN EmployeeBranches eb ON e.EmployeeID = eb.EmployeeID
+                    INNER JOIN UserBranches ub ON eb.BranchID = ub.BranchID
+                    INNER JOIN Users u ON ub.UserID = u.UserID
+                    WHERE u.Username = @Username";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Username", username);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Employee employee = new Employee
+                                (Convert.ToInt32(reader["EmployeeID"]),
+                                reader["Name"].ToString(),
+                                new List<string>(),
+                                new HashSet<int>(),
+                                reader["Rate"] != DBNull.Value ? Convert.ToInt32(reader["Rate"]) : 0,
+                                Convert.ToInt32(reader["HourlySalary"]),
+                                Convert.ToInt32(reader["AssignedHours"]),
+                                Convert.ToBoolean(reader["IsMentor"]),
+                                null
+                                );
+
+                                // טעינת תפקידים של העובד
+                                employee.roles = LoadEmployeeRoles(employee.ID, connection);
+
+                                userEmployees.Add(employee);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("אירעה שגיאה בטעינת העובדים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return userEmployees;
+        }
+
+        // פונקציה עזר לטעינת תפקידים של עובד
+        private List<string> LoadEmployeeRoles(int employeeId, SqlConnection existingConnection)
+        {
+            List<string> roles = new List<string>();
+
+            try
+            {
+                string query = "SELECT RoleName FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
+
+                using (SqlCommand command = new SqlCommand(query, existingConnection))
+                {
+                    command.Parameters.AddWithValue("@EmployeeID", employeeId);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            roles.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // שגיאה בטעינת תפקידים - נחזיר רשימה ריקה
+                Console.WriteLine("Error loading employee roles: " + ex.Message);
+            }
+
+            return roles;
+        }
         public void LoadEmployees()
         {
             employeesListView.Items.Clear(); // מנקה את הרשימה
 
-            foreach (Employee emp in Program.Employees)
+            foreach (Employee emp in EmployeesList)
             {
                 ListViewItem item = new ListViewItem(emp.Name);
-                item.SubItems.Add(emp.Roles.FirstOrDefault() ?? "לא מוגדר"); // מציג את התפקיד הראשון
+                item.SubItems.Add(emp.roles.FirstOrDefault() ?? "לא מוגדר"); // מציג את התפקיד הראשון
                 employeesListView.Items.Add(item);
             }
         }
@@ -128,7 +305,7 @@ namespace EmployeeSchedulingApp
         {
             branchesListView.Items.Clear();
 
-            foreach (Branch br in Program.Branches)
+            foreach (Branch br in BranchesList)
             {
                 ListViewItem item = new ListViewItem(br.Name);
                 item.Tag = br;
@@ -151,17 +328,44 @@ namespace EmployeeSchedulingApp
 
         private void OpenAddBranchPage()
         {
-            AddBranchPage addBranch = new AddBranchPage();
-            addBranch.FormClosed += (sender, e) => { LoadBranches(); };
+            // וודא שהמשתמש הנוכחי מועבר לטופס
+            AddBranchPage addBranchPage = new AddBranchPage(currentUserName);
 
-            addBranch.Show();
+            addBranchPage.FormClosed += (sender, e) =>
+            {
+                if (addBranchPage.DialogResult == DialogResult.OK)
+                {
+                    // רענון רשימת הסניפים
+                    BranchesList = LoadUserBranches(currentUserName);
+                    LoadBranches();
+                }
+            };
+
+            addBranchPage.ShowDialog(); // שימוש ב-ShowDialog כדי לחסום את המסך הראשי עד לסגירת הטופס
         }
 
         private void OpenAddEmployeePage()
         {
-            AddEmployeePage addEmployee = new AddEmployeePage();
-            addEmployee.FormClosed += (sender, e) => { LoadEmployees(); };
-            addEmployee.Show();
+            // העברת שם המשתמש הנוכחי לדף הוספת העובד
+            AddEmployeePage addEmployee = new AddEmployeePage(currentUserName);
+
+            // הוספת אירוע לרענון הרשימה לאחר סגירת הטופס
+            addEmployee.FormClosed += (sender, e) =>
+            {
+                if (addEmployee.DialogResult == DialogResult.OK)
+                {
+                    // רענון רשימת העובדים על ידי טעינת הנתונים מחדש מהדאטאבייס
+                    EmployeesList = LoadUserEmployees(currentUserName);
+
+                    // עדכון הממשק המשתמש
+                    LoadEmployees();
+
+                    Console.WriteLine($"רשימת העובדים רועננה. נטענו {EmployeesList.Count} עובדים.");
+                }
+            };
+
+            // שימוש ב-ShowDialog במקום Show כדי לחסום את המסך הראשי עד לסגירת הטופס
+            addEmployee.ShowDialog();
         }
 
         private void InitializeComponent()
@@ -176,6 +380,6 @@ namespace EmployeeSchedulingApp
 
         }
 
-     
+       
     }
 }

@@ -10,23 +10,23 @@ namespace Final
     {
         public int ID { get; set; }
         public string Name { get; set; }
-        public List<String> Roles { get; set; }
+        public List<String> roles { get; set; }
         public HashSet<int> requestedShifts { get; set; }
         public HashSet<int> backUprequestedShifts { get; set; }
-        public double Rate { get; set; }
+        public int Rate { get; set; }
         public int HourlySalary { get; set; }
         public int AssignedHours { get; set; }
         public bool isMentor { get; set; }
 
         public List<string> Branches { get; set; }
         public HashSet<int> requestedShiftsBackup { get; set; }
+        public int Id { get; internal set; }
 
-
-        public Employee(int ID, string name, List<string> roles, HashSet<int> requestedShifts, double rate, int hourlySalary, int assignedHours, bool isMentor, List<string> branches)
+        public Employee(int ID, string name, List<string> roles, HashSet<int> requestedShifts, int rate, int hourlySalary, int assignedHours, bool isMentor, List<string> branches)
         {
-            ID = ID;
+            this.ID = ID;
             Name = name;
-            Roles = roles;
+            this.roles = roles;
             this.requestedShifts = requestedShifts;
             this.backUprequestedShifts = new HashSet<int>();
             foreach (int id in this.requestedShifts)
