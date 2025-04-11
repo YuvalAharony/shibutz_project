@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Final;
+using System;
+using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
+using System.Data.SqlClient;
 
 namespace Final
 {
@@ -18,7 +20,6 @@ namespace Final
             InitializeComponent();
             SetupUI();
             shiftsDataGridView.CellDoubleClick += ShiftsGridView_CellDoubleClick;
-
             LoadShifts();
         }
 
@@ -126,28 +127,42 @@ namespace Final
         // Add this event handler to your ViewShiftsPage class
         private void ShiftsGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-
-            // Skip if header row/column is clicked
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+            // דילוג אם נלחץ כותרת עמודה/שורה או העמודה הראשונה (עמודת "משמרת")
+            if (e.RowIndex < 0 || e.ColumnIndex <= 0)
                 return;
 
-            // Get the day of week from column header
-            string dayOfWeek = shiftsDataGridView.Columns[e.ColumnIndex].HeaderText;
+            // קבלת היום מכותרת העמודה
+            string dayOfWeek = shiftsDataGridView.Columns[e.ColumnIndex].Name;
 
-            // Get the shift time (Morning/Evening) from row header
-            string shiftTime = shiftsDataGridView.Rows[e.RowIndex].Cells[0].Value.ToString();
+            // קבלת סוג המשמרת (בוקר/ערב) מתא בעמודה הראשונה
+            string shiftTime = shiftsDataGridView.Rows[e.RowIndex].Cells[0].Value?.ToString();
 
-            // Find the corresponding shift in the branch
-            Shift selectedShift = selectedBranch.Shifts.FirstOrDefault(s =>
-                s.day == dayOfWeek && s.TimeSlot == shiftTime);
+            if (string.IsNullOrEmpty(shiftTime))
+                return;
+
+            // שליפת ה-Chromosome הטוב ביותר
+            Chromosome bestChromosome = Program.GetBestChromosome();
+            if (bestChromosome == null || !bestChromosome.Shifts.ContainsKey(selectedBranch.Name))
+            {
+                MessageBox.Show("לא נמצא סידור משמרות לסניף זה", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // חיפוש המשמרת המתאימה
+            Shift selectedShift = bestChromosome.Shifts[selectedBranch.Name]
+                .FirstOrDefault(s => s.day == dayOfWeek && s.TimeSlot == shiftTime);
 
             if (selectedShift != null)
             {
-                // Create and show the detailed shift view
+                // יצירת והצגת תצוגת פרטי משמרת
                 ViewShiftDetailPage detailPage = new ViewShiftDetailPage(selectedShift, selectedBranch);
                 detailPage.Show();
             }
-
+            else
+            {
+                MessageBox.Show($"לא נמצאו פרטי משמרת ליום {dayOfWeek}, משמרת {shiftTime}",
+                    "הודעה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         // Helper method to get the Shift object from a row
@@ -167,6 +182,6 @@ namespace Final
             return selectedBranch.Shifts.FirstOrDefault(s => s.Id.ToString() == shiftId);
         }
 
-        
+     
     }
 }

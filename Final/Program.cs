@@ -108,12 +108,13 @@ namespace Final
             List<Employee> employees = new List<Employee>();
 
             string query = @"
-        SELECT DISTINCT e.EmployeeID, e.Name, e.Phone, e.Email, e.HourlySalary, e.Rate, e.IsMentor, e.AssignedHours
-        FROM Employees e
-        INNER JOIN EmployeeBranches eb ON e.EmployeeID = eb.BranchID
-        INNER JOIN UserBranches ub ON eb.BranchID = ub.BranchID
-        INNER JOIN Users u ON ub.UserID = u.UserID
-        WHERE u.Username = @Username";
+                     SELECT DISTINCT e.EmployeeID, e.Name, e.Phone, e.Email, e.HourlySalary, e.Rate, 
+                    e.IsMentor, e.AssignedHours
+                    FROM Employees e
+                    INNER JOIN EmployeeBranches eb ON e.EmployeeID = eb.EmployeeID
+                    INNER JOIN UserBranches ub ON eb.BranchID = ub.BranchID
+                    INNER JOIN Users u ON ub.UserID = u.UserID
+                    WHERE u.Username = @Username";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {

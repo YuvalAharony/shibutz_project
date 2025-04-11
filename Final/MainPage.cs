@@ -3,7 +3,6 @@ using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using System.Data.SqlClient;
 
 namespace EmployeeSchedulingApp
@@ -15,8 +14,7 @@ namespace EmployeeSchedulingApp
         private List<Branch> BranchesList;
         private ListView branchesListView;
         private string currentUserName;
-        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
-
+        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True;MultipleActiveResultSets=True";
 
 
         public MainPage(string UserName)
@@ -265,8 +263,7 @@ namespace EmployeeSchedulingApp
 
             try
             {
-                string query = "SELECT RoleName FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
-
+                string query = @"SELECT  r.RoleName FROM Employees e join EmployeeRoles er on er.EmployeeID=e.EmployeeID join roles r on r.RoleID=er.RoleID WHERE e.EmployeeID = @EmployeeID";
                 using (SqlCommand command = new SqlCommand(query, existingConnection))
                 {
                     command.Parameters.AddWithValue("@EmployeeID", employeeId);

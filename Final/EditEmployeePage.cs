@@ -304,6 +304,8 @@ namespace EmployeeSchedulingApp
             }
         }
 
+       
+
         // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
         private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
