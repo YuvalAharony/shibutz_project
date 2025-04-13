@@ -165,9 +165,10 @@ namespace Final
             try
             {
                 string query = @"
-            SELECT s.ShiftID, s.TimeSlot, s.DayOfWeek, st.TypeName, s.IsBusy
+            SELECT s.ShiftID,ts.TimeSlotName, s.DayOfWeek, st.TypeName, s.IsBusy
             FROM Shifts s
             INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
+            INNER JOIN TimeSlots ts on ts.TimeSlotID=s.TimeSlotID
             WHERE s.BranchID = @BranchID";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
@@ -379,14 +380,13 @@ namespace Final
         public static void createSceduele(string username)
         {
             LoadDataForUser(username);
-            Console.WriteLine("Creating new schedule at: " + DateTime.Now);
+           
 
             pop.Chromoshomes.Clear();
         
 
             pop = initializeFirstPopulation(pop);
      
-            MessageBox.Show("סידור עבודה נוצר בהצלחה!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         public static Population initializeFirstPopulation(Population pop)
@@ -581,7 +581,7 @@ namespace Final
             }
             #endregion
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
             {
                 foreach (Employee emp in Employees)
                 {

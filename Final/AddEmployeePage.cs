@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Final
@@ -126,11 +127,10 @@ namespace Final
             currentY += 20; // מרווח קטן לפני הרשימה
             shiftsCheckedListBox = new CheckedListBox()
             {
-                Location = new System.Drawing.Point(labelX, currentY),
-                Width = 280,
+                Location = new Point(15, 520),
+                Width = 350,
                 Height = 120,
-                CheckOnClick = true,
-                Name = "shiftsCheckedListBox"
+                CheckOnClick = true
             };
             currentY += shiftsCheckedListBox.Height + 20;
 

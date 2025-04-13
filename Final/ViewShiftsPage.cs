@@ -1,9 +1,6 @@
-﻿using Final;
-using System;
-using System.Windows.Forms;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Data.SqlClient;
+using System.Windows.Forms;
 
 namespace Final
 {
@@ -27,7 +24,7 @@ namespace Final
         {
             this.Text = $"סידור משמרות - {selectedBranch.Name}";
             this.Size = new System.Drawing.Size(800, 600);
-            
+
 
             Label titleLabel = new Label()
             {
@@ -182,6 +179,6 @@ namespace Final
             return selectedBranch.Shifts.FirstOrDefault(s => s.Id.ToString() == shiftId);
         }
 
-     
+
     }
 }

@@ -41,6 +41,18 @@ namespace EmployeeSchedulingApp
 
             this.Controls.Add(generateShiftsButton);
 
+
+            
+            // Add this button to SetupUI in MainPage class
+            Button generateRandomDataButton = new Button()
+            {
+                Text = "צור נתונים באופן רנדומלי",
+                Size = new System.Drawing.Size(150, 40),
+                Location = new System.Drawing.Point(500, 500)
+            };
+            generateRandomDataButton.Click += GenerateRandomDataButton_Click;
+            this.Controls.Add(generateRandomDataButton);
+
             Label titleLabel = new Label()
             {
                 Text = "ניהול רשת המסעדות",
@@ -86,6 +98,8 @@ namespace EmployeeSchedulingApp
                 }
             };
             this.Controls.Add(editBranchShiftsButton);
+
+      
 
             branchesListView = new ListView()
             {
@@ -322,7 +336,47 @@ namespace EmployeeSchedulingApp
         }
 
 
+        // Add this button to SetupUI in MainPage class
+        private void GenerateRandomDataButton_Click(object sender, EventArgs e)
+        {
+            using (Form inputForm = new Form())
+            {
+                inputForm.Text = "Generate Random Data";
+                inputForm.Size = new System.Drawing.Size(300, 200);
+                inputForm.StartPosition = FormStartPosition.CenterParent;
 
+                Label branchLabel = new Label() { Text = "Number of branches:", Location = new System.Drawing.Point(20, 20), AutoSize = true };
+                NumericUpDown branchCount = new NumericUpDown() { Location = new System.Drawing.Point(150, 20), Minimum = 1, Maximum = 10, Value = 2 };
+
+                Label employeeLabel = new Label() { Text = "Total employees:", Location = new System.Drawing.Point(20, 50), AutoSize = true };
+                NumericUpDown employeeCount = new NumericUpDown() { Location = new System.Drawing.Point(150, 50), Minimum = 5, Maximum = 100, Value = 20 };
+
+                Button okButton = new Button() { Text = "OK", Location = new System.Drawing.Point(100, 100), DialogResult = DialogResult.OK };
+
+                inputForm.Controls.AddRange(new Control[] { branchLabel, branchCount, employeeLabel, employeeCount, okButton });
+                inputForm.AcceptButton = okButton;
+
+                if (inputForm.ShowDialog() == DialogResult.OK)
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+                    try
+                    {
+                        // Run random data generation
+                        RandomDataGenerator.GenerateRandomData((int)branchCount.Value, (int)employeeCount.Value, currentUserName);
+
+                        // Refresh the display
+                        BranchesList = LoadUserBranches(currentUserName);
+                        EmployeesList = LoadUserEmployees(currentUserName);
+                        LoadBranches();
+                        LoadEmployees();
+                    }
+                    finally
+                    {
+                        Cursor.Current = Cursors.Default;
+                    }
+                }
+            }
+        }
         private void OpenAddBranchPage()
         {
             // וודא שהמשתמש הנוכחי מועבר לטופס
@@ -377,6 +431,6 @@ namespace EmployeeSchedulingApp
 
         }
 
-       
+        
     }
 }

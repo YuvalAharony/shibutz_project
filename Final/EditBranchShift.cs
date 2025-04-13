@@ -33,10 +33,11 @@ namespace EmployeeSchedulingApp
             // 
             this.ClientSize = new System.Drawing.Size(1000, 600);
             this.Name = "EditBranchShift";
-            this.Text = "עריכת משמרות סניף";
-            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.RightToLeftLayout = true;
+            this.Text = "עריכת משמרות סניף";
             this.ResumeLayout(false);
+
         }
 
         private void SetupUI()
@@ -592,5 +593,7 @@ namespace EmployeeSchedulingApp
 
             return newShiftId;
         }
+
+       
     }
 }

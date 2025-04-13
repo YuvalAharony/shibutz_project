@@ -45,8 +45,6 @@ namespace EmployeeSchedulingApp
             // 
             this.ClientSize = new System.Drawing.Size(400, 750);
             this.Name = "EditEmployeePage";
-            this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.RightToLeftLayout = true;
             this.ResumeLayout(false);
 
         }
@@ -124,8 +122,8 @@ namespace EmployeeSchedulingApp
             Label shiftsLabel = new Label() { Text = "משמרות מועדפות:", Location = new Point(50, 500) };
             shiftsCheckedListBox = new CheckedListBox()
             {
-                Location = new Point(50, 520),
-                Width = 280,
+                Location = new Point(15, 520),
+                Width = 350,
                 Height = 120,
                 CheckOnClick = true
             };
@@ -268,9 +266,10 @@ namespace EmployeeSchedulingApp
                     connection.Open();
 
                     string query = @"
-                        SELECT s.ShiftID, s.TimeSlot, s.DayOfWeek, st.TypeName
+                        SELECT s.ShiftID, st.TypeName, s.DayOfWeek, st.TypeName
                         FROM Shifts s
                         INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
+                        
                         WHERE s.BranchID = @BranchID";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -304,7 +303,9 @@ namespace EmployeeSchedulingApp
             }
         }
 
-       
+        
+
+
 
         // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
         private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
