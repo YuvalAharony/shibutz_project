@@ -51,7 +51,6 @@ namespace EmployeeSchedulingApp
 
                     // Delete existing data
                     DeleteExistingData(connection, userId);
-                    ResetIdentityCounters(connection);
 
                     // 2. Create shift types if they don't exist
                     EnsureShiftTypesExist(connection);
@@ -80,32 +79,32 @@ namespace EmployeeSchedulingApp
                 MessageBox.Show($"Error generating random data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private static void ResetIdentityCounters(SqlConnection connection)
-        {
-            try
-            {
-                // רשימת הטבלאות עם עמודות Identity שצריך לאפס
-                string[] tablesToReset = {
-            "Branches", "Employees",
-            "Shifts", "ShiftTypes"
+        //private static void ResetIdentityCounters(SqlConnection connection)
+        //{
+        //    try
+        //    {
+        //        // רשימת הטבלאות עם עמודות Identity שצריך לאפס
+        //        string[] tablesToReset = {
+        //    "Branches", "Employees",
+        //    "Shifts", "ShiftTypes"
 
-        };
+        //};
 
-                foreach (string tableName in tablesToReset)
-                {
-                    string resetQuery = $"DBCC CHECKIDENT ('{tableName}', RESEED, 0)";
-                    using (SqlCommand command = new SqlCommand(resetQuery, connection))
-                    {
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error resetting identity counters: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                throw;
-            }
-        }
+        //        foreach (string tableName in tablesToReset)
+        //        {
+        //            string resetQuery = $"DBCC CHECKIDENT ('{tableName}', RESEED, 0)";
+        //            using (SqlCommand command = new SqlCommand(resetQuery, connection))
+        //            {
+        //                command.ExecuteNonQuery();
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error resetting identity counters: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        throw;
+        //    }
+        //}
         #region Helper functions for deleting existing data
 
         public static void DeleteExistingData(SqlConnection connection, int userId)

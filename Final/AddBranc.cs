@@ -178,6 +178,7 @@ namespace EmployeeSchedulingApp
                     {
                         command.Parameters.AddWithValue("@Name", branchName);
                         branchId = (int)command.ExecuteScalar();
+                        
                         Console.WriteLine($"נוסף סניף חדש עם מזהה {branchId}");
                     }
 
@@ -420,6 +421,5 @@ namespace EmployeeSchedulingApp
             }
         }
 
-       
     }
 }
