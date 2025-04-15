@@ -18,7 +18,9 @@ namespace Final
         public static List<Employee> Employees{  get; set; }   
         public static List<Branch> Branches{  get; set; }  
         public static DB myDB = new DB();
-        public const int ChromosomesEachGene = 100;
+        public const int ChromosomesEachGene = 500;
+        public const int Genes = 500;
+
 
         public static Population pop = new Population(new List<Chromosome>(), ChromosomesEachGene);
         #endregion
@@ -386,7 +388,17 @@ namespace Final
         
 
             pop = initializeFirstPopulation(pop);
-     
+            pop.Chromoshomes = pop.Chromoshomes.OrderByDescending(x => x.Fitness).Take(ChromosomesEachGene).ToList();
+
+            for (int i = 0; i < Genes; i++)
+            {
+                crossover(pop);
+                Mutation(pop);
+                // תיקון - השמה והפיכת הסדר כי אנחנו רוצים את הערכים הגבוהים
+                pop.Chromoshomes = pop.Chromoshomes.OrderByDescending(x => x.Fitness).Take(ChromosomesEachGene).ToList();
+            }
+            MessageBox.Show("נוצר בהצלחה", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
         }
 
         public static Population initializeFirstPopulation(Population pop)
@@ -506,7 +518,9 @@ namespace Final
 
                                 if (employeesAvaliableForShift != null)
                                 {
-                                    Employee selectedEmployee = currenList.FirstOrDefault(emp => employeesAvaliableForShift.Contains(emp));
+                                    Employee selectedEmployee = currenList.FirstOrDefault(emp =>
+                                    employeesAvaliableForShift.Contains(emp) && employeesAvaliableForRole.Contains(emp));
+
 
                                     if (selectedEmployee != null)
                                     {
@@ -581,7 +595,7 @@ namespace Final
             }
             #endregion
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < ChromosomesEachGene; i++)
             {
                 foreach (Employee emp in Employees)
                 {
@@ -602,7 +616,617 @@ namespace Final
             return pop;
         }
 
+        public static void Mutation(Population pop)
+        {
+            Random random = new Random();
+            List<Chromosome> newChromosomes = new List<Chromosome>();
 
+            // עבור על כל הכרומוזומים באוכלוסייה
+            foreach (Chromosome chromosome in pop.Chromoshomes)
+            {
+                // יצירת העתק עמוק של הכרומוזום לפני המוטציה
+                Chromosome mutatedChromosome = DeepCopyChromosome(chromosome);
+                bool wasMutated = false;
+
+                // עבור על כל סניף בכרומוזום
+                foreach (var branchEntry in mutatedChromosome.Shifts)
+                {
+                    string branchName = branchEntry.Key;
+                    List<Shift> shifts = branchEntry.Value;
+
+                    // בחר משמרת אקראית לשינוי
+                    if (shifts != null && shifts.Count > 0)
+                    {
+                        int shiftIndex = random.Next(shifts.Count);
+                        Shift shiftToMutate = shifts[shiftIndex];
+
+                        // וודא שיש לפחות עובד אחד במשמרת
+                        if (shiftToMutate.AssignedEmployees != null && shiftToMutate.AssignedEmployees.Count > 0)
+                        {
+                            // בחר תפקיד אקראי
+                            var roles = shiftToMutate.AssignedEmployees.Keys.ToList();
+                            if (roles.Count > 0)
+                            {
+                                string role = roles[random.Next(roles.Count)];
+
+                                // וודא שיש לפחות עובד אחד בתפקיד הזה
+                                if (shiftToMutate.AssignedEmployees[role] != null &&
+                                    shiftToMutate.AssignedEmployees[role].Count > 0)
+                                {
+                                    // בחר עובד אקראי להחלפה
+                                    int employeeIndex = random.Next(shiftToMutate.AssignedEmployees[role].Count);
+                                    Employee employeeToReplace = shiftToMutate.AssignedEmployees[role][employeeIndex];
+
+                                    // רשימת העובדים שכבר משובצים במשמרת הזו (בכל התפקידים)
+                                    HashSet<Employee> employeesInShift = new HashSet<Employee>();
+                                    foreach (var roleEntry in shiftToMutate.AssignedEmployees)
+                                    {
+                                        foreach (Employee emp in roleEntry.Value)
+                                        {
+                                            employeesInShift.Add(emp);
+                                        }
+                                    }
+
+                                    // מצא עובד חלופי שיכול לבצע את התפקיד הזה ולא כבר משובץ במשמרת
+                                    List<Employee> potentialReplacements = Program.Employees
+                                        .Where(e => e.roles.Contains(role) &&
+                                               !employeesInShift.Contains(e))
+                                        .ToList();
+
+                                    if (potentialReplacements.Count > 0)
+                                    {
+                                        // החלף את העובד בעובד אקראי מהרשימה של המחליפים הפוטנציאליים
+                                        shiftToMutate.AssignedEmployees[role][employeeIndex] =
+                                            potentialReplacements[random.Next(potentialReplacements.Count)];
+
+                                        wasMutated = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // אם בוצעה מוטציה, חשב את ערך הפיטנס החדש והוסף לאוכלוסייה
+                if (wasMutated)
+                {
+                    mutatedChromosome.Fitness = Program.calaulateChoromosomeFitness(mutatedChromosome);
+                    newChromosomes.Add(mutatedChromosome);
+                }
+            }
+
+            // הוסף את הכרומוזומים החדשים לאוכלוסייה
+            foreach (var newChromosome in newChromosomes)
+            {
+                pop.Chromoshomes.Add(newChromosome);
+            }
+
+            // מיין את האוכלוסייה לפי ערך הפיטנס וקח את החזקים ביותר
+            pop.Chromoshomes = pop.Chromoshomes
+                .OrderByDescending(ch => ch.Fitness)
+                .Take(Program.ChromosomesEachGene)
+                .ToList();
+        }
+        public static void crossover(Population pop)
+        {
+            Random random = new Random();
+            List<Chromosome> newOffspring = new List<Chromosome>();
+
+            // הגדלת מספר הצאצאים
+            int desiredOffspringCount = Program.ChromosomesEachGene * 3 / 4; // 75% מהאוכלוסייה
+
+            for (int i = 0; i < desiredOffspringCount; i++)
+            {
+                // בחירת הורים טובים יותר - לקיחת ה-10% העליונים
+                var bestParents = pop.Chromoshomes
+                    .OrderByDescending(ch => ch.Fitness)
+                    .Take(pop.Chromoshomes.Count / 10)
+                    .ToList();
+
+                // בחירת הורים בסיכוי יחסי לפיטנס
+                Chromosome parent1 = SelectParentByRouletteWheel(bestParents.Count > 0 ? bestParents : pop.Chromoshomes);
+                Chromosome parent2 = SelectParentByRouletteWheel(bestParents.Count > 0 ? bestParents : pop.Chromoshomes);
+
+                // וידוא הורים שונים
+                int attempts = 0;
+                while (parent1 == parent2 && attempts < 10)
+                {
+                    parent2 = SelectParentByRouletteWheel(bestParents.Count > 0 ? bestParents : pop.Chromoshomes);
+                    attempts++;
+                }
+
+                // גיוון טכניקות הצלבה
+                int crossoverType = random.Next(3);
+                Chromosome offspring;
+
+                switch (crossoverType)
+                {
+                    case 0:
+                        offspring = PerformCrossover(parent1, parent2); // הצלבה רגילה
+                        break;
+
+                    case 1:
+                        offspring = PerformUniformCrossover(parent1, parent2); // הצלבה אחידה
+                        break;
+
+                    default:
+                        offspring = PerformMultiPointCrossover(parent1, parent2); // הצלבה רב-נקודתית
+                        break;
+                }
+
+                // חישוב פיטנס והוספה
+                offspring.Fitness = Program.calaulateChoromosomeFitness(offspring);
+                newOffspring.Add(offspring);
+            }
+
+            // הוספת הצאצאים לאוכלוסייה
+            foreach (var offspring in newOffspring)
+            {
+                pop.Chromoshomes.Add(offspring);
+            }
+
+            // מיון ושמירת הטובים ביותר
+            pop.Chromoshomes = pop.Chromoshomes
+                .OrderByDescending(ch => ch.Fitness)
+                .Take(Program.ChromosomesEachGene)
+                .ToList();
+        }
+
+        // הצלבה אחידה - שילוב אקראי של תכונות משני ההורים
+        private static Chromosome PerformUniformCrossover(Chromosome parent1, Chromosome parent2)
+        {
+            Random random = new Random();
+            Chromosome offspring = new Chromosome();
+            offspring.Shifts = new Dictionary<string, List<Shift>>();
+
+            // איחוד מפתחות הסניפים מההורים
+            var allBranchNames = new HashSet<string>(parent1.Shifts.Keys.Concat(parent2.Shifts.Keys));
+
+            foreach (string branchName in allBranchNames)
+            {
+                // אם הסניף קיים רק באחד ההורים, העתק אותו כמו שהוא
+                if (!parent1.Shifts.ContainsKey(branchName))
+                {
+                    offspring.Shifts[branchName] = DeepCopyShifts(parent2.Shifts[branchName]);
+                    continue;
+                }
+
+                if (!parent2.Shifts.ContainsKey(branchName))
+                {
+                    offspring.Shifts[branchName] = DeepCopyShifts(parent1.Shifts[branchName]);
+                    continue;
+                }
+
+                // הסניף קיים בשני ההורים - בצע הצלבה אחידה ברמת המשמרת
+                List<Shift> parent1Shifts = parent1.Shifts[branchName];
+                List<Shift> parent2Shifts = parent2.Shifts[branchName];
+                List<Shift> offspringShifts = new List<Shift>();
+
+                // צלול עמוק יותר - בצע הצלבה ברמת המשמרות
+                int shiftsCount = Math.Min(parent1Shifts.Count, parent2Shifts.Count);
+
+                for (int i = 0; i < shiftsCount; i++)
+                {
+                    Shift shift1 = parent1Shifts[i];
+                    Shift shift2 = parent2Shifts[i];
+
+                    // וודא תאימות בין המשמרות (אותו יום, אותה שעה)
+                    if (shift1.day == shift2.day && shift1.TimeSlot == shift2.TimeSlot)
+                    {
+                        // יצירת משמרת בסיסית
+                        Shift offspringShift = new Shift
+                        {
+                            Id = shift1.Id,
+                            branch = shift1.branch,
+                            day = shift1.day,
+                            TimeSlot = shift1.TimeSlot,
+                            IsBusy = shift1.IsBusy,
+                            EventType = shift1.EventType,
+                            RequiredRoles = new Dictionary<string, int>(shift1.RequiredRoles),
+                            AssignedEmployees = new Dictionary<string, List<Employee>>()
+                        };
+
+                        // איחוד תפקידים משני ההורים
+                        var allRoles = new HashSet<string>(
+                            shift1.AssignedEmployees.Keys.Concat(shift2.AssignedEmployees.Keys));
+
+                        foreach (string role in allRoles)
+                        {
+                            offspringShift.AssignedEmployees[role] = new List<Employee>();
+
+                            // העתקת עובדים מההורה הראשון או השני
+                            if (shift1.AssignedEmployees.ContainsKey(role) &&
+                                shift2.AssignedEmployees.ContainsKey(role))
+                            {
+                                var employees1 = shift1.AssignedEmployees[role];
+                                var employees2 = shift2.AssignedEmployees[role];
+
+                                // בחירה אקראית בין העובדים של שני ההורים
+                                for (int j = 0; j < Math.Max(employees1.Count, employees2.Count); j++)
+                                {
+                                    if (random.Next(2) == 0 && j < employees1.Count)
+                                    {
+                                        if (!offspringShift.AssignedEmployees[role].Contains(employees1[j]))
+                                            offspringShift.AssignedEmployees[role].Add(employees1[j]);
+                                    }
+                                    else if (j < employees2.Count)
+                                    {
+                                        if (!offspringShift.AssignedEmployees[role].Contains(employees2[j]))
+                                            offspringShift.AssignedEmployees[role].Add(employees2[j]);
+                                    }
+                                }
+                            }
+                            else if (shift1.AssignedEmployees.ContainsKey(role))
+                            {
+                                offspringShift.AssignedEmployees[role] = new List<Employee>(shift1.AssignedEmployees[role]);
+                            }
+                            else if (shift2.AssignedEmployees.ContainsKey(role))
+                            {
+                                offspringShift.AssignedEmployees[role] = new List<Employee>(shift2.AssignedEmployees[role]);
+                            }
+                        }
+
+                        offspringShifts.Add(offspringShift);
+                    }
+                    else
+                    {
+                        // המשמרות אינן תואמות - העתק אחת מהן באקראי
+                        offspringShifts.Add(DeepCopyShift(random.Next(2) == 0 ? shift1 : shift2));
+                    }
+                }
+
+                // טיפול במקרה שלאחד ההורים יש יותר משמרות
+                if (parent1Shifts.Count > shiftsCount)
+                {
+                    for (int i = shiftsCount; i < parent1Shifts.Count; i++)
+                    {
+                        offspringShifts.Add(DeepCopyShift(parent1Shifts[i]));
+                    }
+                }
+                else if (parent2Shifts.Count > shiftsCount)
+                {
+                    for (int i = shiftsCount; i < parent2Shifts.Count; i++)
+                    {
+                        offspringShifts.Add(DeepCopyShift(parent2Shifts[i]));
+                    }
+                }
+
+                offspring.Shifts[branchName] = offspringShifts;
+            }
+
+            return offspring;
+        }
+
+        // הצלבה רב-נקודתית
+        private static Chromosome PerformMultiPointCrossover(Chromosome parent1, Chromosome parent2)
+        {
+            Random random = new Random();
+            Chromosome offspring = new Chromosome();
+            offspring.Shifts = new Dictionary<string, List<Shift>>();
+
+            // עבור על הסניפים המשותפים
+            var commonBranches = parent1.Shifts.Keys.Intersect(parent2.Shifts.Keys).ToList();
+
+            foreach (string branchName in commonBranches)
+            {
+                List<Shift> parent1Shifts = parent1.Shifts[branchName];
+                List<Shift> parent2Shifts = parent2.Shifts[branchName];
+                List<Shift> offspringShifts = new List<Shift>();
+
+                int shiftsCount = Math.Min(parent1Shifts.Count, parent2Shifts.Count);
+
+                // יצירת 1-3 נקודות חיתוך אקראיות
+                int numCrossoverPoints = random.Next(1, Math.Min(4, shiftsCount));
+                List<int> crossoverPoints = new List<int>();
+
+                for (int i = 0; i < numCrossoverPoints; i++)
+                {
+                    int point = random.Next(1, shiftsCount);
+
+                    if (!crossoverPoints.Contains(point))
+                        crossoverPoints.Add(point);
+                }
+
+                crossoverPoints.Sort();
+
+                // ביצוע הצלבה לפי נקודות החיתוך
+                bool useParent1 = true;
+                int currentIndex = 0;
+
+                for (int i = 0; i < shiftsCount; i++)
+                {
+                    if (crossoverPoints.Contains(i))
+                    {
+                        useParent1 = !useParent1;
+                    }
+
+                    if (useParent1)
+                    {
+                        offspringShifts.Add(DeepCopyShift(parent1Shifts[i]));
+                    }
+                    else
+                    {
+                        offspringShifts.Add(DeepCopyShift(parent2Shifts[i]));
+                    }
+                }
+
+                // טיפול במשמרות נוספות
+                if (parent1Shifts.Count > shiftsCount)
+                {
+                    for (int i = shiftsCount; i < parent1Shifts.Count; i++)
+                    {
+                        offspringShifts.Add(DeepCopyShift(parent1Shifts[i]));
+                    }
+                }
+                else if (parent2Shifts.Count > shiftsCount)
+                {
+                    for (int i = shiftsCount; i < parent2Shifts.Count; i++)
+                    {
+                        offspringShifts.Add(DeepCopyShift(parent2Shifts[i]));
+                    }
+                }
+
+                offspring.Shifts[branchName] = offspringShifts;
+            }
+
+            // טיפול בסניפים ייחודיים
+            foreach (string branchName in parent1.Shifts.Keys.Except(commonBranches))
+            {
+                offspring.Shifts[branchName] = DeepCopyShifts(parent1.Shifts[branchName]);
+            }
+
+            foreach (string branchName in parent2.Shifts.Keys.Except(commonBranches))
+            {
+                offspring.Shifts[branchName] = DeepCopyShifts(parent2.Shifts[branchName]);
+            }
+
+            return offspring;
+        }
+
+        // פונקציות עזר
+        private static Shift DeepCopyShift(Shift originalShift)
+        {
+            Shift copy = new Shift
+            {
+                Id = originalShift.Id,
+                branch = originalShift.branch,
+                day = originalShift.day,
+                TimeSlot = originalShift.TimeSlot,
+                IsBusy = originalShift.IsBusy,
+                EventType = originalShift.EventType,
+                RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
+                AssignedEmployees = new Dictionary<string, List<Employee>>()
+            };
+
+            foreach (var roleEntry in originalShift.AssignedEmployees)
+            {
+                copy.AssignedEmployees[roleEntry.Key] = new List<Employee>(roleEntry.Value);
+            }
+
+            return copy;
+        }
+
+        private static List<Shift> DeepCopyShifts(List<Shift> shifts)
+        {
+            List<Shift> copies = new List<Shift>();
+
+            foreach (var shift in shifts)
+            {
+                copies.Add(DeepCopyShift(shift));
+            }
+
+            return copies;
+        }
+
+        // פונקציית עזר ליצירת העתק עמוק של כרומוזום
+        private static Chromosome DeepCopyChromosome(Chromosome original)
+        {
+            Chromosome copy = new Chromosome();
+            copy.Fitness = original.Fitness;
+            copy.Shifts = new Dictionary<string, List<Shift>>();
+
+            foreach (var branchEntry in original.Shifts)
+            {
+                string branchName = branchEntry.Key;
+                List<Shift> originalShifts = branchEntry.Value;
+                List<Shift> copiedShifts = new List<Shift>();
+
+                foreach (Shift originalShift in originalShifts)
+                {
+                    Shift shiftCopy = new Shift
+                    {
+                        Id = originalShift.Id,
+                        branch = originalShift.branch,
+                        day = originalShift.day,
+                        TimeSlot = originalShift.TimeSlot,
+                        IsBusy = originalShift.IsBusy,
+                        EventType = originalShift.EventType,
+                        RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
+                        AssignedEmployees = new Dictionary<string, List<Employee>>()
+                    };
+
+                    foreach (var roleEntry in originalShift.AssignedEmployees)
+                    {
+                        string role = roleEntry.Key;
+                        List<Employee> employees = roleEntry.Value;
+
+                        shiftCopy.AssignedEmployees[role] = new List<Employee>(employees);
+                    }
+
+                    copiedShifts.Add(shiftCopy);
+                }
+
+                copy.Shifts[branchName] = copiedShifts;
+            }
+
+            return copy;
+        }
+
+        // פונקציית עזר לבחירת הורה באמצעות סלקציית רולטה
+        private static Chromosome SelectParentByRouletteWheel(List<Chromosome> chromosomes)
+        {
+            Random random = new Random();
+
+            // חישוב סכום כל ערכי הפיטנס
+            double totalFitness = 0;
+            foreach (var chromosome in chromosomes)
+            {
+                // התייחסות לערכי פיטנס שליליים
+                double adjustedFitness = chromosome.Fitness < 0 ? 0.1 : chromosome.Fitness;
+                totalFitness += adjustedFitness;
+            }
+
+            // בחירת מיקום אקראי בגלגל הרולטה
+            double randomPosition = random.NextDouble() * totalFitness;
+            double currentPosition = 0;
+
+            // מציאת הכרומוזום שנבחר
+            foreach (var chromosome in chromosomes)
+            {
+                double adjustedFitness = chromosome.Fitness < 0 ? 0.1 : chromosome.Fitness;
+                currentPosition += adjustedFitness;
+
+                if (currentPosition >= randomPosition)
+                {
+                    return chromosome;
+                }
+            }
+
+            // במקרה קיצוני, החזר את הכרומוזום האחרון
+            return chromosomes[chromosomes.Count - 1];
+        }
+
+        // פונקציית עזר לביצוע crossover בין שני הורים
+        private static Chromosome PerformCrossover(Chromosome parent1, Chromosome parent2)
+        {
+            Random random = new Random();
+            Chromosome offspring = new Chromosome();
+            offspring.Shifts = new Dictionary<string, List<Shift>>();
+
+            // עבור על כל הסניפים בהורה הראשון
+            foreach (var branchEntry in parent1.Shifts)
+            {
+                string branchName = branchEntry.Key;
+                List<Shift> parent1Shifts = branchEntry.Value;
+
+                // בדוק אם הסניף קיים גם בהורה השני
+                if (parent2.Shifts.ContainsKey(branchName))
+                {
+                    List<Shift> parent2Shifts = parent2.Shifts[branchName];
+                    List<Shift> offspringShifts = new List<Shift>();
+
+                    // עבור על כל המשמרות בסניף
+                    int shiftCount = parent1Shifts.Count;
+                    for (int i = 0; i < shiftCount; i++)
+                    {
+                        // בחר נקודת crossover אקראית (נקודה שבה מחליפים בין ההורים)
+                        bool useParent1 = random.Next(2) == 0;
+
+                        Shift sourceShift = useParent1 ? parent1Shifts[i] : parent2Shifts[i];
+
+                        // יצירת העתק של המשמרת הנבחרת
+                        Shift offspringShift = new Shift
+                        {
+                            Id = sourceShift.Id,
+                            branch = sourceShift.branch,
+                            day = sourceShift.day,
+                            TimeSlot = sourceShift.TimeSlot,
+                            IsBusy = sourceShift.IsBusy,
+                            EventType = sourceShift.EventType,
+                            RequiredRoles = new Dictionary<string, int>(sourceShift.RequiredRoles),
+                            AssignedEmployees = new Dictionary<string, List<Employee>>()
+                        };
+
+                        // העתקת העובדים המשובצים
+                        foreach (var roleEntry in sourceShift.AssignedEmployees)
+                        {
+                            string role = roleEntry.Key;
+                            List<Employee> employees = roleEntry.Value;
+
+                            offspringShift.AssignedEmployees[role] = new List<Employee>(employees);
+                        }
+
+                        offspringShifts.Add(offspringShift);
+                    }
+
+                    offspring.Shifts[branchName] = offspringShifts;
+                }
+                else
+                {
+                    // אם הסניף לא קיים בהורה השני, העתק אותו מההורה הראשון
+                    List<Shift> copiedShifts = new List<Shift>();
+
+                    foreach (Shift originalShift in parent1Shifts)
+                    {
+                        Shift shiftCopy = new Shift
+                        {
+                            Id = originalShift.Id,
+                            branch = originalShift.branch,
+                            day = originalShift.day,
+                            TimeSlot = originalShift.TimeSlot,
+                            IsBusy = originalShift.IsBusy,
+                            EventType = originalShift.EventType,
+                            RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
+                            AssignedEmployees = new Dictionary<string, List<Employee>>()
+                        };
+
+                        foreach (var roleEntry in originalShift.AssignedEmployees)
+                        {
+                            string role = roleEntry.Key;
+                            List<Employee> employees = roleEntry.Value;
+
+                            shiftCopy.AssignedEmployees[role] = new List<Employee>(employees);
+                        }
+
+                        copiedShifts.Add(shiftCopy);
+                    }
+
+                    offspring.Shifts[branchName] = copiedShifts;
+                }
+            }
+
+            // טיפול בסניפים שקיימים רק בהורה השני
+            foreach (var branchEntry in parent2.Shifts)
+            {
+                string branchName = branchEntry.Key;
+
+                // אם הסניף לא קיים בצאצא (כלומר, לא היה בהורה הראשון), הוסף אותו
+                if (!offspring.Shifts.ContainsKey(branchName))
+                {
+                    List<Shift> parent2Shifts = branchEntry.Value;
+                    List<Shift> copiedShifts = new List<Shift>();
+
+                    foreach (Shift originalShift in parent2Shifts)
+                    {
+                        Shift shiftCopy = new Shift
+                        {
+                            Id = originalShift.Id,
+                            branch = originalShift.branch,
+                            day = originalShift.day,
+                            TimeSlot = originalShift.TimeSlot,
+                            IsBusy = originalShift.IsBusy,
+                            EventType = originalShift.EventType,
+                            RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
+                            AssignedEmployees = new Dictionary<string, List<Employee>>()
+                        };
+
+                        foreach (var roleEntry in originalShift.AssignedEmployees)
+                        {
+                            string role = roleEntry.Key;
+                            List<Employee> employees = roleEntry.Value;
+
+                            shiftCopy.AssignedEmployees[role] = new List<Employee>(employees);
+                        }
+
+                        copiedShifts.Add(shiftCopy);
+                    }
+
+                    offspring.Shifts[branchName] = copiedShifts;
+                }
+            }
+
+            return offspring;
+        }
 
         public static double calaulateChoromosomeFitness(Chromosome ch)
         {
@@ -713,11 +1337,9 @@ namespace Final
                                     shift.AssignedEmployees = new Dictionary<string, List<Employee>>();
                                 }
 
-                                // חשב את הפיטנס רק למשמרות שיש להן עובדים משובצים
-                                if (shift.AssignedEmployees.Count > 0)
-                                {
+                               
                                     currentChromosomeFitness += calculatesShiftFitness(shift);
-                                }
+                                
                             }
                         }
                     }

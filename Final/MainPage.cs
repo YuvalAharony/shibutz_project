@@ -150,7 +150,7 @@ namespace EmployeeSchedulingApp
                 if (selectedEmployee != null)
                 {
                     // פתיחת טופס עריכת העובד
-                    EditEmployeePage editPage = new EditEmployeePage(selectedEmployee);
+                    EditEmployeePage editPage = new EditEmployeePage(selectedEmployee,currentUserName);
 
                     // הוספת אירוע שיתרחש כאשר הטופס נסגר - רענון רשימת העובדים
                     editPage.FormClosed += (s, args) =>
@@ -431,6 +431,6 @@ namespace EmployeeSchedulingApp
 
         }
 
-        
+     
     }
 }

@@ -240,9 +240,10 @@ namespace Final
                     connection.Open();
 
                     string query = @"
-                        SELECT s.ShiftID, s.TimeSlot, s.DayOfWeek, st.TypeName
+                        SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
                         FROM Shifts s
                         INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
+                        INNER JOIN TimeSlots ts ON s.TimeSlotID=ts.TimeSlotID 
                         WHERE s.BranchID = @BranchID";
 
                     using (SqlCommand command = new SqlCommand(query, connection))

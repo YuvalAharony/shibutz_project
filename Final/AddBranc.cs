@@ -30,10 +30,11 @@ namespace EmployeeSchedulingApp
             // 
             this.ClientSize = new System.Drawing.Size(400, 450);
             this.Name = "AddBranchPage";
-            this.Text = "הוספת סניף חדש";
-            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.RightToLeftLayout = true;
+            this.Text = "הוספת סניף חדש";
             this.ResumeLayout(false);
+
         }
 
         private void SetupUI()
@@ -419,5 +420,6 @@ namespace EmployeeSchedulingApp
             }
         }
 
+       
     }
 }

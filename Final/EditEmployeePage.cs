@@ -20,6 +20,7 @@ namespace EmployeeSchedulingApp
         private CheckedListBox shiftsCheckedListBox;   // רשימת משמרות
         private Button saveButton, cancelButton;
         private Dictionary<string, List<ShiftDisplayInfo>> branchShifts; // מילון לשמירת המשמרות לפי סניף
+        string currentUserName;
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
         // מחלקת עזר לתצוגת מידע על משמרות
@@ -180,11 +181,16 @@ namespace EmployeeSchedulingApp
                     connection.Open();
 
                     // טעינת כל הסניפים
-                    string branchesQuery = "SELECT BranchID, Name FROM Branches";
+                    string branchesQuery = "SELECT b.BranchID, Name FROM Branches b join UserBranches ub on ub.BranchID=b.BranchID " +
+                        "join Users u on u.UserID=ub.UserID " +
+                        "where u.UserName=@UserName";
                     using (SqlCommand command = new SqlCommand(branchesQuery, connection))
                     {
+                        command.Parameters.AddWithValue("@UserName", currentUserName);
+
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
+
                             while (reader.Read())
                             {
                                 int branchId = reader.GetInt32(0);
@@ -266,10 +272,10 @@ namespace EmployeeSchedulingApp
                     connection.Open();
 
                     string query = @"
-                        SELECT s.ShiftID, st.TypeName, s.DayOfWeek, st.TypeName
+                        SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
                         FROM Shifts s
                         INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
-                        
+                        INNER JOIN TimeSlots ts ON s.TimeSlotID=ts.TimeSlotID 
                         WHERE s.BranchID = @BranchID";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -303,7 +309,9 @@ namespace EmployeeSchedulingApp
             }
         }
 
-        
+    
+
+
 
 
 
@@ -599,13 +607,13 @@ namespace EmployeeSchedulingApp
             }
         }
 
-        public EditEmployeePage(Employee employee)
+        public EditEmployeePage(Employee employee,string userName)
         {
             selectedEmployee = employee;
             InitializeComponent();
             branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
             SetupUI();
-
+            currentUserName = userName;
             // מנטרל את האירוע זמנית
             branchesCheckedListBox.ItemCheck -= BranchesCheckedListBox_ItemCheck;
 

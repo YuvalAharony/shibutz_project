@@ -330,9 +330,30 @@ namespace EmployeeSchedulingApp
                 Size = new Size(180, 25),
                 RightToLeft = RightToLeft.No
             };
+            #region ShiftTypesFromDb
+            List<string> shiftTypes = new List<string>();
 
-            string[] eventTypes = { "Regular", "Special Event", "Peak Hour" };
-            eventTypeComboBox.Items.AddRange(eventTypes);
+            // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                // מניחים שהעמודה עם שם סוג המשמרת נקראת TypeName
+                string query = "SELECT TypeName FROM ShiftTypes";
+                SqlCommand command = new SqlCommand(query, connection);
+
+                connection.Open();
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        // קורא את הערך של TypeName מהשאילתה ומוסיף לרשימה
+                        shiftTypes.Add(reader["TypeName"].ToString());
+                    }
+                }
+            }
+            #endregion
+            
+            eventTypeComboBox.Items.AddRange(shiftTypes.ToArray());
             eventTypeComboBox.SelectedItem = selectedShift.EventType;
             editPanel.Controls.Add(eventTypeComboBox);
 
@@ -345,11 +366,29 @@ namespace EmployeeSchedulingApp
                 Location = new Point(350, 170)
             };
             editPanel.Controls.Add(rolesTitle);
+            #region RolesTypesFromDb
+            List<string> roles = new List<string>();
 
-            // מערך של תפקידים אפשריים
-            string[] roles = { "Waiter", "Chef", "Bartender", "Manager" };
+            // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                // מניחים שהעמודה עם שם סוג המשמרת נקראת TypeName
+                string query = "SELECT RoleName FROM Roles";
+                SqlCommand command = new SqlCommand(query, connection);
 
-            // יצירת שדות הזנה לכל תפקיד
+                connection.Open();
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        // קורא את הערך של TypeName מהשאילתה ומוסיף לרשימה
+                        roles.Add(reader["RoleName"].ToString());
+                    }
+                }
+            }
+            #endregion
+   
             int yPos = 200;
             Dictionary<string, NumericUpDown> roleCountInputs = new Dictionary<string, NumericUpDown>();
 
@@ -398,8 +437,8 @@ namespace EmployeeSchedulingApp
                     foreach (string role in roles)
                     {
                         int count = (int)roleCountInputs[role].Value;
-                        if (count > 0)
-                        {
+                       
+                       
                             if (selectedShift.RequiredRoles.ContainsKey(role))
                             {
                                 selectedShift.RequiredRoles[role] = count;
@@ -408,11 +447,8 @@ namespace EmployeeSchedulingApp
                             {
                                 selectedShift.RequiredRoles.Add(role, count);
                             }
-                        }
-                        else if (selectedShift.RequiredRoles.ContainsKey(role))
-                        {
-                            selectedShift.RequiredRoles.Remove(role);
-                        }
+                        
+                       
                     }
 
                     // שמירה בבסיס הנתונים
@@ -476,7 +512,7 @@ namespace EmployeeSchedulingApp
                     branch = currentBranch.Name,
                     TimeSlot = "Morning",
                     day = "Sunday",
-                    RequiredRoles = new Dictionary<string, int> { { "Waiter", 2 }, { "Chef", 1 }, { "Manager", 1 } },
+                    RequiredRoles = new Dictionary<string, int> { { "Waiter", 1 }, { "Chef", 1 }, { "Manager", 1 }, {"Bartender",1 } },
                     IsBusy = false,
                     AssignedEmployees = new Dictionary<string, List<Employee>>(),
                     EventType = "Regular"
@@ -516,23 +552,33 @@ namespace EmployeeSchedulingApp
                 connection.Open();
 
                 // עדכון פרטי המשמרת
-                using (SqlCommand command = new SqlCommand("sp_UpdateShift", connection))
+                string UpdateShiftQuery = $"UPDATE Shifts " +
+                    $"SET " +
+                    $"TimeSlotID = (SELECT ts.TimeSlotID FROM TimeSlots ts WHERE ts.TimeSlotName = @TimeSlotName)," +
+                    $"ShiftTypeID = (SELECT st.ShiftTypeID FROM ShiftTypes st WHERE st.TypeName = @ShiftTypeName)," +
+                    $"DayOfWeek = @DayOfWeek,IsBusy = @IsBusy WHERE ShiftID = @ShiftID";
+
+                using (SqlCommand command = new SqlCommand(UpdateShiftQuery, connection))
                 {
-                    command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@ShiftID", shift.Id);
-                    command.Parameters.AddWithValue("@TimeSlot", shift.TimeSlot);
+                    command.Parameters.AddWithValue("@TimeSlotName", shift.TimeSlot);
                     command.Parameters.AddWithValue("@DayOfWeek", shift.day);
-                    command.Parameters.AddWithValue("@ShiftType", shift.EventType);
+                    command.Parameters.AddWithValue("@ShiftTypeName", shift.EventType);
                     command.Parameters.AddWithValue("@IsBusy", shift.IsBusy);
                     command.ExecuteNonQuery();
                 }
 
-                // עדכון דרישות התפקידים
+                
                 foreach (var role in shift.RequiredRoles)
                 {
-                    using (SqlCommand command = new SqlCommand("sp_UpdateShiftRequiredRoles", connection))
+                    // עדכון פרטי המשמרת
+                    string UpdateRequirsRolesQuery = $"UPDATE s " +
+                        $"SET s.RequiredCount = @RequiredCount " +
+                        $"FROM ShiftRequiredRoles s " +
+                        $"JOIN Roles r ON s.RoleID = r.RoleID " +
+                        $"WHERE s.ShiftID = @ShiftID AND r.RoleName = @RoleName ";
+                    using (SqlCommand command = new SqlCommand(UpdateRequirsRolesQuery, connection))
                     {
-                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@ShiftID", shift.Id);
                         command.Parameters.AddWithValue("@RoleName", role.Key);
                         command.Parameters.AddWithValue("@RequiredCount", role.Value);

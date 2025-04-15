@@ -629,7 +629,7 @@ namespace EmployeeSchedulingApp
                 return;
 
             // Decide how many shifts to prefer (50-80% of available shifts)
-            int preferredShiftsCount = random.Next(branchShiftIds.Count / 2, (branchShiftIds.Count * 4 / 5) + 1);
+            int preferredShiftsCount = random.Next(branchShiftIds.Count / 3, (branchShiftIds.Count * 6 / 10) + 1);
 
             // Shuffle the shifts list
             for (int i = 0; i < branchShiftIds.Count; i++)
@@ -675,10 +675,8 @@ namespace EmployeeSchedulingApp
                 foreach (var timeSlot in timeSlots)
                 {
                     // 80% סיכוי ליצור משמרת
-                    bool createShift = random.Next(10) < 8;
+                    
 
-                    if (createShift)
-                    {
                         // בחירת סוג משמרת אקראי (רגילה/חג/מיוחדת)
                         string shiftTypeName = "Regular"; // ברירת מחדל
                         if (shiftTypes.Count > 0)
@@ -733,7 +731,7 @@ namespace EmployeeSchedulingApp
                                 }
                             }
                         }
-                    }
+                    
                 }
             }
         }
