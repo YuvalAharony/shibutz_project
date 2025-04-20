@@ -383,12 +383,13 @@ namespace Final
         //פונקציה היוצרת אוכלוסייה ראשונית- שלב ראשון באלגוריתם הגנטי
         public static Population initializeFirstPopulation(Population pop)
         {
+            //ניצור כרומוזום בעבור כמות הכרומוזומים הרמויה בכל דור
             for (int i = 0; i < ChromosomesEachGene; i++)
             {
                 //שחזור המשמרות של כל עובד בשביל יצירת הכרומוזום הבא
                 restoreEmployeesRequestedShifts();
                 //אתחול כרומוזום חדש
-                Chromosome c = new Chromosome();
+                Chromosome c;
                 //יצירת הכרומוזום
                 c = initializeChoromosome();
                 //הוספת הכרומוזום לאוכלוסייה
@@ -412,16 +413,14 @@ namespace Final
                     emp.requestedShifts.Add(id);//הוספת המשמרות מהגיבוי למשמרות המבוקשות
                 }
             }
-        }
+        }//
         //פונקציה שמטרתה ליצור כרווזום חדש
-        public static Chromosome initializeChoromosome()
+        private static Chromosome initializeChoromosome()
         {
-            List<Employee> employeesSortedByRate = sort_employees_by_rate(Employees);//מיון העובדים לפי הציון שלהם
-            List<Employee> employeesSortedByavailabilty = sort_employees_by_availabilty(Employees);//מיון העובדים לפי הזמינות שלהם
-            Dictionary<int, List<Employee>> employeesMappedByRequestedShifts = mappingEmployeesByRequestedShifts();//מיפוי העובדים לפי המשמרות המבוקשות
-            Dictionary<string, List<Employee>> employeesMappedByRequestedRoles = mappingEmployeesByRole();//מיפןי העובדים לפי תפקידים
+          
             //אתחול כרומוזום חדש
             Chromosome ch = new Chromosome();
+
             List<Branch> branchesCopy = new List<Branch>();
             foreach (Branch originalBranch in Branches)
             {
@@ -448,7 +447,7 @@ namespace Final
                 branchesCopy.Add(branchCopy);
             }
 
-            List<Branch> shuffledBranches = Branches.OrderBy(x => random.Next()).ToList();
+            List<Branch> shuffledBranches = branchesCopy.OrderBy(x => random.Next()).ToList();
 
             foreach (Branch br in shuffledBranches)
             {
@@ -1845,7 +1844,7 @@ namespace Final
 
         public static Chromosome GetBestChromosome()
         {
-            return pop.Chromoshomes.OrderBy(ch => ch.Fitness).FirstOrDefault();
+            return pop.Chromoshomes.OrderByDescending(ch => ch.Fitness).FirstOrDefault();
         }
 
         static void Main()

@@ -14,10 +14,8 @@ namespace Final
 
         public Chromosome()
         {
-
+            this.Shifts = new Dictionary<string, List<Shift>>();
+            Fitness = 0;
         }
-
-
-
     }
 }
