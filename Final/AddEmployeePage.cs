@@ -43,7 +43,7 @@ namespace Final
         private void SetupUI()
         {
             this.Text = "הוספת עובד חדש";
-            this.Size = new System.Drawing.Size(400, 800); // נשאר אותו גודל
+            this.Size = new System.Drawing.Size(400, 600); // הקטנת הגובה כי אין משמרות
 
             Label titleLabel = new Label()
             {
@@ -61,6 +61,10 @@ namespace Final
             int controlX = 150;
             int controlWidth = 180;
 
+            Label idLabel = new Label() { Text = "מזהה עובד:", Location = new System.Drawing.Point(labelX, currentY) };
+            TextBox idTextBox = new TextBox() { Location = new System.Drawing.Point(controlX, currentY), Width = controlWidth, Name = "idTextBox" };
+            currentY += gap;
+
             // שם העובד
             Label nameLabel = new Label() { Text = "שם העובד:", Location = new System.Drawing.Point(labelX, currentY) };
             TextBox nameTextBox = new TextBox() { Location = new System.Drawing.Point(controlX, currentY), Width = controlWidth, Name = "nameTextBox" };
@@ -74,6 +78,16 @@ namespace Final
             // אימייל
             Label emailLabel = new Label() { Text = "אימייל:", Location = new System.Drawing.Point(labelX, currentY) };
             TextBox emailTextBox = new TextBox() { Location = new System.Drawing.Point(controlX, currentY), Width = controlWidth, Name = "emailTextBox" };
+            currentY += gap;
+
+            Label passwordLabel = new Label() { Text = "סיסמה:", Location = new System.Drawing.Point(labelX, currentY) };
+            TextBox passwordTextBox = new TextBox()
+            {
+                Location = new System.Drawing.Point(controlX, currentY),
+                Width = controlWidth,
+                Name = "passwordTextBox",
+                PasswordChar = '*'
+            };
             currentY += gap;
 
             // תפקיד (ComboBox)
@@ -108,9 +122,11 @@ namespace Final
             };
             currentY += gap;
 
-            // בחירת סניפים
+            // בחירת סניפים - שימוש בשדה שכבר הוגדר במחלקה
             Label branchesLabel = new Label() { Text = "בחר סניפים:", Location = new System.Drawing.Point(labelX, currentY) };
             currentY += 20; // מרווח קטן לפני הרשימה
+
+            // אתחול branchesCheckedListBox שכבר הוגדר כשדה של המחלקה
             branchesCheckedListBox = new CheckedListBox()
             {
                 Location = new System.Drawing.Point(labelX, currentY),
@@ -119,20 +135,9 @@ namespace Final
                 CheckOnClick = true,
                 Name = "branchesCheckedListBox"
             };
-            branchesCheckedListBox.ItemCheck += BranchesCheckedListBox_ItemCheck;
-            currentY += branchesCheckedListBox.Height + 10;
 
-            // בחירת משמרות מועדפות
-            Label shiftsLabel = new Label() { Text = "בחר משמרות מועדפות:", Location = new System.Drawing.Point(labelX, currentY) };
-            currentY += 20; // מרווח קטן לפני הרשימה
-            shiftsCheckedListBox = new CheckedListBox()
-            {
-                Location = new Point(15, 520),
-                Width = 350,
-                Height = 120,
-                CheckOnClick = true
-            };
-            currentY += shiftsCheckedListBox.Height + 20;
+            branchesCheckedListBox.ItemCheck += BranchesCheckedListBox_ItemCheck;
+            currentY += branchesCheckedListBox.Height + 20;
 
             // כפתור שמירה
             Button saveButton = new Button()
@@ -144,14 +149,16 @@ namespace Final
             };
             saveButton.Click += (sender, e) => {
                 SaveEmployee(
+                    idTextBox.Text,
                     nameTextBox.Text,
                     phoneTextBox.Text,
                     emailTextBox.Text,
                     rateTextBox.Text,
                     roleComboBox.SelectedItem?.ToString(),
                     salaryTextBox.Text,
-                    GetSelectedShiftIds(),
-                    isExperiencedCheckBox.Checked
+                   
+                    isExperiencedCheckBox.Checked,
+                    passwordTextBox.Text
                 );
             };
 
@@ -166,6 +173,8 @@ namespace Final
             cancelButton.Click += (sender, e) => { this.Close(); };
 
             // הוספת כל הפקדים לטופס
+            this.Controls.Add(idLabel);
+            this.Controls.Add(idTextBox);
             this.Controls.Add(titleLabel);
             this.Controls.Add(nameLabel);
             this.Controls.Add(nameTextBox);
@@ -182,10 +191,10 @@ namespace Final
             this.Controls.Add(isExperiencedCheckBox);
             this.Controls.Add(branchesLabel);
             this.Controls.Add(branchesCheckedListBox);
-            this.Controls.Add(shiftsLabel);
-            this.Controls.Add(shiftsCheckedListBox);
             this.Controls.Add(saveButton);
             this.Controls.Add(cancelButton);
+            this.Controls.Add(passwordLabel);
+            this.Controls.Add(passwordTextBox);
         }
 
         // פונקציה לטעינת הסניפים הזמינים למשתמש הנוכחי
@@ -283,82 +292,68 @@ namespace Final
             // הרצה מושהית כדי לאפשר את עדכון הסימון לפני הפעולה
             this.BeginInvoke(new Action(() =>
             {
-                UpdateShiftsList();
             }));
         }
 
         // עדכון רשימת המשמרות על פי הסניפים שנבחרו
-        private void UpdateShiftsList()
-        {
-            shiftsCheckedListBox.Items.Clear();
-
-            // איסוף כל המשמרות מהסניפים שנבחרו
-            List<ShiftDisplayInfo> availableShifts = new List<ShiftDisplayInfo>();
-
-            foreach (var checkedItem in branchesCheckedListBox.CheckedItems)
-            {
-                string branchName = checkedItem.ToString();
-                if (branchShifts.ContainsKey(branchName))
-                {
-                    availableShifts.AddRange(branchShifts[branchName]);
-                }
-            }
-
-            // מיון המשמרות לפי יום ושעה
-            availableShifts.Sort((a, b) =>
-            {
-                // מיון לפי יום
-                string[] days = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-                int dayCompare = Array.IndexOf(days, a.DayOfWeek).CompareTo(Array.IndexOf(days, b.DayOfWeek));
-
-                if (dayCompare != 0)
-                    return dayCompare;
-
-                // מיון לפי זמן
-                string[] times = { "Morning", "Evening" };
-                return Array.IndexOf(times, a.TimeSlot).CompareTo(Array.IndexOf(times, b.TimeSlot));
-            });
-
-            // הוספת המשמרות לרשימה
-            foreach (var shift in availableShifts)
-            {
-                shiftsCheckedListBox.Items.Add(shift, false);
-            }
-        }
+       
 
         // פונקציה לקבלת מזהי המשמרות שנבחרו
-        private HashSet<int> GetSelectedShiftIds()
-        {
-            HashSet<int> selectedShiftIds = new HashSet<int>();
-
-            foreach (ShiftDisplayInfo shift in shiftsCheckedListBox.CheckedItems)
-            {
-                selectedShiftIds.Add(shift.ShiftID);
-            }
-
-            return selectedShiftIds;
-        }
+   
 
         private void SaveEmployee(
-            string name,
-            string phone,
-            string email,
-            string rate,
-            string role,
-            string salary,
-            HashSet<int> requestedShifts,
-            bool isExperienced)
+        string employeeId,  // הוספת פרמטר חדש למזהה עובד
+        string name,
+         string phone,
+         string email,
+    string rate,
+    string role,
+    string salary,
+    bool isExperienced,
+    string password)
         {
-            // בדיקת שדות ריקים
+
             if (string.IsNullOrWhiteSpace(name) ||
-                string.IsNullOrWhiteSpace(role) ||
-                string.IsNullOrWhiteSpace(salary) ||
-                string.IsNullOrWhiteSpace(rate))
+              string.IsNullOrWhiteSpace(role) ||
+              string.IsNullOrWhiteSpace(salary) ||
+              string.IsNullOrWhiteSpace(rate) ||
+              string.IsNullOrWhiteSpace(password))
             {
                 MessageBox.Show("נא למלא את כל השדות הדרושים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
+            int newEmployeeId = 0;
+            bool useCustomId = false;
+
+            if (!string.IsNullOrWhiteSpace(employeeId))
+            {
+                if (!int.TryParse(employeeId, out newEmployeeId))
+                {
+                    MessageBox.Show("מזהה העובד חייב להיות מספר.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // בדיקה אם המזהה כבר קיים במערכת
+                using (SqlConnection checkConnection = new SqlConnection(connectionString))
+                {
+                    checkConnection.Open();
+                    string checkQuery = "SELECT COUNT(*) FROM Employees WHERE EmployeeID = @EmployeeID";
+                    using (SqlCommand checkCommand = new SqlCommand(checkQuery, checkConnection))
+                    {
+                        checkCommand.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
+                        int count = (int)checkCommand.ExecuteScalar();
+
+                        if (count > 0)
+                        {
+                            MessageBox.Show("מזהה העובד כבר קיים במערכת.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                    }
+                }
+
+                useCustomId = true;
+            }
             // איסוף הסניפים שנבחרו
             List<string> branchList = new List<string>();
             foreach (var item in branchesCheckedListBox.CheckedItems)
@@ -371,34 +366,53 @@ namespace Final
                 MessageBox.Show("נא לבחור לפחות סניף אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
             try
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
 
-                    // הוספת העובד לטבלת Employees
-                    string insertEmployeeQuery = @"
-                        INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor, AssignedHours)
-                        VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @AssignedHours);
-                        SELECT CAST(SCOPE_IDENTITY() AS INT)";
+                    string insertEmployeeQuery;
 
-                    int newEmployeeId;
+                    if (useCustomId)
+                    {
+                        // שימוש במזהה מותאם אישית
+                        insertEmployeeQuery = @"
+                SET IDENTITY_INSERT Employees ON;
+                INSERT INTO Employees (EmployeeID, Name, Phone, Email, HourlySalary, Rate, IsMentor, AssignedHours, Password)
+                VALUES (@EmployeeID, @Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @AssignedHours, @Password);
+                SET IDENTITY_INSERT Employees OFF;
+                SELECT @EmployeeID;";
+                    }
+                    else
+                    {
+                        // שימוש במזהה אוטומטי
+                        insertEmployeeQuery = @"
+                INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor, AssignedHours, Password)
+                VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @AssignedHours, @Password);
+                SELECT CAST(SCOPE_IDENTITY() AS INT);";
+                    }
 
                     using (SqlCommand command = new SqlCommand(insertEmployeeQuery, connection))
                     {
+                        if (useCustomId)
+                        {
+                            command.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
+                        }
+
                         command.Parameters.AddWithValue("@Name", name);
                         command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
                         command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
                         command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salary));
                         command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rate));
                         command.Parameters.AddWithValue("@IsMentor", isExperienced);
-                        command.Parameters.AddWithValue("@AssignedHours", 7); // ערך דיפולטיבי
+                        command.Parameters.AddWithValue("@AssignedHours", 7);
+                        command.Parameters.AddWithValue("@Password", password);
 
                         // קבלת ה-ID של העובד החדש
                         newEmployeeId = (int)command.ExecuteScalar();
                     }
+
 
                     // הוספת התפקיד של העובד לטבלת EmployeeRoles
                     if (!string.IsNullOrEmpty(role))
@@ -464,26 +478,13 @@ namespace Final
                     }
 
                     // הוספת המשמרות המועדפות
-                    if (requestedShifts.Count > 0)
-                    {
-                        foreach (int shiftId in requestedShifts)
-                        {
-                            string insertPreferredShiftQuery = "INSERT INTO EmployeePreferredShifts (EmployeeID, ShiftID) VALUES (@EmployeeID, @ShiftID)";
-                            using (SqlCommand command = new SqlCommand(insertPreferredShiftQuery, connection))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
-                                command.Parameters.AddWithValue("@ShiftID", shiftId);
-                                command.ExecuteNonQuery();
-                            }
-                        }
-                    }
-
+            
                     // הוספה לרשימת העובדים בזיכרון
                     Employee newEmployee = new Employee(
                         newEmployeeId,
                         name,
                         new List<string> { role },
-                        requestedShifts,
+                        null,
                         Convert.ToInt32(rate),
                         Convert.ToInt32(salary),
                         7,

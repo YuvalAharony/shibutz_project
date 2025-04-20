@@ -50,108 +50,186 @@ namespace EmployeeSchedulingApp
 
         }
 
-        
+
 
         private void SetupUI()
         {
             this.Text = "עריכת עובד";
-            this.Size = new System.Drawing.Size(400, 750);
+            this.Size = new System.Drawing.Size(450, 700);
+            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeftLayout = true;
 
+            // מרכוז הכותרת
             Label titleLabel = new Label()
             {
                 Text = "עריכת פרטי עובד",
                 AutoSize = true,
-                Font = new Font("Arial", 14, FontStyle.Bold),
-                Location = new Point(120, 20)
+                Font = new Font("Arial", 16, FontStyle.Bold),
+                Location = new Point((this.ClientSize.Width - 200) / 2, 20),
+                TextAlign = ContentAlignment.MiddleCenter
             };
 
-            // שם העובד
-            Label nameLabel = new Label() { Text = "שם העובד:", Location = new Point(50, 70) };
-            nameTextBox = new TextBox() { Location = new Point(150, 70), Width = 180 };
+            // הגדרת מרחקים קבועים
+            int labelX = 50;
+            int controlX = 200;
+            int verticalSpacing = 40;
+            int currentY = 70;
 
-            // מזהה (לא ניתן לעריכה)
-            Label idLabel = new Label() { Text = "מזהה (ID):", Location = new Point(50, 110) };
-            idTextBox = new TextBox() { Location = new Point(150, 110), Width = 180, ReadOnly = true };
+            // שם העובד
+            Label nameLabel = new Label()
+            {
+                Text = "שם העובד:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
+            nameTextBox = new TextBox()
+            {
+                Location = new Point(controlX, currentY),
+                Width = 180
+            };
+            currentY += verticalSpacing;
 
             // טלפון
-            Label phoneLabel = new Label() { Text = "טלפון:", Location = new Point(50, 150) };
-            phoneTextBox = new TextBox() { Location = new Point(150, 150), Width = 180 };
+            Label phoneLabel = new Label()
+            {
+                Text = "טלפון:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
+            phoneTextBox = new TextBox()
+            {
+                Location = new Point(controlX, currentY),
+                Width = 180
+            };
+            currentY += verticalSpacing;
 
             // אימייל
-            Label emailLabel = new Label() { Text = "אימייל:", Location = new Point(50, 190) };
-            emailTextBox = new TextBox() { Location = new Point(150, 190), Width = 180 };
+            Label emailLabel = new Label()
+            {
+                Text = "אימייל:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
+            emailTextBox = new TextBox()
+            {
+                Location = new Point(controlX, currentY),
+                Width = 180
+            };
+            currentY += verticalSpacing;
 
             // תפקיד
-            Label roleLabel = new Label() { Text = "תפקיד:", Location = new Point(50, 230) };
+            Label roleLabel = new Label()
+            {
+                Text = "תפקיד:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
             roleComboBox = new ComboBox()
             {
-                Location = new Point(150, 230),
+                Location = new Point(controlX, currentY),
                 Width = 180,
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             roleComboBox.Items.AddRange(new string[] { "Waiter", "Chef", "Bartender", "Manager" });
+            currentY += verticalSpacing;
 
             // שכר שעתי
-            Label salaryLabel = new Label() { Text = "שכר שעתי:", Location = new Point(50, 270) };
-            salaryTextBox = new TextBox() { Location = new Point(150, 270), Width = 180 };
+            Label salaryLabel = new Label()
+            {
+                Text = "שכר שעתי:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
+            salaryTextBox = new TextBox()
+            {
+                Location = new Point(controlX, currentY),
+                Width = 180
+            };
+            currentY += verticalSpacing;
 
             // ציון עובד
-            Label rateLabel = new Label() { Text = "ציון עובד:", Location = new Point(50, 310) };
-            rateTextBox = new TextBox() { Location = new Point(150, 310), Width = 180 };
+            Label rateLabel = new Label()
+            {
+                Text = "ציון עובד:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
+            rateTextBox = new TextBox()
+            {
+                Location = new Point(controlX, currentY),
+                Width = 180
+            };
+            currentY += verticalSpacing;
 
             // האם מנוסה
             isExperiencedCheckBox = new CheckBox()
             {
                 Text = "האם עובד מנוסה?",
-                Location = new Point(150, 350)
+                Location = new Point(controlX, currentY),
+                AutoSize = true
             };
+            currentY += verticalSpacing;
 
             // בחירת סניפים
-            Label branchesLabel = new Label() { Text = "סניפים:", Location = new Point(50, 390) };
+            Label branchesLabel = new Label()
+            {
+                Text = "סניפים:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
+            currentY += 20;
             branchesCheckedListBox = new CheckedListBox()
             {
-                Location = new Point(50, 410),
-                Width = 280,
+                Location = new Point(labelX, currentY),
+                Width = this.ClientSize.Width - 100,
                 Height = 80,
                 CheckOnClick = true
             };
-
-            // אירוע בחירת סניפים
             branchesCheckedListBox.ItemCheck += BranchesCheckedListBox_ItemCheck;
+            currentY += 100;
 
             // בחירת משמרות מועדפות
-            Label shiftsLabel = new Label() { Text = "משמרות מועדפות:", Location = new Point(50, 500) };
+            Label shiftsLabel = new Label()
+            {
+                Text = "משמרות מועדפות:",
+                Location = new Point(labelX, currentY),
+                AutoSize = true
+            };
+            currentY += 20;
             shiftsCheckedListBox = new CheckedListBox()
             {
-                Location = new Point(15, 520),
-                Width = 350,
-                Height = 120,
-                CheckOnClick = true
+                Location = new Point(labelX, currentY),
+                Width = this.ClientSize.Width - 100,
+                Height = 120
             };
+            currentY += 140;
+            shiftsCheckedListBox.Enabled = false;
 
             // כפתורי שמירה וביטול
-            saveButton = new Button()
-            {
-                Text = "שמור",
-                Size = new Size(100, 40),
-                Location = new Point(200, 660)
-            };
-            saveButton.Click += SaveEmployeeChanges;
+            int buttonWidth = 100;
+            int buttonHeight = 40;
+            int buttonSpacing = (this.ClientSize.Width - (2 * buttonWidth)) / 2;
 
             cancelButton = new Button()
             {
                 Text = "ביטול",
-                Size = new Size(100, 40),
-                Location = new Point(70, 660)
+                Size = new Size(buttonWidth, buttonHeight),
+                Location = new Point(buttonSpacing, currentY)
             };
             cancelButton.Click += (sender, e) => { this.Close(); };
+
+            saveButton = new Button()
+            {
+                Text = "שמור",
+                Size = new Size(buttonWidth, buttonHeight),
+                Location = new Point(buttonSpacing + buttonWidth + 20, currentY)
+            };
+            saveButton.Click += SaveEmployeeChanges;
 
             // הוספת כל הרכיבים לטופס
             this.Controls.Add(titleLabel);
             this.Controls.Add(nameLabel);
             this.Controls.Add(nameTextBox);
-            this.Controls.Add(idLabel);
-            this.Controls.Add(idTextBox);
             this.Controls.Add(phoneLabel);
             this.Controls.Add(phoneTextBox);
             this.Controls.Add(emailLabel);
@@ -170,7 +248,6 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(saveButton);
             this.Controls.Add(cancelButton);
         }
-
         private void LoadBranchesAndShifts()
         {
             try
@@ -309,7 +386,9 @@ namespace EmployeeSchedulingApp
             }
         }
 
-    
+       
+
+
 
 
 
@@ -371,7 +450,6 @@ namespace EmployeeSchedulingApp
         private void LoadEmployeeData()
         {
             nameTextBox.Text = selectedEmployee.Name;
-            idTextBox.Text = selectedEmployee.ID.ToString();
 
             // טעינת נתוני טלפון ואימייל מהדאטאבייס
             try

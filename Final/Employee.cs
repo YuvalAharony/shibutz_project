@@ -17,10 +17,7 @@ namespace Final
         public int HourlySalary { get; set; }
         public int AssignedHours { get; set; }
         public bool isMentor { get; set; }
-
         public List<string> Branches { get; set; }
-        public HashSet<int> requestedShiftsBackup { get; set; }
-        public int Id { get; internal set; }
 
         public Employee(int ID, string name, List<string> roles, HashSet<int> requestedShifts, int rate, int hourlySalary, int assignedHours, bool isMentor, List<string> branches)
         {
@@ -29,9 +26,12 @@ namespace Final
             this.roles = roles;
             this.requestedShifts = requestedShifts;
             this.backUprequestedShifts = new HashSet<int>();
-            foreach (int id in this.requestedShifts)
+            if (requestedShifts!=null)
             {
-                this.backUprequestedShifts.Add(id);
+                foreach (int id in this.requestedShifts)
+                {
+                    this.backUprequestedShifts.Add(id);
+                }
             }
             Rate = rate;
             HourlySalary = hourlySalary;

@@ -97,8 +97,16 @@ namespace Final
                 return;
             }
 
-            // במערכת האמיתית היינו בודקים גם סיסמה, אבל לצרכי הדגמה נשתמש רק במספר זיהוי
-            Employee employee = ValidateEmployee(employeeId);
+            if (string.IsNullOrWhiteSpace(passwordTextBox.Text))
+            {
+                MessageBox.Show("אנא הזן סיסמה", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string password = passwordTextBox.Text;
+
+            // בדיקת זהות העובד והסיסמה
+            Employee employee = ValidateEmployee(employeeId, password);
 
             if (employee != null)
             {
@@ -116,7 +124,7 @@ namespace Final
             }
         }
 
-        private Employee ValidateEmployee(int employeeId)
+        private Employee ValidateEmployee(int employeeId, string password)
         {
             try
             {
@@ -127,11 +135,12 @@ namespace Final
                     string query = @"
                         SELECT e.EmployeeID, e.Name, e.Rate, e.HourlySalary, e.AssignedHours, e.IsMentor 
                         FROM Employees e
-                        WHERE e.EmployeeID = @EmployeeID";
+                        WHERE e.EmployeeID = @EmployeeID AND e.Password = @Password";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@EmployeeID", employeeId);
+                        command.Parameters.AddWithValue("@Password", password);
 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {

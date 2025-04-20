@@ -37,7 +37,6 @@
 //            this.ClientSize = new System.Drawing.Size(800, 450);
 //            this.Name = "EmployeeLoginPage";
 //            this.Text = "EmployeeLoginPage";
-//            this.Load += new System.EventHandler(this.EmployeeLoginPage_Load);
 //            this.ResumeLayout(false);
 
 //        }

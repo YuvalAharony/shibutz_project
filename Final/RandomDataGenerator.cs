@@ -342,7 +342,7 @@ namespace EmployeeSchedulingApp
                 if (count == 0)
                 {
                     // אם אין רשומות ב-TimeSlots, נוסיף את הבסיסיות
-                    string[] timeSlots = {  "Evening","Morning" };
+                    string[] timeSlots = { "Evening", "Morning" };
 
                     foreach (string timeSlot in timeSlots)
                     {
@@ -539,9 +539,15 @@ namespace EmployeeSchedulingApp
                     {
                         employeesCreated++;
                         int employeeId = Convert.ToInt32(result);
-
-                        // Determine how many branches this employee will work at (1-3)
-                        int branchCount = random.Next(1, Math.Min(4, allBranchIds.Count + 1));
+                        string updatePassword = @"UPDATE Employees set Password=@Password where EmployeeID=@EmployeeID ";
+                        using (SqlCommand command2 = new SqlCommand(updatePassword, connection))
+                        {
+                            command2.Parameters.AddWithValue("@Password", result.ToString());
+                            command2.Parameters.AddWithValue("@EmployeeID", result);
+                            command2.ExecuteScalar();
+                        }
+                            // Determine how many branches this employee will work at (1-3)
+                            int branchCount = random.Next(1, Math.Min(4, allBranchIds.Count + 1));
 
                         // Shuffle branch IDs
                         var shuffledBranches = new List<int>(allBranchIds);
@@ -674,63 +680,63 @@ namespace EmployeeSchedulingApp
                 foreach (var timeSlot in timeSlots)
                 {
                     // 80% סיכוי ליצור משמרת
-                    
 
-                        // בחירת סוג משמרת אקראי (רגילה/חג/מיוחדת)
-                        string shiftTypeName = "Regular"; // ברירת מחדל
-                        if (shiftTypes.Count > 0)
-                        {
-                            var shiftTypeNames = shiftTypes.Keys.ToList();
-                            shiftTypeName = shiftTypeNames[random.Next(shiftTypeNames.Count)];
-                        }
 
-                        int shiftTypeId = shiftTypes.ContainsKey(shiftTypeName) ? shiftTypes[shiftTypeName] : 1;
-                        bool isBusy = random.Next(2) == 0; // 50% סיכוי למשמרת עמוסה
+                    // בחירת סוג משמרת אקראי (רגילה/חג/מיוחדת)
+                    string shiftTypeName = "Regular"; // ברירת מחדל
+                    if (shiftTypes.Count > 0)
+                    {
+                        var shiftTypeNames = shiftTypes.Keys.ToList();
+                        shiftTypeName = shiftTypeNames[random.Next(shiftTypeNames.Count)];
+                    }
 
-                        // הוספת המשמרת לדאטאבייס
+                    int shiftTypeId = shiftTypes.ContainsKey(shiftTypeName) ? shiftTypes[shiftTypeName] : 1;
+                    bool isBusy = random.Next(2) == 0; // 50% סיכוי למשמרת עמוסה
 
-                        string insertShiftQuery = @"INSERT INTO Shifts (BranchID, TimeSlotID, DayOfWeek, ShiftTypeID, IsBusy) 
+                    // הוספת המשמרת לדאטאבייס
+
+                    string insertShiftQuery = @"INSERT INTO Shifts (BranchID, TimeSlotID, DayOfWeek, ShiftTypeID, IsBusy) 
                          VALUES (@BranchID, @TimeSlotID, @DayOfWeek, @ShiftTypeID, @IsBusy);
                          SELECT SCOPE_IDENTITY();";
 
 
-                        using (SqlCommand command = new SqlCommand(insertShiftQuery, connection))
+                    using (SqlCommand command = new SqlCommand(insertShiftQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@BranchID", branchId);
+                        command.Parameters.AddWithValue("@ShiftTypeID", shiftTypeId);
+                        command.Parameters.AddWithValue("@TimeSlotID", timeSlot.Value);
+                        command.Parameters.AddWithValue("@DayOfWeek", day);
+                        command.Parameters.AddWithValue("@IsBusy", isBusy);
+
+                        object result = command.ExecuteScalar();
+
+                        if (result != null)
                         {
-                            command.Parameters.AddWithValue("@BranchID", branchId);
-                            command.Parameters.AddWithValue("@ShiftTypeID", shiftTypeId);
-                            command.Parameters.AddWithValue("@TimeSlotID", timeSlot.Value);
-                            command.Parameters.AddWithValue("@DayOfWeek", day);
-                            command.Parameters.AddWithValue("@IsBusy", isBusy);
+                            int shiftId = Convert.ToInt32(result);
 
-                            object result = command.ExecuteScalar();
-
-                            if (result != null)
+                            // הוספת דרישות התפקידים למשמרת
+                            foreach (var role in roles)
                             {
-                                int shiftId = Convert.ToInt32(result);
-
-                                // הוספת דרישות התפקידים למשמרת
-                                foreach (var role in roles)
+                                // 70% סיכוי לדרוש את התפקיד הזה
+                                if (random.Next(10) < 7)
                                 {
-                                    // 70% סיכוי לדרוש את התפקיד הזה
-                                    if (random.Next(10) < 7)
-                                    {
-                                        int requiredCount = random.Next(1, 4); // 1-3 עובדים נדרשים
+                                    int requiredCount = random.Next(1, 4); // 1-3 עובדים נדרשים
 
-                                        string insertRoleReqQuery = @"INSERT INTO ShiftRequiredRoles (ShiftID, RoleID, RequiredCount) 
+                                    string insertRoleReqQuery = @"INSERT INTO ShiftRequiredRoles (ShiftID, RoleID, RequiredCount) 
                                                            VALUES (@ShiftID, @RoleID, @RequiredCount)";
 
-                                        using (SqlCommand roleCommand = new SqlCommand(insertRoleReqQuery, connection))
-                                        {
-                                            roleCommand.Parameters.AddWithValue("@ShiftID", shiftId);
-                                            roleCommand.Parameters.AddWithValue("@RoleID", role.Key);
-                                            roleCommand.Parameters.AddWithValue("@RequiredCount", requiredCount);
-                                            roleCommand.ExecuteNonQuery();
-                                        }
+                                    using (SqlCommand roleCommand = new SqlCommand(insertRoleReqQuery, connection))
+                                    {
+                                        roleCommand.Parameters.AddWithValue("@ShiftID", shiftId);
+                                        roleCommand.Parameters.AddWithValue("@RoleID", role.Key);
+                                        roleCommand.Parameters.AddWithValue("@RequiredCount", requiredCount);
+                                        roleCommand.ExecuteNonQuery();
                                     }
                                 }
                             }
                         }
-                    
+                    }
+
                 }
             }
         }
