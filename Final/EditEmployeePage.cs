@@ -170,7 +170,7 @@ namespace EmployeeSchedulingApp
             };
             currentY += verticalSpacing;
 
-            // בחירת סניפים
+            //  סניפים
             Label branchesLabel = new Label()
             {
                 Text = "סניפים:",
@@ -188,7 +188,7 @@ namespace EmployeeSchedulingApp
             branchesCheckedListBox.ItemCheck += BranchesCheckedListBox_ItemCheck;
             currentY += 100;
 
-            // בחירת משמרות מועדפות
+            // = משמרות מועדפות
             Label shiftsLabel = new Label()
             {
                 Text = "משמרות מועדפות:",
@@ -200,10 +200,10 @@ namespace EmployeeSchedulingApp
             {
                 Location = new Point(labelX, currentY),
                 Width = this.ClientSize.Width - 100,
-                Height = 120
+                Height = 120,
+
             };
             currentY += 140;
-            shiftsCheckedListBox.Enabled = false;
 
             // כפתורי שמירה וביטול
             int buttonWidth = 100;
@@ -386,7 +386,9 @@ namespace EmployeeSchedulingApp
             }
         }
 
-       
+      
+
+
 
 
 
