@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using System.Xml.Linq;
@@ -23,10 +24,16 @@ namespace Final
         public static List<Branch> Branches;
         public const int ChromosomesEachGene = 250;
         public const int Genes = 250;
+        public const int hoursPerWeek = 42;
+        public const int hoursPerDay = 9;
+        public const int hoursPerShift = 9;
+        public static int countGood=0;
+        public static int countBad = 0;
+
+
         public static Population pop;
         #endregion
 
-        //פעולות הטוענות את כל הנתונים מהדאטא בייס של המשתמש המחובר
        
 
         //אלגוריתם ראשי למציאת סידור עבודה אופטימלי ע"י אלגוריתם גנטי
@@ -50,6 +57,11 @@ namespace Final
                 pop.Chromoshomes = pop.Chromoshomes.OrderByDescending(x => x.Fitness).Take(ChromosomesEachGene).ToList();
             }
             //הדפסת הודעה למשתמש בסיום האלגוריתם שסידור העבודה נוצר בהצלחה
+            Console.WriteLine(countGood);
+            Console.WriteLine("\n");
+
+            Console.WriteLine(countBad);
+
             MessageBox.Show("נוצר בהצלחה", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -68,7 +80,7 @@ namespace Final
                 //הוספת הכרומוזום לאוכלוסייה
                 pop.Chromoshomes.Add(c);
                 //קביעת ציון הכושר של הכרומוזום
-                c.Fitness = calaulateChoromosomeFitness(c);
+                c.Fitness = CalculateChromosomeFitness(c);
             }
             return pop;
         }
@@ -295,32 +307,29 @@ namespace Final
             }
             return br.Shifts;
         }
-       
-        #endregion
 
-        #region Crossover
+        #endregion
+        #region Crrosover
+
+        
         public static void crossover(Population pop)
         {
             List<Chromosome> newOffspring = new List<Chromosome>();
-
-            // יצירת צאצאים נוספים להגברת הגיוון
             int desiredOffspringCount = Program.ChromosomesEachGene * 3 / 4;
 
-            // מיון כרומוזומים לפי Fitness
+            // Get the best chromosome for elitism
             var sortedChromosomes = pop.Chromoshomes.OrderByDescending(ch => ch.Fitness).ToList();
-
-            // שמירת המיטבי לצורך אליטיזם
             Chromosome bestChromosome = null;
             if (sortedChromosomes.Count > 0)
                 bestChromosome = DeepCopyChromosome(sortedChromosomes[0]);
 
             for (int i = 0; i < desiredOffspringCount; i++)
             {
-                // בחירת הורים – שימוש בבחירת טורניר
+                // Parent selection via tournament
                 Chromosome parent1 = SelectParentByTournament(pop.Chromoshomes, random);
                 Chromosome parent2 = SelectParentByTournament(pop.Chromoshomes, random);
 
-                // ודא שההורים שונים
+                // Try to make sure parents are different
                 int attempts = 0;
                 while (parent1 == parent2 && attempts < 3 && pop.Chromoshomes.Count > 1)
                 {
@@ -328,56 +337,59 @@ namespace Final
                     attempts++;
                 }
 
-                // שימוש בסוגי crossover שונים לקידום הגיוון
+                // Choose crossover method based on randomness
                 Chromosome offspring;
                 int crossoverType = random.Next(3);
 
                 switch (crossoverType)
                 {
                     case 0:
-                        offspring = PerformUniformCrossover(parent1, parent2, random);
+                        offspring = PerformSimpleCrossover(parent1, parent2, random);
                         break;
                     case 1:
-                        offspring = PerformMultiPointCrossover(parent1, parent2, random);
+                        offspring = PerformDayBasedCrossover(parent1, parent2, random);
                         break;
                     default:
-                        offspring = PerformCrossover(parent1, parent2, random);
+                        offspring = PerformRoleBasedCrossover(parent1, parent2, random);
                         break;
                 }
 
-                // חישוב Fitness לצאצא החדש
-                offspring.Fitness = Program.calaulateChoromosomeFitness(offspring);
+                // Calculate fitness for new offspring
+                offspring.Fitness = Program.CalculateChromosomeFitness(offspring);
                 newOffspring.Add(offspring);
             }
 
-            // הוספת הצאצאים החדשים לאוכלוסייה
-            foreach (var offspring in newOffspring)
-            {
-                pop.Chromoshomes.Add(offspring);
-            }
+            // Add new offspring to population
+            pop.Chromoshomes.AddRange(newOffspring);
 
-            // שמירה על הכרומוזומים הטובים לדור הבא
+            // Select best chromosomes for next generation
             pop.Chromoshomes = pop.Chromoshomes
                 .OrderByDescending(ch => ch.Fitness)
-                .Take(Program.ChromosomesEachGene - 1) // משאירים מקום לאליט
+                .Take(Program.ChromosomesEachGene - 1) // Leave room for elite
                 .ToList();
 
-            // הוספת הכרומוזום הטוב חזרה (אליטיזם)
+            // Add the best chromosome back (elitism)
             if (bestChromosome != null)
                 pop.Chromoshomes.Add(bestChromosome);
         }
 
         private static Chromosome SelectParentByTournament(List<Chromosome> chromosomes, Random random)
         {
-            // בחירת טורניר עם 3 מועמדים אקראיים
+            // Tournament selection with 3 random candidates
             Chromosome best = null;
             double bestFitness = double.MinValue;
 
+            // Handle empty list
+            if (chromosomes.Count == 0)
+                return null;
+
+            // For very small populations, just pick randomly
+            if (chromosomes.Count <= 2)
+                return chromosomes[random.Next(chromosomes.Count)];
+
+            // Select 3 random candidates and pick the best
             for (int i = 0; i < 3; i++)
             {
-                if (chromosomes.Count == 0)
-                    return null;
-
                 int idx = random.Next(chromosomes.Count);
                 Chromosome candidate = chromosomes[idx];
 
@@ -391,219 +403,304 @@ namespace Final
             return best;
         }
 
-        private static Chromosome PerformUniformCrossover(Chromosome parent1, Chromosome parent2, Random random)
+        private static Chromosome PerformSimpleCrossover(Chromosome parent1, Chromosome parent2, Random random)
         {
             Chromosome offspring = new Chromosome();
             offspring.Shifts = new Dictionary<string, List<Shift>>();
 
-            // מעקב אחרי שיוכי עובדים למשמרות מסוימות
+            // Track employee assignments to prevent conflicts
             Dictionary<Employee, HashSet<string>> employeeAssignments = new Dictionary<Employee, HashSet<string>>();
 
-            // איסוף כל שמות הסניפים משני ההורים
+            // Get all branch names from both parents
             var allBranchNames = new HashSet<string>(parent1.Shifts.Keys.Concat(parent2.Shifts.Keys));
 
             foreach (string branchName in allBranchNames)
             {
-                // אם סניף קיים רק באחד ההורים, מעתיקים אותו ישירות
+                // Handle case where branch exists in only one parent
                 if (!parent1.Shifts.ContainsKey(branchName))
                 {
-                    var shiftsCopy = DeepCopyShifts(parent2.Shifts[branchName]);
-                    offspring.Shifts[branchName] = shiftsCopy;
-
-                    // עדכון מעקב שיוך עובדים
-                    RecordEmployeeAssignments(shiftsCopy, employeeAssignments);
+                    offspring.Shifts[branchName] = DeepCopyShifts(parent2.Shifts[branchName]);
+                    UpdateEmployeeAssignments(offspring.Shifts[branchName], employeeAssignments);
                     continue;
                 }
 
                 if (!parent2.Shifts.ContainsKey(branchName))
                 {
-                    var shiftsCopy = DeepCopyShifts(parent1.Shifts[branchName]);
-                    offspring.Shifts[branchName] = shiftsCopy;
-
-                    RecordEmployeeAssignments(shiftsCopy, employeeAssignments);
+                    offspring.Shifts[branchName] = DeepCopyShifts(parent1.Shifts[branchName]);
+                    UpdateEmployeeAssignments(offspring.Shifts[branchName], employeeAssignments);
                     continue;
                 }
 
-                // אם הסניף קיים בשני ההורים – ביצוע uniform crossover ברמת המשמרת
-                List<Shift> parent1Shifts = parent1.Shifts[branchName];
-                List<Shift> parent2Shifts = parent2.Shifts[branchName];
+                // If branch exists in both parents, create a map of all day+timeslot combinations
                 List<Shift> offspringShifts = new List<Shift>();
+                var shiftSlots = new Dictionary<string, List<Shift>>();
 
-                // מספר המשמרות המינימלי בין שני ההורים
-                int shiftsCount = Math.Min(parent1Shifts.Count, parent2Shifts.Count);
-
-                for (int i = 0; i < shiftsCount; i++)
+                // Collect shifts from both parents into shift slots
+                foreach (var shift in parent1.Shifts[branchName].Concat(parent2.Shifts[branchName]))
                 {
-                    Shift shift1 = parent1Shifts[i];
-                    Shift shift2 = parent2Shifts[i];
+                    string key = $"{shift.day}_{shift.TimeSlot}";
 
-                    // וידוא שמשמרות מתאימות לאותו יום ושעת משמרת
-                    if (shift1.day == shift2.day && shift1.TimeSlot == shift2.TimeSlot)
-                    {
-                        // יצירת משמרת חדשה עם מאפיינים מ־parent1
-                        Shift offspringShift = new Shift
-                        {
-                            Id = shift1.Id,
-                            branch = shift1.branch,
-                            day = shift1.day,
-                            TimeSlot = shift1.TimeSlot,
-                            IsBusy = shift1.IsBusy,
-                            EventType = shift1.EventType,
-                            RequiredRoles = new Dictionary<string, int>(shift1.RequiredRoles),
-                            AssignedEmployees = new Dictionary<string, List<Employee>>()
-                        };
+                    if (!shiftSlots.ContainsKey(key))
+                        shiftSlots[key] = new List<Shift>();
 
-                        // איסוף כל התפקידים משני ההורים
-                        var allRoles = new HashSet<string>(
-                            shift1.AssignedEmployees.Keys.Concat(shift2.AssignedEmployees.Keys));
-
-                        // עבור כל תפקיד, בוחרים עובדים מהורה אחד עם מקריות מסוימת
-                        foreach (string role in allRoles)
-                        {
-                            offspringShift.AssignedEmployees[role] = new List<Employee>();
-
-                            // אם התפקיד קיים בשני ההורים
-                            if (shift1.AssignedEmployees.ContainsKey(role) &&
-                                shift2.AssignedEmployees.ContainsKey(role))
-                            {
-                                var employees1 = shift1.AssignedEmployees[role];
-                                var employees2 = shift2.AssignedEmployees[role];
-
-                                // לקיחת המספר הגדול יותר של עובדים
-                                int maxEmployees = Math.Max(employees1.Count, employees2.Count);
-
-                                // עבור כל עמדה, בוחרים מהורה 1 או 2
-                                for (int j = 0; j < maxEmployees; j++)
-                                {
-                                    bool takeFromParent1 = random.Next(2) == 0;
-                                    string shiftKey = $"{offspringShift.day}_{offspringShift.TimeSlot}";
-
-                                    if ((takeFromParent1 && j < employees1.Count) ||
-                                        (!takeFromParent1 && j >= employees2.Count && j < employees1.Count))
-                                    {
-                                        Employee emp = employees1[j];
-                                        if (!IsEmployeeAlreadyAssigned(emp, shiftKey, employeeAssignments) &&
-                                            !offspringShift.AssignedEmployees[role].Contains(emp))
-                                        {
-                                            offspringShift.AssignedEmployees[role].Add(emp);
-                                            if (!employeeAssignments.ContainsKey(emp))
-                                                employeeAssignments[emp] = new HashSet<string>();
-                                            employeeAssignments[emp].Add(shiftKey);
-                                        }
-                                    }
-                                    else if ((!takeFromParent1 && j < employees2.Count) ||
-                                             (takeFromParent1 && j >= employees1.Count && j < employees2.Count))
-                                    {
-                                        Employee emp = employees2[j];
-                                        if (!IsEmployeeAlreadyAssigned(emp, shiftKey, employeeAssignments) &&
-                                            !offspringShift.AssignedEmployees[role].Contains(emp))
-                                        {
-                                            offspringShift.AssignedEmployees[role].Add(emp);
-                                            if (!employeeAssignments.ContainsKey(emp))
-                                                employeeAssignments[emp] = new HashSet<string>();
-                                            employeeAssignments[emp].Add(shiftKey);
-                                        }
-                                    }
-                                }
-                            }
-                            else if (shift1.AssignedEmployees.ContainsKey(role))
-                            {
-                                string shiftKey = $"{offspringShift.day}_{offspringShift.TimeSlot}";
-                                foreach (Employee emp in shift1.AssignedEmployees[role])
-                                {
-                                    if (!IsEmployeeAlreadyAssigned(emp, shiftKey, employeeAssignments))
-                                    {
-                                        offspringShift.AssignedEmployees[role].Add(emp);
-                                        if (!employeeAssignments.ContainsKey(emp))
-                                            employeeAssignments[emp] = new HashSet<string>();
-                                        employeeAssignments[emp].Add(shiftKey);
-                                    }
-                                }
-                            }
-                            else if (shift2.AssignedEmployees.ContainsKey(role))
-                            {
-                                string shiftKey = $"{offspringShift.day}_{offspringShift.TimeSlot}";
-                                foreach (Employee emp in shift2.AssignedEmployees[role])
-                                {
-                                    if (!IsEmployeeAlreadyAssigned(emp, shiftKey, employeeAssignments))
-                                    {
-                                        offspringShift.AssignedEmployees[role].Add(emp);
-                                        if (!employeeAssignments.ContainsKey(emp))
-                                            employeeAssignments[emp] = new HashSet<string>();
-                                        employeeAssignments[emp].Add(shiftKey);
-                                    }
-                                }
-                            }
-                        }
-                        offspringShifts.Add(offspringShift);
-                    }
-                    else
-                    {
-                        // אם המשמרות לא תואמות – בוחרים אחת באופן אקראי
-                        Shift selectedShift = DeepCopyShift(random.Next(2) == 0 ? shift1 : shift2);
-                        string shiftKey = $"{selectedShift.day}_{selectedShift.TimeSlot}";
-                        RemoveOverlappingEmployees(selectedShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(selectedShift);
-                    }
+                    shiftSlots[key].Add(shift);
                 }
 
-                // אם להורה אחד יש משמרות נוספות – מוסיפים גם אותן
-                if (parent1Shifts.Count > shiftsCount)
+                // For each slot, randomly select a shift from available options
+                foreach (var entry in shiftSlots)
                 {
-                    for (int i = shiftsCount; i < parent1Shifts.Count; i++)
-                    {
-                        Shift extraShift = DeepCopyShift(parent1Shifts[i]);
-                        string shiftKey = $"{extraShift.day}_{extraShift.TimeSlot}";
-                        RemoveOverlappingEmployees(extraShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(extraShift);
-                    }
+                    // Get random shift for this slot
+                    Shift selectedShift = DeepCopyShift(entry.Value[random.Next(entry.Value.Count)]);
+
+                    // Ensure no employee conflicts
+                    string shiftKey = $"{selectedShift.day}_{selectedShift.TimeSlot}";
+                    RemoveConflictingEmployees(selectedShift, shiftKey, employeeAssignments);
+
+                    offspringShifts.Add(selectedShift);
                 }
-                else if (parent2Shifts.Count > shiftsCount)
-                {
-                    for (int i = shiftsCount; i < parent2Shifts.Count; i++)
-                    {
-                        Shift extraShift = DeepCopyShift(parent2Shifts[i]);
-                        string shiftKey = $"{extraShift.day}_{extraShift.TimeSlot}";
-                        RemoveOverlappingEmployees(extraShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(extraShift);
-                    }
-                }
+
                 offspring.Shifts[branchName] = offspringShifts;
             }
+
             return offspring;
         }
 
-        // בדיקה האם עובד כבר משויך למשמרת באותו יום/שעה
-        private static bool IsEmployeeAlreadyAssigned(Employee employee, string shiftKey,
-            Dictionary<Employee, HashSet<string>> employeeAssignments)
+        private static Chromosome PerformDayBasedCrossover(Chromosome parent1, Chromosome parent2, Random random)
         {
-            return employeeAssignments.ContainsKey(employee) &&
-                   employeeAssignments[employee].Contains(shiftKey);
+            Chromosome offspring = new Chromosome();
+            offspring.Shifts = new Dictionary<string, List<Shift>>();
+
+            // Track employee assignments to prevent conflicts
+            Dictionary<Employee, HashSet<string>> employeeAssignments = new Dictionary<Employee, HashSet<string>>();
+
+            // Common branches in both parents
+            var commonBranches = parent1.Shifts.Keys.Intersect(parent2.Shifts.Keys).ToList();
+
+            // Process common branches with day-based crossover
+            foreach (string branchName in commonBranches)
+            {
+                List<Shift> offspringShifts = new List<Shift>();
+
+                // Group shifts by day
+                var dayGroups = new Dictionary<string, List<Tuple<Shift, Shift>>>();
+
+                // Map shifts from parent1
+                Dictionary<string, Shift> shiftsMap1 = parent1.Shifts[branchName]
+                    .ToDictionary(s => $"{s.day}_{s.TimeSlot}", s => s);
+
+                // Map shifts from parent2
+                Dictionary<string, Shift> shiftsMap2 = parent2.Shifts[branchName]
+                    .ToDictionary(s => $"{s.day}_{s.TimeSlot}", s => s);
+
+                // Get all unique days from both parents
+                var allDays = new HashSet<string>();
+                foreach (var shift in parent1.Shifts[branchName]) allDays.Add(shift.day);
+                foreach (var shift in parent2.Shifts[branchName]) allDays.Add(shift.day);
+
+                // For each day, randomly choose a parent
+                foreach (string day in allDays)
+                {
+                    bool useParent1 = random.Next(2) == 0;
+
+                    // Get all shifts for this day
+                    var shiftsForDay1 = parent1.Shifts[branchName].Where(s => s.day == day).ToList();
+                    var shiftsForDay2 = parent2.Shifts[branchName].Where(s => s.day == day).ToList();
+
+                    // Select shifts based on chosen parent
+                    List<Shift> selectedShifts;
+                    if (useParent1)
+                        selectedShifts = shiftsForDay1.Count > 0 ? shiftsForDay1 : shiftsForDay2;
+                    else
+                        selectedShifts = shiftsForDay2.Count > 0 ? shiftsForDay2 : shiftsForDay1;
+
+                    // Create deep copies and add to offspring
+                    foreach (Shift shift in selectedShifts)
+                    {
+                        Shift newShift = DeepCopyShift(shift);
+                        string shiftKey = $"{newShift.day}_{newShift.TimeSlot}";
+                        RemoveConflictingEmployees(newShift, shiftKey, employeeAssignments);
+                        offspringShifts.Add(newShift);
+                    }
+                }
+
+                offspring.Shifts[branchName] = offspringShifts;
+            }
+
+            // Add branches unique to each parent
+            foreach (string branchName in parent1.Shifts.Keys.Except(commonBranches))
+            {
+                offspring.Shifts[branchName] = DeepCopyShifts(parent1.Shifts[branchName]);
+                UpdateEmployeeAssignments(offspring.Shifts[branchName], employeeAssignments);
+            }
+
+            foreach (string branchName in parent2.Shifts.Keys.Except(commonBranches))
+            {
+                offspring.Shifts[branchName] = DeepCopyShifts(parent2.Shifts[branchName]);
+                UpdateEmployeeAssignments(offspring.Shifts[branchName], employeeAssignments);
+            }
+
+            return offspring;
         }
 
-        // רישום שיוכי העובדים ממשמרות לרשומת המעקב
-        private static void RecordEmployeeAssignments(List<Shift> shifts,
-            Dictionary<Employee, HashSet<string>> employeeAssignments)
+        private static Chromosome PerformRoleBasedCrossover(Chromosome parent1, Chromosome parent2, Random random)
+        {
+            Chromosome offspring = new Chromosome();
+            offspring.Shifts = new Dictionary<string, List<Shift>>();
+
+            // Track employee assignments to prevent conflicts
+            Dictionary<Employee, HashSet<string>> employeeAssignments = new Dictionary<Employee, HashSet<string>>();
+
+            // Get all branch names from both parents
+            var allBranchNames = new HashSet<string>(parent1.Shifts.Keys.Concat(parent2.Shifts.Keys));
+
+            foreach (string branchName in allBranchNames)
+            {
+                // Handle branches that exist in only one parent
+                if (!parent1.Shifts.ContainsKey(branchName))
+                {
+                    offspring.Shifts[branchName] = DeepCopyShifts(parent2.Shifts[branchName]);
+                    UpdateEmployeeAssignments(offspring.Shifts[branchName], employeeAssignments);
+                    continue;
+                }
+
+                if (!parent2.Shifts.ContainsKey(branchName))
+                {
+                    offspring.Shifts[branchName] = DeepCopyShifts(parent1.Shifts[branchName]);
+                    UpdateEmployeeAssignments(offspring.Shifts[branchName], employeeAssignments);
+                    continue;
+                }
+
+                // Create map of shifts by day+timeslot for each parent
+                Dictionary<string, Shift> shiftsMap1 = parent1.Shifts[branchName]
+                    .ToDictionary(s => $"{s.day}_{s.TimeSlot}", s => s);
+
+                Dictionary<string, Shift> shiftsMap2 = parent2.Shifts[branchName]
+                    .ToDictionary(s => $"{s.day}_{s.TimeSlot}", s => s);
+
+                // Get all unique shift slots
+                var allSlots = new HashSet<string>(shiftsMap1.Keys.Concat(shiftsMap2.Keys));
+
+                List<Shift> offspringShifts = new List<Shift>();
+
+                // For each unique slot, create a new shift with basic structure
+                foreach (string slot in allSlots)
+                {
+                    string[] parts = slot.Split('_');
+                    string day = parts[0];
+                    string timeSlot = parts[1];
+
+                    Shift shift1 = shiftsMap1.ContainsKey(slot) ? shiftsMap1[slot] : null;
+                    Shift shift2 = shiftsMap2.ContainsKey(slot) ? shiftsMap2[slot] : null;
+
+                    // If shift exists in only one parent, copy it
+                    if (shift1 == null)
+                    {
+                        Shift newShift = DeepCopyShift(shift2);
+                        string shiftKey = $"{newShift.day}_{newShift.TimeSlot}";
+                        RemoveConflictingEmployees(newShift, shiftKey, employeeAssignments);
+                        offspringShifts.Add(newShift);
+                        continue;
+                    }
+
+                    if (shift2 == null)
+                    {
+                        Shift newShift = DeepCopyShift(shift1);
+                        string shiftKey = $"{newShift.day}_{newShift.TimeSlot}";
+                        RemoveConflictingEmployees(newShift, shiftKey, employeeAssignments);
+                        offspringShifts.Add(newShift);
+                        continue;
+                    }
+
+                    // Both parents have this shift - create new shift with base properties from shift1
+                    Shift offspringShift = new Shift
+                    {
+                        Id = shift1.Id,
+                        branch = shift1.branch,
+                        day = shift1.day,
+                        TimeSlot = shift1.TimeSlot,
+                        IsBusy = shift1.IsBusy,
+                        EventType = shift1.EventType,
+                        RequiredRoles = new Dictionary<string, int>(shift1.RequiredRoles),
+                        AssignedEmployees = new Dictionary<string, List<Employee>>()
+                    };
+
+                    // For each role, randomly choose employees from either parent
+                    var allRoles = new HashSet<string>(
+                        shift1.AssignedEmployees.Keys.Concat(shift2.AssignedEmployees.Keys));
+
+                    foreach (string role in allRoles)
+                    {
+                        offspringShift.AssignedEmployees[role] = new List<Employee>();
+
+                        List<Employee> employees1 = shift1.AssignedEmployees.ContainsKey(role) ?
+                            shift1.AssignedEmployees[role] : new List<Employee>();
+
+                        List<Employee> employees2 = shift2.AssignedEmployees.ContainsKey(role) ?
+                            shift2.AssignedEmployees[role] : new List<Employee>();
+
+                        // Select randomly which parent to use for this role
+                        List<Employee> selectedEmployees = random.Next(2) == 0 ?
+                            new List<Employee>(employees1) : new List<Employee>(employees2);
+
+                        // Add selected employees, avoiding conflicts
+                        string shiftKey = $"{offspringShift.day}_{offspringShift.TimeSlot}";
+
+                        foreach (Employee emp in selectedEmployees)
+                        {
+                            if (!IsEmployeeAlreadyAssigned(emp, shiftKey, employeeAssignments))
+                            {
+                                offspringShift.AssignedEmployees[role].Add(emp);
+
+                                if (!employeeAssignments.ContainsKey(emp))
+                                    employeeAssignments[emp] = new HashSet<string>();
+
+                                employeeAssignments[emp].Add(shiftKey);
+                            }
+                        }
+                    }
+
+                    offspringShifts.Add(offspringShift);
+                }
+
+                offspring.Shifts[branchName] = offspringShifts;
+            }
+
+            return offspring;
+        }
+
+        private static void UpdateEmployeeAssignments(List<Shift> shifts, Dictionary<Employee, HashSet<string>> employeeAssignments)
         {
             foreach (Shift shift in shifts)
             {
                 string shiftKey = $"{shift.day}_{shift.TimeSlot}";
+
+                if (shift.AssignedEmployees == null)
+                    continue;
+
                 foreach (var roleEntry in shift.AssignedEmployees)
                 {
                     foreach (Employee employee in roleEntry.Value)
                     {
                         if (!employeeAssignments.ContainsKey(employee))
                             employeeAssignments[employee] = new HashSet<string>();
+
                         employeeAssignments[employee].Add(shiftKey);
                     }
                 }
             }
         }
 
-        // הסרת עובדים המשויכים למשמרת כפולה (חפיפה)
-        private static void RemoveOverlappingEmployees(Shift shift, string shiftKey,
-            Dictionary<Employee, HashSet<string>> employeeAssignments)
+        private static bool IsEmployeeAlreadyAssigned(Employee employee, string shiftKey, Dictionary<Employee, HashSet<string>> employeeAssignments)
         {
+            return employeeAssignments.ContainsKey(employee) &&
+                   employeeAssignments[employee].Contains(shiftKey);
+        }
+
+        private static void RemoveConflictingEmployees(Shift shift, string shiftKey, Dictionary<Employee, HashSet<string>> employeeAssignments)
+        {
+            if (shift.AssignedEmployees == null)
+                return;
+
             foreach (var roleEntry in shift.AssignedEmployees.ToList())
             {
                 string role = roleEntry.Key;
@@ -615,217 +712,23 @@ namespace Final
                     if (!IsEmployeeAlreadyAssigned(employee, shiftKey, employeeAssignments))
                     {
                         keptEmployees.Add(employee);
+
                         if (!employeeAssignments.ContainsKey(employee))
                             employeeAssignments[employee] = new HashSet<string>();
+
                         employeeAssignments[employee].Add(shiftKey);
                     }
                 }
+
                 shift.AssignedEmployees[role] = keptEmployees;
             }
         }
 
-        private static Chromosome PerformMultiPointCrossover(Chromosome parent1, Chromosome parent2, Random random)
-        {
-            Chromosome offspring = new Chromosome();
-            offspring.Shifts = new Dictionary<string, List<Shift>>();
-
-            // מעקב אחרי שיוכי עובדים למשמרות מסוימות
-            Dictionary<Employee, HashSet<string>> employeeAssignments = new Dictionary<Employee, HashSet<string>>();
-
-            // סניפים משותפים לשני ההורים
-            var commonBranches = parent1.Shifts.Keys.Intersect(parent2.Shifts.Keys).ToList();
-
-            foreach (string branchName in commonBranches)
-            {
-                List<Shift> parent1Shifts = parent1.Shifts[branchName];
-                List<Shift> parent2Shifts = parent2.Shifts[branchName];
-                List<Shift> offspringShifts = new List<Shift>();
-
-                int shiftsCount = Math.Min(parent1Shifts.Count, parent2Shifts.Count);
-
-                if (shiftsCount <= 1)
-                {
-                    if (shiftsCount == 1)
-                    {
-                        Shift selectedShift = DeepCopyShift(random.Next(2) == 0 ? parent1Shifts[0] : parent2Shifts[0]);
-                        string shiftKey = $"{selectedShift.day}_{selectedShift.TimeSlot}";
-                        RemoveOverlappingEmployees(selectedShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(selectedShift);
-                    }
-                    offspring.Shifts[branchName] = offspringShifts;
-                    continue;
-                }
-
-                // הגדרת נקודות החלפה
-                int numCrossoverPoints = Math.Min(shiftsCount - 1, random.Next(1, 4));
-                List<int> crossoverPoints = new List<int>();
-
-                for (int i = 0; i < numCrossoverPoints; i++)
-                {
-                    int point = random.Next(1, shiftsCount);
-                    if (!crossoverPoints.Contains(point))
-                        crossoverPoints.Add(point);
-                }
-                crossoverPoints.Sort();
-
-                bool useParent1 = true;
-
-                for (int i = 0; i < shiftsCount; i++)
-                {
-                    if (crossoverPoints.Contains(i))
-                    {
-                        useParent1 = !useParent1;
-                    }
-                    Shift selectedShift = DeepCopyShift(useParent1 ? parent1Shifts[i] : parent2Shifts[i]);
-                    string shiftKey = $"{selectedShift.day}_{selectedShift.TimeSlot}";
-                    RemoveOverlappingEmployees(selectedShift, shiftKey, employeeAssignments);
-                    offspringShifts.Add(selectedShift);
-                }
-
-                // טיפול במשמרות נוספות
-                if (parent1Shifts.Count > shiftsCount)
-                {
-                    for (int i = shiftsCount; i < parent1Shifts.Count; i++)
-                    {
-                        Shift extraShift = DeepCopyShift(parent1Shifts[i]);
-                        string shiftKey = $"{extraShift.day}_{extraShift.TimeSlot}";
-                        RemoveOverlappingEmployees(extraShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(extraShift);
-                    }
-                }
-                else if (parent2Shifts.Count > shiftsCount)
-                {
-                    for (int i = shiftsCount; i < parent2Shifts.Count; i++)
-                    {
-                        Shift extraShift = DeepCopyShift(parent2Shifts[i]);
-                        string shiftKey = $"{extraShift.day}_{extraShift.TimeSlot}";
-                        RemoveOverlappingEmployees(extraShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(extraShift);
-                    }
-                }
-                offspring.Shifts[branchName] = offspringShifts;
-            }
-
-            // הוספת סניפים הייחודיים לכל הורה
-            foreach (string branchName in parent1.Shifts.Keys.Except(commonBranches))
-            {
-                var shiftsCopy = DeepCopyShifts(parent1.Shifts[branchName]);
-                offspring.Shifts[branchName] = shiftsCopy;
-                RecordEmployeeAssignments(shiftsCopy, employeeAssignments);
-            }
-            foreach (string branchName in parent2.Shifts.Keys.Except(commonBranches))
-            {
-                var shiftsCopy = DeepCopyShifts(parent2.Shifts[branchName]);
-                offspring.Shifts[branchName] = shiftsCopy;
-                RecordEmployeeAssignments(shiftsCopy, employeeAssignments);
-            }
-
-            return offspring;
-        }
-
-        private static Chromosome PerformCrossover(Chromosome parent1, Chromosome parent2, Random random)
-        {
-            Chromosome offspring = new Chromosome();
-            offspring.Shifts = new Dictionary<string, List<Shift>>();
-
-            // מעקב אחרי שיוכי עובדים למשמרות מסוימות
-            Dictionary<Employee, HashSet<string>> employeeAssignments = new Dictionary<Employee, HashSet<string>>();
-
-            // איסוף רשימת כל הסניפים מהשני הורים
-            var allBranchNames = new HashSet<string>(parent1.Shifts.Keys.Concat(parent2.Shifts.Keys));
-
-            foreach (string branchName in allBranchNames)
-            {
-                // טיפול במקרה שהסניף קיים רק באחד ההורים
-                if (!parent1.Shifts.ContainsKey(branchName))
-                {
-                    var shiftsCopy = DeepCopyShifts(parent2.Shifts[branchName]);
-
-                    // טיפול בחפיפות
-                    foreach (Shift shift in shiftsCopy)
-                    {
-                        string shiftKey = $"{shift.day}_{shift.TimeSlot}";
-                        RemoveOverlappingEmployees(shift, shiftKey, employeeAssignments);
-                    }
-
-                    offspring.Shifts[branchName] = shiftsCopy;
-                    continue;
-                }
-
-                if (!parent2.Shifts.ContainsKey(branchName))
-                {
-                    var shiftsCopy = DeepCopyShifts(parent1.Shifts[branchName]);
-
-                    // טיפול בחפיפות
-                    foreach (Shift shift in shiftsCopy)
-                    {
-                        string shiftKey = $"{shift.day}_{shift.TimeSlot}";
-                        RemoveOverlappingEmployees(shift, shiftKey, employeeAssignments);
-                    }
-
-                    offspring.Shifts[branchName] = shiftsCopy;
-                    continue;
-                }
-
-                // אם הסניף קיים בשני ההורים
-                List<Shift> offspringShifts = new List<Shift>();
-                List<Shift> parent1Shifts = parent1.Shifts[branchName];
-                List<Shift> parent2Shifts = parent2.Shifts[branchName];
-
-                // איחוד רשימת המשמרות מההורים
-                HashSet<Tuple<string, string>> allShiftSlots = new HashSet<Tuple<string, string>>();
-
-                foreach (Shift shift in parent1Shifts)
-                {
-                    allShiftSlots.Add(new Tuple<string, string>(shift.day, shift.TimeSlot));
-                }
-
-                foreach (Shift shift in parent2Shifts)
-                {
-                    allShiftSlots.Add(new Tuple<string, string>(shift.day, shift.TimeSlot));
-                }
-
-                // עבור כל משמרת אפשרית, בחר אותה מאחד ההורים
-                foreach (var shiftSlot in allShiftSlots)
-                {
-                    string day = shiftSlot.Item1;
-                    string timeSlot = shiftSlot.Item2;
-                    string shiftKey = $"{day}_{timeSlot}";
-
-                    Shift shift1 = parent1Shifts.FirstOrDefault(s => s.day == day && s.TimeSlot == timeSlot);
-                    Shift shift2 = parent2Shifts.FirstOrDefault(s => s.day == day && s.TimeSlot == timeSlot);
-
-                    if (shift1 != null && shift2 != null)
-                    {
-                        // אם קיימת בשני ההורים, בחר באקראי
-                        Shift selectedShift = DeepCopyShift(random.Next(2) == 0 ? shift1 : shift2);
-                        RemoveOverlappingEmployees(selectedShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(selectedShift);
-                    }
-                    else if (shift1 != null)
-                    {
-                        // אם קיימת רק בהורה הראשון
-                        Shift selectedShift = DeepCopyShift(shift1);
-                        RemoveOverlappingEmployees(selectedShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(selectedShift);
-                    }
-                    else if (shift2 != null)
-                    {
-                        // אם קיימת רק בהורה השני
-                        Shift selectedShift = DeepCopyShift(shift2);
-                        RemoveOverlappingEmployees(selectedShift, shiftKey, employeeAssignments);
-                        offspringShifts.Add(selectedShift);
-                    }
-                }
-
-                offspring.Shifts[branchName] = offspringShifts;
-            }
-
-            return offspring;
-        }
-
         private static Shift DeepCopyShift(Shift originalShift)
         {
+            if (originalShift == null)
+                return null;
+
             Shift copy = new Shift
             {
                 Id = originalShift.Id,
@@ -834,13 +737,36 @@ namespace Final
                 TimeSlot = originalShift.TimeSlot,
                 IsBusy = originalShift.IsBusy,
                 EventType = originalShift.EventType,
-                RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
+                RequiredRoles = new Dictionary<string, int>(),
                 AssignedEmployees = new Dictionary<string, List<Employee>>()
             };
 
-            foreach (var roleEntry in originalShift.AssignedEmployees)
+            // Copy required roles
+            if (originalShift.RequiredRoles != null)
             {
-                copy.AssignedEmployees[roleEntry.Key] = new List<Employee>(roleEntry.Value);
+                foreach (var entry in originalShift.RequiredRoles)
+                {
+                    copy.RequiredRoles[entry.Key] = entry.Value;
+                }
+            }
+
+            // Copy assigned employees
+            if (originalShift.AssignedEmployees != null)
+            {
+                foreach (var roleEntry in originalShift.AssignedEmployees)
+                {
+                    string role = roleEntry.Key;
+                    copy.AssignedEmployees[role] = new List<Employee>();
+
+                    if (roleEntry.Value != null)
+                    {
+                        foreach (Employee emp in roleEntry.Value)
+                        {
+                            if (emp != null)
+                                copy.AssignedEmployees[role].Add(emp);
+                        }
+                    }
+                }
             }
 
             return copy;
@@ -848,11 +774,15 @@ namespace Final
 
         private static List<Shift> DeepCopyShifts(List<Shift> shifts)
         {
+            if (shifts == null)
+                return new List<Shift>();
+
             List<Shift> copies = new List<Shift>();
 
             foreach (var shift in shifts)
             {
-                copies.Add(DeepCopyShift(shift));
+                if (shift != null)
+                    copies.Add(DeepCopyShift(shift));
             }
 
             return copies;
@@ -860,42 +790,22 @@ namespace Final
 
         private static Chromosome DeepCopyChromosome(Chromosome original)
         {
+            if (original == null)
+                return null;
+
             Chromosome copy = new Chromosome();
             copy.Fitness = original.Fitness;
             copy.Shifts = new Dictionary<string, List<Shift>>();
 
-            foreach (var branchEntry in original.Shifts)
+            if (original.Shifts != null)
             {
-                string branchName = branchEntry.Key;
-                List<Shift> originalShifts = branchEntry.Value;
-                List<Shift> copiedShifts = new List<Shift>();
-
-                foreach (Shift originalShift in originalShifts)
+                foreach (var branchEntry in original.Shifts)
                 {
-                    Shift shiftCopy = new Shift
-                    {
-                        Id = originalShift.Id,
-                        branch = originalShift.branch,
-                        day = originalShift.day,
-                        TimeSlot = originalShift.TimeSlot,
-                        IsBusy = originalShift.IsBusy,
-                        EventType = originalShift.EventType,
-                        RequiredRoles = new Dictionary<string, int>(originalShift.RequiredRoles),
-                        AssignedEmployees = new Dictionary<string, List<Employee>>()
-                    };
+                    string branchName = branchEntry.Key;
+                    List<Shift> originalShifts = branchEntry.Value;
 
-                    foreach (var roleEntry in originalShift.AssignedEmployees)
-                    {
-                        string role = roleEntry.Key;
-                        List<Employee> employees = roleEntry.Value;
-
-                        shiftCopy.AssignedEmployees[role] = new List<Employee>(employees);
-                    }
-
-                    copiedShifts.Add(shiftCopy);
+                    copy.Shifts[branchName] = DeepCopyShifts(originalShifts);
                 }
-
-                copy.Shifts[branchName] = copiedShifts;
             }
 
             return copy;
@@ -1006,7 +916,7 @@ namespace Final
                 if (wasMutated)
                 {
                     // חישוב ציון הכושר החדש
-                    mutatedChromosome.Fitness = Program.calaulateChoromosomeFitness(mutatedChromosome);
+                    mutatedChromosome.Fitness = Program.CalculateChromosomeFitness(mutatedChromosome);
 
                     // רק אם הכרומוזום שופר (או לא נפגע) נוסיף אותו לאוכלוסייה
                     if (mutatedChromosome.Fitness >= originalFitness)
@@ -1377,7 +1287,6 @@ namespace Final
                 return new List<int>();
 
             List<int> overlappingShiftIds = new List<int>();
-
             foreach (int shiftId in employee.requestedShifts)
             {
                 // Find the shift in the branches
@@ -1400,162 +1309,298 @@ namespace Final
         }
 
         #endregion
-                
-        public static double calaulateChoromosomeFitness(Chromosome ch)
+        #region Fitness
+
+        //פונקציה לחישוב ציון הכושר של כרומוזום
+        public static double CalculateChromosomeFitness(Chromosome chromosome)
         {
-            double currentChromosomeFitness = 0;
-            double calculatesShiftFitness(Shift shift)
+            //השמת ערך התחלתי לציון לכרומוזום
+            double totalFitness = 0;
+
+            // מעקב אחר שעות העבודה השבועיות והיומיות של כל עובד
+            Dictionary<Employee, double> weeklyHoursPerEmployee = new Dictionary<Employee, double>();
+            Dictionary<Employee, Dictionary<string, double>> dailyHoursPerEmployee = new Dictionary<Employee, Dictionary<string, double>>();
+            //החזרת ערך מינימלי במקרה שהמשמרות ריקות
+            if (chromosome.Shifts == null)
+                return Double.MinValue;
+
+            //מעבר על כל הסניפים בכרומוזום
+            foreach (var branchEntry in chromosome.Shifts)
             {
-                double fitness = 0;
+                //קבלת רשימת המשמרות של הסניף הנוכחי
+                string branchName = branchEntry.Key;
+                List<Shift> branchShifts = branchEntry.Value;
 
-                if (shift.AssignedEmployees == null)
+                if (branchShifts == null)
+                    continue;
+
+                // מעבר על כל המשמרות בסניף הנוכחי
+                foreach (var shift in branchShifts)
                 {
-                    shift.AssignedEmployees = new Dictionary<string, List<Employee>>();
+                    //חישוב ציון הכושר של המשמרת הנוכחית
+                    double shiftFitness = CalculateShiftFitness(shift, weeklyHoursPerEmployee, dailyHoursPerEmployee);
+                    //הוספת ציון הכושר של המשמרת הנוכחית לציון הכושר הכולל
+                    totalFitness += shiftFitness;
                 }
+            }
 
-                foreach (var roleEntry in shift.RequiredRoles)
+            // בדיקת אילוץ- עובד לא יעבוד יותר שעות שבועיות מהמותר בחוק
+            //מעבר על המילון ששומר את כמות השעות השבועיות של כל עובד
+            foreach (var entry in weeklyHoursPerEmployee)
+            {
+                Employee emp = entry.Key;
+                double hours = entry.Value;
+                // קנס משמעותי על חריגה ממגבלת השעות השבועיות
+                if (hours > hoursPerWeek)
                 {
-                    string role = roleEntry.Key;
-                    int requiredCount = roleEntry.Value;
+                    totalFitness -= (hours - hoursPerWeek) * 10; 
+                }
+            }
 
-                    if (shift.AssignedEmployees.ContainsKey(role) &&
-                        shift.AssignedEmployees[role] != null &&
-                        shift.AssignedEmployees[role].Count >= requiredCount)
+            // בדיקת אילוץ- עובד לא יעבוד יותר שעות יומיות מהמותר בחוק
+            //מעבר על המילון ששומר את כמות השעות היומיות של כל עובד
+            foreach (var empEntry in dailyHoursPerEmployee)
+            {
+                var dayHours = empEntry.Value;
+                foreach (var dayEntry in dayHours)
+                {
+                    double hours = dayEntry.Value;
+                    // קנס משמעותי יותר על חריגה ממגבלת השעות היומיות
+                    if (hours > hoursPerDay)
                     {
-                        fitness += 10;
+                        totalFitness -= (hours - hoursPerDay) * 15; 
+                    }
+                }
+            }
+            //החזרת ציון הכושר הכולל
+            return totalFitness;
+        }
+        //פונקציה לחישוב ציון הכושר של משמרת בכרומוזום
+        private static double CalculateShiftFitness(Shift shift,
+            Dictionary<Employee, double> weeklyHoursPerEmployee,
+            Dictionary<Employee, Dictionary<string, double>> dailyHoursPerEmployee)
+        {
+            //השמת ערך התחלתי לציון המשמרת
+            double shiftFitness = 0;
+
+            //קבלת כמות העובדים הדרושים וכמות העובדים בפועל למשמרת
+            int totalEmployees = GetTotalEmployeesInShift(shift);
+            int requiredEmployees = shift.GetTotalRequiredEmployees();
+
+            // בדיקת אילוץ - כמות מינימלית של עובדים
+            // קנס חמור על חוסר בעובדים
+            if (totalEmployees < requiredEmployees)
+            {
+                shiftFitness -= (requiredEmployees - totalEmployees) * 20; 
+            }
+
+            // בדיקת אילוץ חובה - תפקידים נדרשים
+            foreach (var roleEntry in shift.RequiredRoles)
+            {
+                string role = roleEntry.Key;
+                int requiredCount = roleEntry.Value;
+
+                if (!shift.AssignedEmployees.ContainsKey(role) ||
+                    shift.AssignedEmployees[role].Count < requiredCount)
+                {
+                    int missing = requiredCount - (shift.AssignedEmployees.ContainsKey(role) ?
+                        shift.AssignedEmployees[role].Count : 0);
+
+                    shiftFitness -= missing * 25; // קנס חמור אף יותר על היעדר תפקידים נדרשים
+                }
+                else
+                {
+                    shiftFitness += 10; // בונוס על מילוי דרישת תפקיד
+                }
+            }
+
+            // בדיקת אילוץ - עובדים משובצים רק לסניפים ומשמרות שביקשו
+            foreach (var roleEntry in shift.AssignedEmployees)
+            {
+                foreach (var employee in roleEntry.Value)
+                {
+                    // בדיקה אם העובד שייך לסניף
+                    if (!employee.Branches.Contains(shift.branch))
+                    {
+                        shiftFitness -= 30; // קנס חמור על שיבוץ לסניף לא נכון
+                    }
+
+                    // בדיקה אם העובד ביקש את המשמרת
+                    if (!employee.requestedShifts.Contains(shift.Id))
+                    {
+                        shiftFitness -= 15; // קנס על שיבוץ למשמרת לא מבוקשת
+                         countBad++;
                     }
                     else
                     {
-                        fitness -= 10;
+                        shiftFitness += 5; // בונוס על שיבוץ למשמרת מבוקשת
+                         countGood++;
+
                     }
+
+                    // עדכון מעקב שעות עבודה לעובד
+                    UpdateWorkingHours(employee, shift.day, hoursPerShift, weeklyHoursPerEmployee, dailyHoursPerEmployee);
                 }
-
-                foreach (var roleEntry in shift.AssignedEmployees)
-                {
-                    string role = roleEntry.Key;
-                    List<Employee> employees = roleEntry.Value;
-
-                    if (employees != null)
-                    {
-                        foreach (var emp in employees)
-                        {
-                            if (emp != null && emp.backUprequestedShifts != null &&
-                                emp.backUprequestedShifts.Contains(shift.Id))
-                            {
-                                fitness += 3;
-                            }
-                            else
-                            {
-                                fitness -= 5;
-                            }
-                        }
-                    }
-                }
-
-                bool hasMentor = false;
-                foreach (var employeeList in shift.AssignedEmployees.Values)
-                {
-                    if (employeeList != null && employeeList.Any(emp => emp != null && emp.isMentor))
-                    {
-                        hasMentor = true;
-                        break;
-                    }
-                }
-                fitness += hasMentor ? 5 : -5;
-
-                double salaryExpense = 0;
-                foreach (var employeeList in shift.AssignedEmployees.Values)
-                {
-                    if (employeeList != null)
-                    {
-                        foreach (var emp in employeeList)
-                        {
-                            if (emp != null)
-                            {
-                                salaryExpense += (emp.HourlySalary * emp.AssignedHours) / 100.0;
-                            }
-                        }
-                    }
-                }
-                fitness -= salaryExpense;
-
-                return fitness;
             }
 
-            if (ch.Shifts != null)
+            // בדיקת אילוץ -  עובד מנוסה בכל משמרת
+            bool hasMentor = false;
+            foreach (var employeeList in shift.AssignedEmployees.Values)
             {
-                foreach (var branchEntry in ch.Shifts)
+                if (employeeList.Any(emp => emp.isMentor))
                 {
-                    string branchName = branchEntry.Key;
-                    List<Shift> branchShifts = branchEntry.Value;
-
-                    if (branchShifts != null)
-                    {
-                        foreach (var shift in branchShifts)
-                        {
-                            if (shift != null)
-                            {
-                                if (shift.AssignedEmployees == null)
-                                {
-                                    shift.AssignedEmployees = new Dictionary<string, List<Employee>>();
-                                }
-                                currentChromosomeFitness += calculatesShiftFitness(shift);
-                            }
-                        }
-                    }
+                    hasMentor = true;
+                    break;
                 }
             }
 
-            int unassignedShifts = 0;
-
-            if (ch.Shifts != null)
+            if (hasMentor)
             {
-                foreach (var branchEntry in ch.Shifts)
+                shiftFitness += 100; // בונוס על נוכחות עובד מנוסה במשמרת
+            }
+            else
+            {
+                shiftFitness -= 100; // קנס  על היעדר עובד מנוסה במשמרת
+            }
+
+            // בדיקת אילוץ  - התאמת רמת העובדים למידת העומס
+            if (shift.IsBusy)
+            {
+                double avgRate = CalculateAverageEmployeeRate(shift);
+                if (avgRate >= 3.5)
                 {
-                    List<Shift> branchShifts = branchEntry.Value;
-
-                    if (branchShifts != null)
-                    {
-                        foreach (var shift in branchShifts)
-                        {
-                            if (shift != null && shift.RequiredRoles != null)
-                            {
-                                bool allRolesCovered = true;
-
-                                foreach (var roleEntry in shift.RequiredRoles)
-                                {
-                                    string role = roleEntry.Key;
-                                    int requiredCount = roleEntry.Value;
-
-                                    if (shift.AssignedEmployees == null ||
-                                        !shift.AssignedEmployees.ContainsKey(role) ||
-                                        shift.AssignedEmployees[role] == null ||
-                                        shift.AssignedEmployees[role].Count < requiredCount)
-                                    {
-                                        allRolesCovered = false;
-                                        break;
-                                    }
-                                }
-
-                                if (!allRolesCovered)
-                                {
-                                    unassignedShifts++;
-                                }
-                            }
-                        }
-                    }
+                    shiftFitness += 70; // בונוס על צוות חזק במשמרת עמוסה
+                }
+                else
+                {
+                    shiftFitness -= 70; // קנס קל על צוות חלש במשמרת עמוסה
                 }
             }
 
-            currentChromosomeFitness -= unassignedShifts * 20;
-            return currentChromosomeFitness;
+            // בדיקת אילוץ  - תמהיל צוותי מאוזן
+            double experiencedRatio = CalculateExperiencedRatio(shift);
+            if (experiencedRatio >= 0.3 && experiencedRatio <= 0.7)
+            {
+                shiftFitness += 50; // בונוס על איזון טוב בין מנוסים לחדשים
+            }
+
+            // בדיקת אילוץ - מינימום עלות משמרת
+            double shiftCost = CalculateShiftCost(shift, hoursPerShift);
+            shiftFitness -= shiftCost / 200; // קנס קל לפי עלות המשמרת
+
+            return shiftFitness;
         }
 
+      
+        //פונקציה המקבלת משמרת ומחזירה את כמו העובדים ששובצו אליה
+        private static int GetTotalEmployeesInShift(Shift shift)
+        {
+            return shift.AssignedEmployees.Values.Sum(lst => lst.Count);
+        }
+
+        //פונקציה המעדכנת את המילון ששומר את השעות של כל עובד 
+        private static void UpdateWorkingHours(Employee employee, string day, double hours,
+            Dictionary<Employee, double> weeklyHoursPerEmployee,
+            Dictionary<Employee, Dictionary<string, double>> dailyHoursPerEmployee)
+        {
+            // עדכון שעות שבועיות
+            if (!weeklyHoursPerEmployee.ContainsKey(employee))
+            {
+                //הכנסת העובד למילון אם הוא עוד לא קיים שם
+                weeklyHoursPerEmployee[employee] = 0;
+            }
+            //הוספת שעות המשמרת שלו
+            weeklyHoursPerEmployee[employee] += hours;
+
+            // עדכון שעות יומיות
+            if (!dailyHoursPerEmployee.ContainsKey(employee))
+            {
+                dailyHoursPerEmployee[employee] = new Dictionary<string, double>();
+            }
+
+            if (!dailyHoursPerEmployee[employee].ContainsKey(day))
+            {
+                //הכנסת העובד למילון אם הוא עוד לא קיים שם
+                dailyHoursPerEmployee[employee][day] = 0;
+            }
+            //הוספת שעות המשמרת שלו
+
+            dailyHoursPerEmployee[employee][day] += hours;
+        }
+
+        //פונקציה המחשבת את הציון הממוצע של עובדים במשמרת
+        private static double CalculateAverageEmployeeRate(Shift shift)
+        {
+            //קבלת מספר העובדים
+            int totalEmployees = GetTotalEmployeesInShift(shift);
+            if (totalEmployees == 0)
+                return 0;
+            //צבירת סכום הציונים שלהם במונה
+            double sumRate = 0;
+            foreach (var employeeList in shift.AssignedEmployees.Values)
+            {
+                foreach (var employee in employeeList)
+                {
+                    sumRate += employee.Rate;
+                }
+            }
+            //חישוב הממוצע
+            return sumRate / totalEmployees;
+        }
+
+        //פונקציה המחשבת את כמות העובדים המנוסים מסך כל העובדים
+        private static double CalculateExperiencedRatio(Shift shift)
+        {
+            //קבלת מספר העובדים
+            int totalEmployees = GetTotalEmployeesInShift(shift);
+            if (totalEmployees == 0)
+                return 0;
+
+            int experiencedCount = 0;
+            //מעבר על כל העובדים במשמרת 
+            foreach (var employeeList in shift.AssignedEmployees.Values)
+            {
+                foreach (var employee in employeeList)
+                {
+                    //סכימת כמות העובדים המנוסים
+                    if (employee.isMentor)
+                    {
+                        experiencedCount++;
+                    }
+                }
+            }
+            //חישוב אחוז העובדים המנוסים מסך כל העובדים
+            return (double)experiencedCount / totalEmployees;
+        }
+
+        //פונקציה המחשבת את עלות המשמרת
+        private static double CalculateShiftCost(Shift shift, double hours)
+        {
+            double totalCost = 0;
+            //מעבר על כל העובדים במשמרת
+            foreach (var employeeList in shift.AssignedEmployees.Values)
+            {
+                foreach (var employee in employeeList)
+                {
+                    //סכימת שכר העובדים
+                    totalCost += employee.HourlySalary * hours;
+                }
+            }
+
+            return totalCost;
+        }
+
+        #endregion
+
+        //פונקציה המחזירה את הכרומוזום הטוב ביותר באוכלוסייה
         public static Chromosome GetBestChromosome()
         {
+            //מיון הכרומוזומיים בסדר יורד והחזרת הכרומוזום הטוב ביותר
             return pop.Chromoshomes.OrderByDescending(ch => ch.Fitness).FirstOrDefault();
         }
-
+        /// <summary>
+        /// לשנות ליעיל יותר
+        /// </summary>
         static void Main()
         {
             Branches = DB.addBranches();

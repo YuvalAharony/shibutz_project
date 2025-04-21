@@ -515,7 +515,7 @@ namespace EmployeeSchedulingApp
                 usedNames.Add(name);
 
                 int hourlySalary = random.Next(30, 70);
-                int rate = random.Next(1, 6);
+                int rate = random.Next(1,11);
                 bool isMentor = random.Next(10) < 2; // 20% chance to be a mentor
                 int assignedHours = random.Next(20, 41);
 
@@ -634,7 +634,7 @@ namespace EmployeeSchedulingApp
                 return;
 
             // Decide how many shifts to prefer (50-80% of available shifts)
-            int preferredShiftsCount = random.Next(branchShiftIds.Count / 3, (branchShiftIds.Count * 6 / 10) + 1);
+            int preferredShiftsCount = random.Next(branchShiftIds.Count / 3, (branchShiftIds.Count * 8 / 10) + 1);
 
             // Shuffle the shifts list
             for (int i = 0; i < branchShiftIds.Count; i++)
