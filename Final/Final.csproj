@@ -121,6 +121,7 @@
       <DependentUpon>RegisterPage.cs</DependentUpon>
     </Compile>
     <Compile Include="Shift.cs" />
+    <Compile Include="ShiftDisplayInfo.cs" />
     <Compile Include="ViewShiftDetailsPage.cs">
       <SubType>Form</SubType>
     </Compile>

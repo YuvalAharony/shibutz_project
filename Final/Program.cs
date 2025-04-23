@@ -22,8 +22,8 @@ namespace Final
         public static List<Employee> Employees=new List<Employee>();
         public static DataBaseHelper DataBaseHelper=new DataBaseHelper();
         public static List<Branch> Branches=new List<Branch>();
-        public const int ChromosomesEachGene = 200;
-        public const int Genes = 200;
+        public const int ChromosomesEachGene = 300;
+        public const int Genes = 300;
         public const int hoursPerWeek = 42;
         public const int hoursPerDay = 9;
         public const int hoursPerShift = 9;
@@ -36,8 +36,6 @@ namespace Final
 
         public static Population pop;
         #endregion
-
-       
 
         //אלגוריתם ראשי למציאת סידור עבודה אופטימלי ע"י אלגוריתם גנטי
         public static void createSceduele(string username)
@@ -65,6 +63,7 @@ namespace Final
 
         }
 
+        #region InitializeFirstPopulation 
         //פונקציה היוצרת אוכלוסייה ראשונית- שלב ראשון באלגוריתם הגנטי
         public static Population initializeFirstPopulation(Population pop)
         {
@@ -85,7 +84,7 @@ namespace Final
             return pop;
         }
 
-        #region InitializeFirstPopulation Helper Functions
+
         //פונקציה שמשחזרת את המשמרות המבוקשות של כל עובד
         public static void RestoreEmployeesRequestedShifts()
         {
@@ -756,493 +755,366 @@ namespace Final
             Random random = new Random();
             List<Chromosome> newChromosomes = new List<Chromosome>();
 
-            // מעקב אחרי עובדים שמשויכים למשמרות למניעת חפיפות
-            Dictionary<Employee, HashSet<string>> globalEmployeeAssignments = new Dictionary<Employee, HashSet<string>>();
-
             foreach (Chromosome chromosome in pop.Chromoshomes)
             {
-                // יצירת העתק עמוק של הכרומוזום לצורך מוטציה
+                // יצירת העתק של הכרומוזום לביצוע מוטציה
                 Chromosome mutatedChromosome = CopyChromosome(chromosome);
-                bool wasMutated = false;
                 double originalFitness = chromosome.Fitness;
+                bool wasImproved = false;
 
-                // ניקוי המעקב עבור כל כרומוזום חדש
-                globalEmployeeAssignments.Clear();
+                // מיפוי שיבוצים נוכחיים
+                Dictionary<Employee, HashSet<string>> assignments = GetEmployeeAssignments(mutatedChromosome);
 
-                // בניית המעקב הקיים של שיוכי עובדים כדי לזהות חפיפות
-                foreach (var branchEntry in mutatedChromosome.Shifts)
+                // מספר ניסיונות לשיפור הכרומוזום
+                for (int i = 0; i < 8; i++)
                 {
-                    foreach (Shift shift in branchEntry.Value)
+                    // בחירת משמרת אקראית מהכרומוזום
+                    Shift shift = GetRandomShift(mutatedChromosome, random);
+                    if (shift == null) continue;
+
+                    string shiftKey = $"{shift.day}_{shift.TimeSlot}";
+
+                    // הפעלת אסטרטגיות מוטציה מהחשובה לפחות חשובה
+                    if (!ShiftHasMentor(shift) && AddMentor(shift, shiftKey, assignments))
+                        wasImproved = true;
+                    else if (random.Next(2) == 0 && FillEmptyPositions(shift, shiftKey, assignments))
+                        wasImproved = true;
+                    else if (random.Next(2) == 0 && OptimizePreferences(shift, shiftKey, assignments))
+                        wasImproved = true;
+                    else if (random.Next(3) == 0 && UpgradeEmployees(shift, shiftKey, assignments))
+                        wasImproved = true;
+                    else if (random.Next(4) == 0 && ReduceCosts(shift, shiftKey, assignments))
+                        wasImproved = true;
+                }
+
+                // אם הכרומוזום השתפר, חשב מחדש את ציון הכושר והוסף לרשימה
+                if (wasImproved)
+                {
+                    mutatedChromosome.Fitness = CalculateChromosomeFitness(mutatedChromosome);
+                    if (mutatedChromosome.Fitness > originalFitness)
+                        newChromosomes.Add(mutatedChromosome);
+                }
+            }
+
+            // הוסף את הכרומוזומים המשופרים לאוכלוסייה
+            pop.Chromoshomes.AddRange(newChromosomes);
+
+            // שמור על הכרומוזומים הטובים ביותר
+            pop.Chromoshomes = pop.Chromoshomes
+                .OrderByDescending(ch => ch.Fitness)
+                .Take(ChromosomesEachGene)
+                .ToList();
+        }
+
+        // מיפוי שיבוצי עובדים נוכחיים
+        private static Dictionary<Employee, HashSet<string>> GetEmployeeAssignments(Chromosome chromosome)
+        {
+            var assignments = new Dictionary<Employee, HashSet<string>>();
+
+            foreach (var branch in chromosome.Shifts)
+            {
+                foreach (Shift shift in branch.Value)
+                {
+                    string key = $"{shift.day}_{shift.TimeSlot}";
+
+                    if (shift.AssignedEmployees != null)
                     {
-                        foreach (var roleEntry in shift.AssignedEmployees)
+                        foreach (var role in shift.AssignedEmployees)
                         {
-                            foreach (Employee emp in roleEntry.Value)
+                            foreach (Employee emp in role.Value)
                             {
-                                string shiftKey = $"{shift.day}_{shift.TimeSlot}";
-                                if (!globalEmployeeAssignments.ContainsKey(emp))
-                                    globalEmployeeAssignments[emp] = new HashSet<string>();
-                                globalEmployeeAssignments[emp].Add(shiftKey);
+                                if (!assignments.ContainsKey(emp))
+                                    assignments[emp] = new HashSet<string>();
+
+                                assignments[emp].Add(key);
                             }
                         }
                     }
                 }
-
-                // ניסיונות מוטציה מרובים - הגדלנו את מספר הניסיונות
-                for (int attempt = 0; attempt < 10; attempt++)
-                {
-                    // בחירת סניף אקראי לביצוע מוטציה
-                    if (mutatedChromosome.Shifts.Count == 0)
-                        continue;
-
-                    var branchKeys = mutatedChromosome.Shifts.Keys.ToList();
-                    string branchName = branchKeys[random.Next(branchKeys.Count)];
-                    List<Shift> shifts = mutatedChromosome.Shifts[branchName];
-
-                    if (shifts == null || shifts.Count == 0)
-                        continue;
-
-                    // בחירת משמרת אקראית למוטציה
-                    int shiftIndex = random.Next(shifts.Count);
-                    Shift shiftToMutate = shifts[shiftIndex];
-                    string shiftKey = $"{shiftToMutate.day}_{shiftToMutate.TimeSlot}";
-
-                    if (shiftToMutate.AssignedEmployees == null)
-                        shiftToMutate.AssignedEmployees = new Dictionary<string, List<Employee>>();
-
-                    // Strategy 1: מילוי משרות ריקות (Focus on empty slots first)
-                    bool appliedStrategy1 = TryFillEmptyPositions(shiftToMutate, shiftKey, globalEmployeeAssignments);
-                    if (appliedStrategy1)
-                    {
-                        wasMutated = true;
-                        continue;
-                    }
-
-                    // Strategy 2: שיפור שיבוץ על ידי החלפת עובדים בעלי דירוג נמוך בעובדים בעלי דירוג גבוה
-                    bool appliedStrategy2 = TryUpgradeEmployees(shiftToMutate, shiftKey, globalEmployeeAssignments);
-                    if (appliedStrategy2)
-                    {
-                        wasMutated = true;
-                        continue;
-                    }
-
-                    // Strategy 3: מנסה לשבץ עובדים שביקשו משמרת זו במקום עובדים שלא ביקשו
-                    bool appliedStrategy3 = TryMatchPreferredShifts(shiftToMutate, shiftKey, globalEmployeeAssignments);
-                    if (appliedStrategy3)
-                    {
-                        wasMutated = true;
-                        continue;
-                    }
-
-                    // Strategy 4: הוספת עובד מנטור אם אין כזה במשמרת
-                    bool appliedStrategy4 = TryAddMentor(shiftToMutate, shiftKey, globalEmployeeAssignments);
-                    if (appliedStrategy4)
-                    {
-                        wasMutated = true;
-                        continue;
-                    }
-
-                    // Strategy 5: ניסיון להפחית עלויות על ידי החלפת עובדים יקרים בעובדים זולים יותר
-                    bool appliedStrategy5 = TryReduceCosts(shiftToMutate, shiftKey, globalEmployeeAssignments);
-                    if (appliedStrategy5)
-                    {
-                        wasMutated = true;
-                        continue;
-                    }
-                }
-
-                if (wasMutated)
-                {
-                    // חישוב ציון הכושר החדש
-                    mutatedChromosome.Fitness = Program.CalculateChromosomeFitness(mutatedChromosome);
-
-                    // רק אם הכרומוזום שופר (או לא נפגע) נוסיף אותו לאוכלוסייה
-                    if (mutatedChromosome.Fitness >= originalFitness)
-                    {
-                        newChromosomes.Add(mutatedChromosome);
-                    }
-                }
             }
 
-            // הוספת הכרומוזומים החדשים לאוכלוסייה
-            foreach (var newChromosome in newChromosomes)
-            {
-                pop.Chromoshomes.Add(newChromosome);
-            }
-
-            // שמירה על הכרומוזומים הטובים בלבד
-            pop.Chromoshomes = pop.Chromoshomes
-                .OrderByDescending(ch => ch.Fitness)
-                .Take(Program.ChromosomesEachGene)
-                .ToList();
+            return assignments;
         }
 
-        // ניסיון למלא משרות ריקות
-        private static bool TryFillEmptyPositions(Shift shiftToMutate, string shiftKey,
-            Dictionary<Employee, HashSet<string>> globalEmployeeAssignments)
+        // בחירת משמרת אקראית מהכרומוזום
+        private static Shift GetRandomShift(Chromosome chromosome, Random random)
         {
-            // בדיקה האם קיימות משרות שלא מולאו
-            foreach (var roleReq in shiftToMutate.RequiredRoles)
+            if (chromosome.Shifts.Count == 0) return null;
+
+            var branchKeys = chromosome.Shifts.Keys.ToList();
+            string branch = branchKeys[random.Next(branchKeys.Count)];
+
+            if (chromosome.Shifts[branch].Count == 0) return null;
+
+            return chromosome.Shifts[branch][random.Next(chromosome.Shifts[branch].Count)];
+        }
+
+        // בדיקה אם יש מנטור במשמרת
+        private static bool ShiftHasMentor(Shift shift)
+        {
+            if (shift.AssignedEmployees == null) return false;
+
+            return shift.AssignedEmployees.Values
+                .SelectMany(emps => emps)
+                .Any(emp => emp.isMentor);
+        }
+
+        // הוספת מנטור למשמרת
+        private static bool AddMentor(Shift shift, string shiftKey, Dictionary<Employee, HashSet<string>> assignments)
+        {
+            if (shift.AssignedEmployees == null || shift.AssignedEmployees.Count == 0) return false;
+
+            // בחר תפקיד אקראי ועובד אקראי להחלפה
+            var roles = shift.AssignedEmployees.Where(r => r.Value.Count > 0).ToList();
+            if (roles.Count == 0) return false;
+
+            var roleEntry = roles[new Random().Next(roles.Count)];
+            string role = roleEntry.Key;
+            int empIndex = new Random().Next(roleEntry.Value.Count);
+            Employee currentEmp = roleEntry.Value[empIndex];
+
+            // בדוק אילו עובדים כבר במשמרת
+            var employeesInShift = shift.AssignedEmployees.Values
+                .SelectMany(emps => emps)
+                .ToHashSet();
+
+            // מצא מנטור מתאים להחלפה
+            var mentor = Employees
+                .Where(e => e.roles.Contains(role) &&
+                       e.isMentor &&
+                       !employeesInShift.Contains(e) &&
+                       (!assignments.ContainsKey(e) || !assignments[e].Contains(shiftKey)))
+                .OrderByDescending(e => e.Rate)
+                .FirstOrDefault();
+
+            if (mentor == null) return false;
+
+            // עדכן את המשמרת ואת מפת השיבוצים
+            if (assignments.ContainsKey(currentEmp))
+                assignments[currentEmp].Remove(shiftKey);
+
+            roleEntry.Value[empIndex] = mentor;
+
+            if (!assignments.ContainsKey(mentor))
+                assignments[mentor] = new HashSet<string>();
+
+            assignments[mentor].Add(shiftKey);
+
+            return true;
+        }
+
+        // מילוי משרות ריקות
+        private static bool FillEmptyPositions(Shift shift, string shiftKey, Dictionary<Employee, HashSet<string>> assignments)
+        {
+            if (shift.AssignedEmployees == null)
+                shift.AssignedEmployees = new Dictionary<string, List<Employee>>();
+
+            foreach (var roleReq in shift.RequiredRoles)
             {
                 string role = roleReq.Key;
                 int required = roleReq.Value;
 
-                if (!shiftToMutate.AssignedEmployees.ContainsKey(role))
-                    shiftToMutate.AssignedEmployees[role] = new List<Employee>();
+                if (!shift.AssignedEmployees.ContainsKey(role))
+                    shift.AssignedEmployees[role] = new List<Employee>();
 
-                if (shiftToMutate.AssignedEmployees[role].Count < required)
+                if (shift.AssignedEmployees[role].Count < required)
                 {
-                    // מציאת עובדים שכבר במשמרת
-                    HashSet<Employee> employeesInShift = GetEmployeesInShift(shiftToMutate);
+                    // בדוק אילו עובדים כבר במשמרת
+                    var employeesInShift = shift.AssignedEmployees.Values
+                        .SelectMany(emps => emps)
+                        .ToHashSet();
 
-                    // מציאת עובדים זמינים לתפקיד, עם עדיפות למי שביקש את המשמרת
-                    List<Employee> preferredEmployees = Program.Employees
+                    // מצא עובד מתאים
+                    var emp = Employees
                         .Where(e => e.roles.Contains(role) &&
-                               e.requestedShifts.Contains(shiftToMutate.Id) &&
                                !employeesInShift.Contains(e) &&
-                               (!globalEmployeeAssignments.ContainsKey(e) ||
-                                !globalEmployeeAssignments[e].Contains(shiftKey)))
-                        .OrderByDescending(e => e.Rate)
-                        .ToList();
+                               (!assignments.ContainsKey(e) || !assignments[e].Contains(shiftKey)))
+                        .OrderByDescending(e => e.requestedShifts.Contains(shift.Id) ? 1 : 0)
+                        .ThenByDescending(e => e.Rate)
+                        .FirstOrDefault();
 
-                    // אם יש עובדים מתאימים שביקשו את המשמרת
-                    if (preferredEmployees.Count > 0)
+                    if (emp != null)
                     {
-                        // הוספת עובד מועדף למשרה הריקה
-                        Employee selectedEmployee = preferredEmployees[0];
-                        shiftToMutate.AssignedEmployees[role].Add(selectedEmployee);
+                        shift.AssignedEmployees[role].Add(emp);
 
-                        // עדכון המעקב
-                        if (!globalEmployeeAssignments.ContainsKey(selectedEmployee))
-                            globalEmployeeAssignments[selectedEmployee] = new HashSet<string>();
-                        globalEmployeeAssignments[selectedEmployee].Add(shiftKey);
+                        if (!assignments.ContainsKey(emp))
+                            assignments[emp] = new HashSet<string>();
+
+                        assignments[emp].Add(shiftKey);
 
                         return true;
                     }
-                    else
+                }
+            }
+
+            return false;
+        }
+
+        // התאמת העדפות עובדים
+        private static bool OptimizePreferences(Shift shift, string shiftKey, Dictionary<Employee, HashSet<string>> assignments)
+        {
+            if (shift.AssignedEmployees == null || shift.AssignedEmployees.Count == 0) return false;
+
+            foreach (var roleEntry in shift.AssignedEmployees)
+            {
+                for (int i = 0; i < roleEntry.Value.Count; i++)
+                {
+                    Employee current = roleEntry.Value[i];
+
+                    // בדוק אם העובד הנוכחי לא ביקש את המשמרת
+                    if (!current.requestedShifts.Contains(shift.Id))
                     {
-                        // אם אין עובדים שביקשו את המשמרת, ננסה לשבץ כל עובד מתאים
-                        List<Employee> availableEmployees = Program.Employees
-                            .Where(e => e.roles.Contains(role) &&
-                                  !employeesInShift.Contains(e) &&
-                                  (!globalEmployeeAssignments.ContainsKey(e) ||
-                                   !globalEmployeeAssignments[e].Contains(shiftKey)))
+                        // בדוק אילו עובדים כבר במשמרת
+                        var employeesInShift = shift.AssignedEmployees.Values
+                            .SelectMany(emps => emps)
+                            .Where(e => e != current)
+                            .ToHashSet();
+
+                        // מצא עובד שכן ביקש את המשמרת
+                        var preferred = Employees
+                            .Where(e => e.roles.Contains(roleEntry.Key) &&
+                                   e.requestedShifts.Contains(shift.Id) &&
+                                   !employeesInShift.Contains(e) &&
+                                   (!assignments.ContainsKey(e) || !assignments[e].Contains(shiftKey)))
                             .OrderByDescending(e => e.Rate)
-                            .ToList();
+                            .FirstOrDefault();
 
-                        if (availableEmployees.Count > 0)
+                        if (preferred != null)
                         {
-                            // הוספת עובד מתאים למשרה הריקה
-                            Employee selectedEmployee = availableEmployees[0];
-                            shiftToMutate.AssignedEmployees[role].Add(selectedEmployee);
+                            if (assignments.ContainsKey(current))
+                                assignments[current].Remove(shiftKey);
 
-                            // עדכון המעקב
-                            if (!globalEmployeeAssignments.ContainsKey(selectedEmployee))
-                                globalEmployeeAssignments[selectedEmployee] = new HashSet<string>();
-                            globalEmployeeAssignments[selectedEmployee].Add(shiftKey);
+                            roleEntry.Value[i] = preferred;
+
+                            if (!assignments.ContainsKey(preferred))
+                                assignments[preferred] = new HashSet<string>();
+
+                            assignments[preferred].Add(shiftKey);
 
                             return true;
                         }
                     }
                 }
             }
+
             return false;
         }
 
-        // ניסיון לשפר את הרכב העובדים על ידי החלפת עובדים בעלי דירוג נמוך בעובדים בעלי דירוג גבוה
-        private static bool TryUpgradeEmployees(Shift shiftToMutate, string shiftKey,
-            Dictionary<Employee, HashSet<string>> globalEmployeeAssignments)
+        // שיפור איכות העובדים
+        private static bool UpgradeEmployees(Shift shift, string shiftKey, Dictionary<Employee, HashSet<string>> assignments)
         {
-            if (shiftToMutate.AssignedEmployees.Count == 0)
-                return false;
+            if (shift.AssignedEmployees == null || shift.AssignedEmployees.Count == 0) return false;
 
-            // בחירת תפקיד אקראי שיש בו עובדים
-            var rolesWithEmployees = shiftToMutate.AssignedEmployees
-                .Where(kv => kv.Value != null && kv.Value.Count > 0)
-                .Select(kv => kv.Key)
-                .ToList();
+            // מצא את העובד עם הדירוג הנמוך ביותר
+            Employee lowest = null;
+            string lowestRole = null;
+            int lowestIndex = -1;
+            int lowestRate = int.MaxValue;
 
-            if (rolesWithEmployees.Count == 0)
-                return false;
-
-            Random random = new Random();
-            string role = rolesWithEmployees[random.Next(rolesWithEmployees.Count)];
-            List<Employee> employees = shiftToMutate.AssignedEmployees[role];
-
-            if (employees.Count > 0)
-            {
-                // מיון העובדים לפי דירוג (מהנמוך לגבוה) כדי להחליף את הנמוך ביותר
-                employees.Sort((a, b) => a.Rate.CompareTo(b.Rate));
-                Employee currentEmployee = employees[0]; // העובד עם הדירוג הנמוך ביותר
-
-                // מציאת עובדים שכבר במשמרת
-                HashSet<Employee> employeesInShift = GetEmployeesInShift(shiftToMutate);
-
-                // מציאת עובדים פוטנציאליים להחלפה עם דירוג גבוה יותר
-                List<Employee> potentialReplacements = Program.Employees
-                    .Where(e => e.roles.Contains(role) &&
-                           e.Rate > currentEmployee.Rate &&
-                           !employeesInShift.Contains(e) &&
-                           (!globalEmployeeAssignments.ContainsKey(e) ||
-                            !globalEmployeeAssignments[e].Contains(shiftKey)))
-                    .OrderByDescending(e => e.Rate)
-                    .ToList();
-
-                if (potentialReplacements.Count > 0)
-                {
-                    // הסרת העובד הנוכחי מהמעקב
-                    if (globalEmployeeAssignments.ContainsKey(currentEmployee))
-                        globalEmployeeAssignments[currentEmployee].Remove(shiftKey);
-
-                    // החלפה בעובד טוב יותר
-                    Employee replacement = potentialReplacements[0];
-                    int employeeIndex = employees.IndexOf(currentEmployee);
-                    shiftToMutate.AssignedEmployees[role][employeeIndex] = replacement;
-
-                    if (!globalEmployeeAssignments.ContainsKey(replacement))
-                        globalEmployeeAssignments[replacement] = new HashSet<string>();
-                    globalEmployeeAssignments[replacement].Add(shiftKey);
-
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // ניסיון להתאים עובדים למשמרות שהם ביקשו
-        private static bool TryMatchPreferredShifts(Shift shiftToMutate, string shiftKey,
-            Dictionary<Employee, HashSet<string>> globalEmployeeAssignments)
-        {
-            if (shiftToMutate.AssignedEmployees.Count == 0)
-                return false;
-
-            foreach (var roleEntry in shiftToMutate.AssignedEmployees)
-            {
-                string role = roleEntry.Key;
-                List<Employee> employees = roleEntry.Value;
-
-                // מיון העובדים לפי אלו שלא ביקשו את המשמרת
-                var nonPreferredEmployees = employees
-                    .Where(e => !e.requestedShifts.Contains(shiftToMutate.Id))
-                    .ToList();
-
-                if (nonPreferredEmployees.Count > 0)
-                {
-                    Employee currentEmployee = nonPreferredEmployees[0];
-
-                    // מציאת עובדים שכבר במשמרת
-                    HashSet<Employee> employeesInShift = GetEmployeesInShift(shiftToMutate);
-                    employeesInShift.Remove(currentEmployee); // מסירים את העובד הנוכחי שנחליף
-
-                    // מציאת עובדים שכן ביקשו את המשמרת
-                    List<Employee> preferredEmployees = Program.Employees
-                        .Where(e => e.roles.Contains(role) &&
-                               e.requestedShifts.Contains(shiftToMutate.Id) &&
-                               !employeesInShift.Contains(e) &&
-                               (!globalEmployeeAssignments.ContainsKey(e) ||
-                                !globalEmployeeAssignments[e].Contains(shiftKey)))
-                        .OrderByDescending(e => e.Rate)
-                        .ToList();
-
-                    if (preferredEmployees.Count > 0)
-                    {
-                        // הסרת העובד הנוכחי מהמעקב
-                        if (globalEmployeeAssignments.ContainsKey(currentEmployee))
-                            globalEmployeeAssignments[currentEmployee].Remove(shiftKey);
-
-                        // החלפה בעובד שביקש את המשמרת
-                        Employee replacement = preferredEmployees[0];
-                        int employeeIndex = employees.IndexOf(currentEmployee);
-                        shiftToMutate.AssignedEmployees[role][employeeIndex] = replacement;
-
-                        if (!globalEmployeeAssignments.ContainsKey(replacement))
-                            globalEmployeeAssignments[replacement] = new HashSet<string>();
-                        globalEmployeeAssignments[replacement].Add(shiftKey);
-
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        // ניסיון להוסיף עובד מנטור אם אין כזה במשמרת
-        private static bool TryAddMentor(Shift shiftToMutate, string shiftKey,
-            Dictionary<Employee, HashSet<string>> globalEmployeeAssignments)
-        {
-            // בדיקה אם כבר יש מנטור במשמרת
-            bool hasMentor = false;
-            foreach (var employeeList in shiftToMutate.AssignedEmployees.Values)
-            {
-                if (employeeList.Any(e => e.isMentor))
-                {
-                    hasMentor = true;
-                    break;
-                }
-            }
-
-            // אם אין מנטור, ננסה להוסיף אחד
-            if (!hasMentor)
-            {
-                // עובר על כל התפקידים כדי לנסות להחליף עובד רגיל במנטור
-                foreach (var roleEntry in shiftToMutate.AssignedEmployees)
-                {
-                    string role = roleEntry.Key;
-                    List<Employee> employees = roleEntry.Value;
-
-                    if (employees.Count > 0)
-                    {
-                        // בוחר עובד אקראי שאינו מנטור
-                        Random random = new Random();
-                        var nonMentors = employees.Where(e => !e.isMentor).ToList();
-
-                        if (nonMentors.Count > 0)
-                        {
-                            Employee currentEmployee = nonMentors[random.Next(nonMentors.Count)];
-
-                            // מציאת עובדים שכבר במשמרת
-                            HashSet<Employee> employeesInShift = GetEmployeesInShift(shiftToMutate);
-                            employeesInShift.Remove(currentEmployee); // מסירים את העובד הנוכחי שנחליף
-
-                            // חיפוש מנטור מתאים
-                            List<Employee> availableMentors = Program.Employees
-                                .Where(e => e.roles.Contains(role) &&
-                                       e.isMentor &&
-                                       !employeesInShift.Contains(e) &&
-                                       (!globalEmployeeAssignments.ContainsKey(e) ||
-                                        !globalEmployeeAssignments[e].Contains(shiftKey)))
-                                .OrderByDescending(e => e.Rate)
-                                .ToList();
-
-                            if (availableMentors.Count > 0)
-                            {
-                                // הסרת העובד הנוכחי מהמעקב
-                                if (globalEmployeeAssignments.ContainsKey(currentEmployee))
-                                    globalEmployeeAssignments[currentEmployee].Remove(shiftKey);
-
-                                // החלפה במנטור
-                                Employee mentor = availableMentors[0];
-                                int employeeIndex = employees.IndexOf(currentEmployee);
-                                shiftToMutate.AssignedEmployees[role][employeeIndex] = mentor;
-
-                                if (!globalEmployeeAssignments.ContainsKey(mentor))
-                                    globalEmployeeAssignments[mentor] = new HashSet<string>();
-                                globalEmployeeAssignments[mentor].Add(shiftKey);
-
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        // ניסיון להפחית עלויות על ידי החלפת עובדים יקרים בעובדים זולים יותר
-        private static bool TryReduceCosts(Shift shiftToMutate, string shiftKey,
-            Dictionary<Employee, HashSet<string>> globalEmployeeAssignments)
-        {
-            if (shiftToMutate.AssignedEmployees.Count == 0)
-                return false;
-
-            // בחירת תפקיד אקראי שיש בו עובדים
-            Random random = new Random();
-            var rolesWithEmployees = shiftToMutate.AssignedEmployees
-                .Where(kv => kv.Value != null && kv.Value.Count > 0)
-                .Select(kv => kv.Key)
-                .ToList();
-
-            if (rolesWithEmployees.Count == 0)
-                return false;
-
-            string role = rolesWithEmployees[random.Next(rolesWithEmployees.Count)];
-            List<Employee> employees = shiftToMutate.AssignedEmployees[role];
-
-            if (employees.Count > 0)
-            {
-                // מיון העובדים לפי שכר (מהגבוה לנמוך)
-                employees.Sort((a, b) => b.HourlySalary.CompareTo(a.HourlySalary));
-                Employee expensiveEmployee = employees[0]; // העובד עם השכר הגבוה ביותר
-
-                // רק אם העובד מרוויח מעל למינימום מסוים - שווה להחליף אותו
-                if (expensiveEmployee.HourlySalary > 50)
-                {
-                    // מציאת עובדים שכבר במשמרת
-                    HashSet<Employee> employeesInShift = GetEmployeesInShift(shiftToMutate);
-                    employeesInShift.Remove(expensiveEmployee); // מסירים את העובד היקר שנחליף
-
-                    // חיפוש עובדים זולים יותר
-                    List<Employee> cheaperEmployees = Program.Employees
-                        .Where(e => e.roles.Contains(role) &&
-                               e.HourlySalary < expensiveEmployee.HourlySalary &&
-                               e.Rate >= expensiveEmployee.Rate * 0.8 && // לא יותר מדי נמוך בדירוג
-                               !employeesInShift.Contains(e) &&
-                               (!globalEmployeeAssignments.ContainsKey(e) ||
-                                !globalEmployeeAssignments[e].Contains(shiftKey)))
-                        .OrderBy(e => e.HourlySalary)
-                        .ToList();
-
-                    if (cheaperEmployees.Count > 0)
-                    {
-                        // הסרת העובד היקר מהמעקב
-                        if (globalEmployeeAssignments.ContainsKey(expensiveEmployee))
-                            globalEmployeeAssignments[expensiveEmployee].Remove(shiftKey);
-
-                        // החלפה בעובד זול יותר
-                        Employee replacement = cheaperEmployees[0];
-                        int employeeIndex = employees.IndexOf(expensiveEmployee);
-                        shiftToMutate.AssignedEmployees[role][employeeIndex] = replacement;
-
-                        if (!globalEmployeeAssignments.ContainsKey(replacement))
-                            globalEmployeeAssignments[replacement] = new HashSet<string>();
-                        globalEmployeeAssignments[replacement].Add(shiftKey);
-
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        // Helper method to get all employees currently in a shift
-        private static HashSet<Employee> GetEmployeesInShift(Shift shift)
-        {
-            HashSet<Employee> employeesInShift = new HashSet<Employee>();
             foreach (var roleEntry in shift.AssignedEmployees)
             {
-                foreach (Employee emp in roleEntry.Value)
+                for (int i = 0; i < roleEntry.Value.Count; i++)
                 {
-                    employeesInShift.Add(emp);
+                    if (roleEntry.Value[i].Rate < lowestRate)
+                    {
+                        lowest = roleEntry.Value[i];
+                        lowestRole = roleEntry.Key;
+                        lowestIndex = i;
+                        lowestRate = roleEntry.Value[i].Rate;
+                    }
                 }
             }
-            return employeesInShift;
+
+            if (lowest == null) return false;
+
+            // בדוק אילו עובדים כבר במשמרת
+            var employeesInShift = shift.AssignedEmployees.Values
+                .SelectMany(emps => emps)
+                .Where(e => e != lowest)
+                .ToHashSet();
+
+            // מצא עובד טוב יותר
+            var better = Employees
+                .Where(e => e.roles.Contains(lowestRole) &&
+                       e.Rate > lowest.Rate &&
+                       !employeesInShift.Contains(e) &&
+                       (!assignments.ContainsKey(e) || !assignments[e].Contains(shiftKey)))
+                .OrderByDescending(e => e.Rate)
+                .FirstOrDefault();
+
+            if (better == null) return false;
+
+            if (assignments.ContainsKey(lowest))
+                assignments[lowest].Remove(shiftKey);
+
+            shift.AssignedEmployees[lowestRole][lowestIndex] = better;
+
+            if (!assignments.ContainsKey(better))
+                assignments[better] = new HashSet<string>();
+
+            assignments[better].Add(shiftKey);
+
+            return true;
         }
 
-        // Helper function to find shifts that would overlap with an assigned shift
-        private static List<int> FindOverlappingShifts(Employee employee, Shift assignedShift)
+        // הפחתת עלויות
+        private static bool ReduceCosts(Shift shift, string shiftKey, Dictionary<Employee, HashSet<string>> assignments)
         {
-            if (employee == null || assignedShift == null)
-                return new List<int>();
+            if (shift.AssignedEmployees == null || shift.AssignedEmployees.Count == 0) return false;
 
-            List<int> overlappingShiftIds = new List<int>();
-            foreach (int shiftId in employee.requestedShifts)
+            // מצא את העובד היקר ביותר
+            Employee mostExpensive = null;
+            string expRole = null;
+            int expIndex = -1;
+            int highestSalary = 0;
+
+            foreach (var roleEntry in shift.AssignedEmployees)
             {
-                // Find the shift in the branches
-                Shift shift = null;
-                foreach (Branch branch in Program.Branches)
+                for (int i = 0; i < roleEntry.Value.Count; i++)
                 {
-                    shift = branch.Shifts.FirstOrDefault(s => s.Id == shiftId);
-                    if (shift != null)
-                        break;
-                }
-
-                // Check if it's an overlapping shift (same day and time slot)
-                if (shift != null && shift.day == assignedShift.day && shift.TimeSlot == assignedShift.TimeSlot)
-                {
-                    overlappingShiftIds.Add(shiftId);
+                    if (roleEntry.Value[i].HourlySalary > highestSalary)
+                    {
+                        mostExpensive = roleEntry.Value[i];
+                        expRole = roleEntry.Key;
+                        expIndex = i;
+                        highestSalary = roleEntry.Value[i].HourlySalary;
+                    }
                 }
             }
 
-            return overlappingShiftIds;
+            // טיפול רק בעובדים יקרים במיוחד
+            if (mostExpensive == null || highestSalary <= 50) return false;
+
+            // בדוק אילו עובדים כבר במשמרת
+            var employeesInShift = shift.AssignedEmployees.Values
+                .SelectMany(emps => emps)
+                .Where(e => e != mostExpensive)
+                .ToHashSet();
+
+            // מצא עובד זול יותר
+            var cheaper = Employees
+                .Where(e => e.roles.Contains(expRole) &&
+                       e.HourlySalary < mostExpensive.HourlySalary * 0.8 &&
+                       e.Rate >= mostExpensive.Rate * 0.8 &&
+                       !employeesInShift.Contains(e) &&
+                       (!assignments.ContainsKey(e) || !assignments[e].Contains(shiftKey)))
+                .OrderByDescending(e => e.Rate)
+                .ThenBy(e => e.HourlySalary)
+                .FirstOrDefault();
+
+            if (cheaper == null) return false;
+
+            if (assignments.ContainsKey(mostExpensive))
+                assignments[mostExpensive].Remove(shiftKey);
+
+            shift.AssignedEmployees[expRole][expIndex] = cheaper;
+
+            if (!assignments.ContainsKey(cheaper))
+                assignments[cheaper] = new HashSet<string>();
+
+            assignments[cheaper].Add(shiftKey);
+
+            return true;
         }
 
         #endregion

@@ -15,6 +15,8 @@ namespace Final
         private string currentUserName;
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
         private Dictionary<string, List<ShiftDisplayInfo>> branchShifts; // מילון לשמירת המשמרות לפי סניף
+        private static DataBaseHelper helper = new DataBaseHelper();
+
 
         public AddEmployeePage(String userName)
         {
@@ -22,24 +24,10 @@ namespace Final
             currentUserName = userName;
             branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
             SetupUI();
-            LoadAvailableBranches();
+            helper.LoadUserBranches(userName,new SqlConnection(connectionString));
         }
 
-        // מחלקת עזר לתצוגת מידע על משמרות
-        private class ShiftDisplayInfo
-        {
-            public int ShiftID { get; set; }
-            public string BranchName { get; set; }
-            public string DayOfWeek { get; set; }
-            public string TimeSlot { get; set; }
-            public string ShiftType { get; set; }
-
-            public override string ToString()
-            {
-                return $"{BranchName} - {DayOfWeek} {TimeSlot} ({ShiftType})";
-            }
-        }
-
+ 
         private void SetupUI()
         {
             this.Text = "הוספת עובד חדש";
@@ -198,93 +186,93 @@ namespace Final
         }
 
         // פונקציה לטעינת הסניפים הזמינים למשתמש הנוכחי
-        private void LoadAvailableBranches()
-        {
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
+        //private void LoadAvailableBranches()
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection connection = new SqlConnection(connectionString))
+        //        {
+        //            connection.Open();
 
-                    string query = @"
-                        SELECT b.BranchID, b.Name 
-                        FROM Branches b
-                        INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
-                        INNER JOIN Users u ON ub.UserID = u.UserID
-                        WHERE u.Username = @Username";
+        //            string query = @"
+        //                SELECT b.BranchID, b.Name 
+        //                FROM Branches b
+        //                INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
+        //                INNER JOIN Users u ON ub.UserID = u.UserID
+        //                WHERE u.Username = @Username";
 
-                    using (SqlCommand command = new SqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@Username", currentUserName);
+        //            using (SqlCommand command = new SqlCommand(query, connection))
+        //            {
+        //                command.Parameters.AddWithValue("@Username", currentUserName);
 
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            branchesCheckedListBox.Items.Clear();
+        //                using (SqlDataReader reader = command.ExecuteReader())
+        //                {
+        //                    branchesCheckedListBox.Items.Clear();
 
-                            while (reader.Read())
-                            {
-                                string branchName = reader.GetString(1);
-                                branchesCheckedListBox.Items.Add(branchName);
+        //                    while (reader.Read())
+        //                    {
+        //                        string branchName = reader.GetString(1);
+        //                        branchesCheckedListBox.Items.Add(branchName);
 
-                                // טעינת המשמרות של הסניף
-                                LoadBranchShifts(reader.GetInt32(0), branchName);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("אירעה שגיאה בטעינת הסניפים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        //                        // טעינת המשמרות של הסניף
+        //                        LoadBranchShifts(reader.GetInt32(0), branchName);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("אירעה שגיאה בטעינת הסניפים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
+        //}
 
         // פונקציה לטעינת המשמרות של סניף מסוים
-        private void LoadBranchShifts(int branchId, string branchName)
-        {
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
+        //private void LoadBranchShifts(int branchId, string branchName)
+        //{
+        //    try
+        //    {
+        //        using (SqlConnection connection = new SqlConnection(connectionString))
+        //        {
+        //            connection.Open();
 
-                    string query = @"
-                        SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
-                        FROM Shifts s
-                        INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
-                        INNER JOIN TimeSlots ts ON s.TimeSlotID=ts.TimeSlotID 
-                        WHERE s.BranchID = @BranchID";
+        //            string query = @"
+        //                SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
+        //                FROM Shifts s
+        //                INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
+        //                INNER JOIN TimeSlots ts ON s.TimeSlotID=ts.TimeSlotID 
+        //                WHERE s.BranchID = @BranchID";
 
-                    using (SqlCommand command = new SqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@BranchID", branchId);
+        //            using (SqlCommand command = new SqlCommand(query, connection))
+        //            {
+        //                command.Parameters.AddWithValue("@BranchID", branchId);
 
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            List<ShiftDisplayInfo> shifts = new List<ShiftDisplayInfo>();
+        //                using (SqlDataReader reader = command.ExecuteReader())
+        //                {
+        //                    List<ShiftDisplayInfo> shifts = new List<ShiftDisplayInfo>();
 
-                            while (reader.Read())
-                            {
-                                shifts.Add(new ShiftDisplayInfo
-                                {
-                                    ShiftID = reader.GetInt32(0),
-                                    BranchName = branchName,
-                                    TimeSlot = reader.GetString(1),
-                                    DayOfWeek = reader.GetString(2),
-                                    ShiftType = reader.GetString(3)
-                                });
-                            }
+        //                    while (reader.Read())
+        //                    {
+        //                        shifts.Add(new ShiftDisplayInfo
+        //                        {
+        //                            ShiftID = reader.GetInt32(0),
+        //                            BranchName = branchName,
+        //                            TimeSlot = reader.GetString(1),
+        //                            DayOfWeek = reader.GetString(2),
+        //                            ShiftType = reader.GetString(3)
+        //                        });
+        //                    }
 
-                            branchShifts[branchName] = shifts;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        //                    branchShifts[branchName] = shifts;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
+        //}
 
         // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
         private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -295,22 +283,17 @@ namespace Final
             }));
         }
 
-        // עדכון רשימת המשמרות על פי הסניפים שנבחרו
        
-
-        // פונקציה לקבלת מזהי המשמרות שנבחרו
-   
-
         private void SaveEmployee(
         string employeeId,  // הוספת פרמטר חדש למזהה עובד
         string name,
-         string phone,
-         string email,
-    string rate,
-    string role,
-    string salary,
-    bool isExperienced,
-    string password)
+        string phone,
+        string email,
+        string rate,
+        string role,
+        string salary,
+        bool isExperienced,
+        string password)
         {
 
             if (string.IsNullOrWhiteSpace(name) ||

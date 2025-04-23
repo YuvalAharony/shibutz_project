@@ -105,7 +105,25 @@ namespace EmployeeSchedulingApp
             };
             this.Controls.Add(editBranchShiftsButton);
 
-      
+
+            // הוספת כפתורי מחיקה ליד רשימות הסניפים והעובדים
+            Button deleteBranchButton = new Button()
+            {
+                Text = "מחק סניף",
+                Size = new System.Drawing.Size(150, 40),
+                Location = new System.Drawing.Point(50, 460)
+            };
+            deleteBranchButton.Click += DeleteBranchButton_Click;
+            this.Controls.Add(deleteBranchButton);
+
+            Button deleteEmployeeButton = new Button()
+            {
+                Text = "מחק עובד",
+                Size = new System.Drawing.Size(150, 40),
+                Location = new System.Drawing.Point(400, 460)
+            };
+            deleteEmployeeButton.Click += DeleteEmployeeButton_Click;
+            this.Controls.Add(deleteEmployeeButton);
 
             branchesListView = new ListView()
             {
@@ -129,6 +147,8 @@ namespace EmployeeSchedulingApp
 
             employeesListView.Columns.Add("שם העובד", 150);
             employeesListView.Columns.Add("תפקיד", 150);
+
+
 
             this.Controls.Add(titleLabel);
             this.Controls.Add(addBranchButton);
@@ -177,138 +197,7 @@ namespace EmployeeSchedulingApp
             }
         }
 
-        //private List<Branch> LoadUserBranches(string username)
-        //{
-        //    List<Branch> userBranches = new List<Branch>();
-
-        //    try
-        //    {
-        //        using (SqlConnection connection = new SqlConnection(connectionString))
-        //        {
-        //            connection.Open();
-
-        //            // שאילתה שמביאה את הסניפים המשויכים למשתמש
-        //            string query = @"
-        //        SELECT b.BranchID, b.Name 
-        //        FROM Branches b
-        //        INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
-        //        INNER JOIN Users u ON ub.UserID = u.UserID
-        //        WHERE u.Username = @Username";
-
-        //            using (SqlCommand command = new SqlCommand(query, connection))
-        //            {
-        //                command.Parameters.AddWithValue("@Username", username);
-
-        //                using (SqlDataReader reader = command.ExecuteReader())
-        //                {
-        //                    while (reader.Read())
-        //                    {
-        //                        Branch branch = new Branch
-        //                        {
-        //                            ID = reader.GetInt32(0),
-        //                            Name = reader.GetString(1),
-        //                        };
-
-        //                        userBranches.Add(branch);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("אירעה שגיאה בטעינת הסניפים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    }
-
-        //    return userBranches;
-        //}
-
-        //private List<Employee> LoadUserEmployees(string username)
-        //{
-        //    List<Employee> userEmployees = new List<Employee>();
-
-        //    try
-        //    {
-        //        using (SqlConnection connection = new SqlConnection(connectionString))
-        //        {
-        //            connection.Open();
-
-        //            // שאילתה שמביאה את העובדים המשויכים לסניפים של המשתמש
-        //            string query = @"
-        //             SELECT DISTINCT e.EmployeeID, e.Name, e.Phone, e.Email, e.HourlySalary, e.Rate, 
-        //            e.IsMentor, e.AssignedHours
-        //            FROM Employees e
-        //            INNER JOIN EmployeeBranches eb ON e.EmployeeID = eb.EmployeeID
-        //            INNER JOIN UserBranches ub ON eb.BranchID = ub.BranchID
-        //            INNER JOIN Users u ON ub.UserID = u.UserID
-        //            WHERE u.Username = @Username";
-
-        //            using (SqlCommand command = new SqlCommand(query, connection))
-        //            {
-        //                command.Parameters.AddWithValue("@Username", username);
-
-        //                using (SqlDataReader reader = command.ExecuteReader())
-        //                {
-        //                    while (reader.Read())
-        //                    {
-        //                        Employee employee = new Employee
-        //                        (Convert.ToInt32(reader["EmployeeID"]),
-        //                        reader["Name"].ToString(),
-        //                        new List<string>(),
-        //                        new HashSet<int>(),
-        //                        reader["Rate"] != DBNull.Value ? Convert.ToInt32(reader["Rate"]) : 0,
-        //                        Convert.ToInt32(reader["HourlySalary"]),
-        //                        Convert.ToInt32(reader["AssignedHours"]),
-        //                        Convert.ToBoolean(reader["IsMentor"]),
-        //                        null
-        //                        );
-
-        //                        // טעינת תפקידים של העובד
-        //                        employee.roles = LoadEmployeeRoles(employee.ID, connection);
-
-        //                        userEmployees.Add(employee);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("אירעה שגיאה בטעינת העובדים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    }
-
-        //    return userEmployees;
-        //}
-
-        //// פונקציה עזר לטעינת תפקידים של עובד
-        //private List<string> LoadEmployeeRoles(int employeeId, SqlConnection existingConnection)
-        //{
-        //    List<string> roles = new List<string>();
-
-        //    try
-        //    {
-        //        string query = @"SELECT  r.RoleName FROM Employees e join EmployeeRoles er on er.EmployeeID=e.EmployeeID join roles r on r.RoleID=er.RoleID WHERE e.EmployeeID = @EmployeeID";
-        //        using (SqlCommand command = new SqlCommand(query, existingConnection))
-        //        {
-        //            command.Parameters.AddWithValue("@EmployeeID", employeeId);
-
-        //            using (SqlDataReader reader = command.ExecuteReader())
-        //            {
-        //                while (reader.Read())
-        //                {
-        //                    roles.Add(reader.GetString(0));
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // שגיאה בטעינת תפקידים - נחזיר רשימה ריקה
-        //        Console.WriteLine("Error loading employee roles: " + ex.Message);
-        //    }
-
-        //    return roles;
-        //}
+        
         public void LoadEmployees()
         {
             employeesListView.Items.Clear(); // מנקה את הרשימה
@@ -445,7 +334,76 @@ namespace EmployeeSchedulingApp
             this.ResumeLayout(false);
 
         }
+        private void DeleteBranchButton_Click(object sender, EventArgs e)
+        {
+            if (branchesListView.SelectedItems.Count > 0)
+            {
+                Branch selectedBranch = (Branch)branchesListView.SelectedItems[0].Tag;
 
-     
+                DialogResult result = MessageBox.Show(
+                    $"האם אתה בטוח שברצונך למחוק את הסניף '{selectedBranch.Name}'?\n" +
+                    "פעולה זו תסיר גם את כל המשמרות של הסניף.",
+                    "אישור מחיקה",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    // מחיקת הסניף
+                    if (helper.DeleteBranch(selectedBranch.ID))
+                    {
+                        // מחיקה מהרשימה המקומית
+                        BranchesList.RemoveAll(b => b.ID == selectedBranch.ID);
+                        LoadBranches(); // רענון התצוגה
+                        MessageBox.Show($"הסניף '{selectedBranch.Name}' נמחק בהצלחה.", "מחיקה הושלמה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("נא לבחור סניף למחיקה.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void DeleteEmployeeButton_Click(object sender, EventArgs e)
+        {
+            if (employeesListView.SelectedItems.Count > 0)
+            {
+                string selectedEmployeeName = employeesListView.SelectedItems[0].Text;
+                Employee selectedEmployee = EmployeesList.FirstOrDefault(emp => emp.Name == selectedEmployeeName);
+
+                if (selectedEmployee == null)
+                {
+                    MessageBox.Show("לא ניתן למצוא את פרטי העובד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                DialogResult result = MessageBox.Show(
+                    $"האם אתה בטוח שברצונך למחוק את העובד '{selectedEmployee.Name}'?",
+                    "אישור מחיקה",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    // מחיקת העובד
+                    if (helper.DeleteEmployee(selectedEmployee.ID));
+                    {
+                        // מחיקה מהרשימה המקומית
+                        EmployeesList.RemoveAll(emp => emp.ID == selectedEmployee.ID);
+                        LoadEmployees(); // רענון התצוגה
+                        MessageBox.Show($"העובד '{selectedEmployee.Name}' נמחק בהצלחה.", "מחיקה הושלמה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("נא לבחור עובד למחיקה.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+
+
+
     }
 }

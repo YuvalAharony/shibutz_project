@@ -13,6 +13,8 @@ namespace EmployeeSchedulingApp
     {
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
         private string currentUserName;
+        private static DataBaseHelper helper = new DataBaseHelper();
+
 
         public AddBranchPage(string userName = null)
         {
@@ -186,7 +188,7 @@ namespace EmployeeSchedulingApp
                     if (!string.IsNullOrEmpty(currentUserName))
                     {
                         // קבלת מזהה המשתמש
-                        int userId = GetUserIdByUsername(currentUserName, connection);
+                        int userId = helper.GetUserIdByUsername(currentUserName, connection);
 
                         if (userId > 0)
                         {
@@ -214,7 +216,7 @@ namespace EmployeeSchedulingApp
                     if (shiftsGroupBox != null)
                     {
                         // קבלת סוגי המשמרות
-                        int regularShiftTypeId = GetOrCreateShiftType("Regular", connection);
+                        int regularShiftTypeId = helper.GetOrCreateShiftType("Regular", connection);
 
                         // מעבר על כל תיבות הסימון של המשמרות
                         foreach (CheckBox cb in shiftsGroupBox.Controls.OfType<CheckBox>())
@@ -226,7 +228,7 @@ namespace EmployeeSchedulingApp
                                 string timeSlot = parts[1];
 
                                 // הוספת משמרת חדשה
-                                AddShift(branchId, dayOfWeek, timeSlot, regularShiftTypeId, connection);
+                                helper.AddShift(branchId, dayOfWeek, timeSlot, regularShiftTypeId, connection);
                             }
                         }
                     }
@@ -251,175 +253,6 @@ namespace EmployeeSchedulingApp
                 MessageBox.Show($"אירעה שגיאה בהוספת הסניף: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        // פונקציית עזר לקבלת מזהה משתמש לפי שם משתמש
-        private int GetUserIdByUsername(string username, SqlConnection connection)
-        {
-            try
-            {
-                string query = "SELECT UserID FROM Users WHERE Username = @Username";
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Username", username);
-                    object result = command.ExecuteScalar();
-
-                    if (result != null && result != DBNull.Value)
-                    {
-                        return Convert.ToInt32(result);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"שגיאה בקבלת מזהה משתמש: {ex.Message}");
-            }
-
-            return -1;
-        }
-
-        // פונקציית עזר לקבלת מזהה סוג משמרת (או יצירת סוג חדש אם אינו קיים)
-        private int GetOrCreateShiftType(string typeName, SqlConnection connection)
-        {
-            try
-            {
-                // בדיקה אם סוג המשמרת כבר קיים
-                string query = "SELECT ShiftTypeID FROM ShiftTypes WHERE TypeName = @TypeName";
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@TypeName", typeName);
-                    object result = command.ExecuteScalar();
-
-                    if (result != null && result != DBNull.Value)
-                    {
-                        return Convert.ToInt32(result);
-                    }
-                }
-
-                // אם לא קיים, יצירת סוג משמרת חדש
-                string insertQuery = @"
-                    INSERT INTO ShiftTypes (TypeName)
-                    VALUES (@TypeName);
-                    SELECT CAST(SCOPE_IDENTITY() AS INT)";
-
-                using (SqlCommand command = new SqlCommand(insertQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@TypeName", typeName);
-                    return (int)command.ExecuteScalar();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"שגיאה בקבלת/יצירת סוג משמרת: {ex.Message}");
-                return -1;
-            }
-        }
-
-        // פונקציית עזר להוספת משמרת חדשה
-        private void AddShift(int branchId, string dayOfWeek, string timeSlot, int shiftTypeId, SqlConnection connection)
-        {
-            try
-            {
-                // הוספת המשמרת
-                string insertShiftQuery = @"
-                    INSERT INTO Shifts (BranchID, TimeSlot, DayOfWeek, ShiftTypeID, IsBusy)
-                    VALUES (@BranchID, @TimeSlot, @DayOfWeek, @ShiftTypeID, 0);
-                    SELECT CAST(SCOPE_IDENTITY() AS INT)";
-
-                int shiftId;
-                using (SqlCommand command = new SqlCommand(insertShiftQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@BranchID", branchId);
-                    command.Parameters.AddWithValue("@TimeSlot", timeSlot);
-                    command.Parameters.AddWithValue("@DayOfWeek", dayOfWeek);
-                    command.Parameters.AddWithValue("@ShiftTypeID", shiftTypeId);
-
-                    shiftId = (int)command.ExecuteScalar();
-                    Console.WriteLine($"נוספה משמרת חדשה: {dayOfWeek}, {timeSlot}, ID: {shiftId}");
-                }
-
-                // הוספת דרישות תפקידים בסיסיות למשמרת
-                Dictionary<string, int> defaultRoles = new Dictionary<string, int>
-                {
-                    { "Waiter", 2 },
-                    { "Chef", 1 },
-                    { "Bartender", 1 },
-                    { "Manager", 1 }
-                };
-
-                foreach (var role in defaultRoles)
-                {
-                    int roleId = GetOrCreateRole(role.Key, connection);
-                    if (roleId > 0)
-                    {
-                        AddShiftRequiredRole(shiftId, roleId, role.Value, connection);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"שגיאה בהוספת משמרת: {ex.Message}");
-            }
-        }
-
-        // פונקציית עזר לקבלת מזהה תפקיד (או יצירת תפקיד חדש אם אינו קיים)
-        private int GetOrCreateRole(string roleName, SqlConnection connection)
-        {
-            try
-            {
-                // בדיקה אם התפקיד כבר קיים
-                string query = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@RoleName", roleName);
-                    object result = command.ExecuteScalar();
-
-                    if (result != null && result != DBNull.Value)
-                    {
-                        return Convert.ToInt32(result);
-                    }
-                }
-
-                // אם לא קיים, יצירת תפקיד חדש
-                string insertQuery = @"
-                    INSERT INTO Roles (RoleName)
-                    VALUES (@RoleName);
-                    SELECT CAST(SCOPE_IDENTITY() AS INT)";
-
-                using (SqlCommand command = new SqlCommand(insertQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@RoleName", roleName);
-                    return (int)command.ExecuteScalar();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"שגיאה בקבלת/יצירת תפקיד: {ex.Message}");
-                return -1;
-            }
-        }
-
-        // פונקציית עזר להוספת דרישת תפקיד למשמרת
-        private void AddShiftRequiredRole(int shiftId, int roleId, int requiredCount, SqlConnection connection)
-        {
-            try
-            {
-                string insertQuery = @"
-                    INSERT INTO ShiftRequiredRoles (ShiftID, RoleID, RequiredCount)
-                    VALUES (@ShiftID, @RoleID, @RequiredCount)";
-
-                using (SqlCommand command = new SqlCommand(insertQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@ShiftID", shiftId);
-                    command.Parameters.AddWithValue("@RoleID", roleId);
-                    command.Parameters.AddWithValue("@RequiredCount", requiredCount);
-                    command.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"שגיאה בהוספת דרישת תפקיד: {ex.Message}");
-            }
-        }
-
+       
     }
 }
