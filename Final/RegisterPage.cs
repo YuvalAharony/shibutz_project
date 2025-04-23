@@ -109,10 +109,22 @@ namespace EmployeeSchedulingApp
                 MessageBox.Show("הסיסמאות אינן תואמות.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            string checkUsernameQuery = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
+         
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+                using (SqlCommand checkCommand = new SqlCommand(checkUsernameQuery, connection))
+                {
+                    checkCommand.Parameters.AddWithValue("@Username", username);
+                    int userCount = (int)checkCommand.ExecuteScalar();
 
+                    if (userCount > 0)
+                    {
+                        MessageBox.Show("שם המשתמש כבר תפוס, אנא בחר שם משתמש אחר.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
                 // שימוש בפרמטרים מונע SQL Injection
                 string query = @"INSERT INTO Users (Username, Password, FullName, Email, IsActive)
                         VALUES (@Username, @Password, @FullName, @Email, @IsActive);";
@@ -120,7 +132,7 @@ namespace EmployeeSchedulingApp
                 {
                     // הוספת הפרמטרים
                     command.Parameters.AddWithValue("@Username", username);
-                    command.Parameters.AddWithValue("@Password", password); // הצפנת הסיסמה
+                    command.Parameters.AddWithValue("@Password", password); 
                     command.Parameters.AddWithValue("@FullName", fullName);
                     command.Parameters.AddWithValue("@Email", email);
                     command.Parameters.AddWithValue("@IsActive", 1);
@@ -131,6 +143,9 @@ namespace EmployeeSchedulingApp
                     if (rowsAffected > 0)
                     {
                         MessageBox.Show("המשתמש נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MainPage main = new MainPage(username);
+                        main.Show();
+                        this.Hide();
                     }
                     else
                     {

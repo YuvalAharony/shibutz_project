@@ -67,7 +67,6 @@
     </Compile>
     <Compile Include="Chromosome.cs" />
     <Compile Include="DataBaseHelper.cs" />
-    <Compile Include="DB.cs" />
     <Compile Include="EditBranchShift.cs">
       <SubType>Form</SubType>
     </Compile>

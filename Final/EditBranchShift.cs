@@ -535,7 +535,8 @@ namespace EmployeeSchedulingApp
                     if (((Shift)item.Tag).Id == newShiftId)
                     {
                         item.Selected = true;
-                        break;
+                        
+                        ;
                     }
                 }
             }
