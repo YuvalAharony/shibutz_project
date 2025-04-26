@@ -519,8 +519,8 @@ namespace EmployeeSchedulingApp
                 bool isMentor = random.Next(10) < 2; // 20% chance to be a mentor
                 int assignedHours = random.Next(20, 41);
 
-                string query = @"INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor, AssignedHours) 
-                       VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @AssignedHours); 
+                string query = @"INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor) 
+                       VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor); 
                        SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
@@ -531,7 +531,6 @@ namespace EmployeeSchedulingApp
                     command.Parameters.AddWithValue("@HourlySalary", hourlySalary);
                     command.Parameters.AddWithValue("@Rate", rate);
                     command.Parameters.AddWithValue("@IsMentor", isMentor);
-                    command.Parameters.AddWithValue("@AssignedHours", assignedHours);
 
                     object result = command.ExecuteScalar();
 

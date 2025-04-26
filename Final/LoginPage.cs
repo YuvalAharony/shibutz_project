@@ -8,6 +8,8 @@ namespace EmployeeSchedulingApp
     public partial class LoginPage : Form
     {
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+        private static DataBaseHelper helper = new DataBaseHelper();
+
 
         public LoginPage()
         {
@@ -19,72 +21,74 @@ namespace EmployeeSchedulingApp
             this.Text = "התחברות למערכת";
             this.Size = new System.Drawing.Size(400, 300);
 
+            // 1) הפיכת כל ה־Form ל־RTL
+            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeftLayout = true;
+
+            // כותרת
             Label titleLabel = new Label()
             {
                 Text = "התחבר למערכת",
-                AutoSize = true,
+                AutoSize = false,
                 Font = new System.Drawing.Font("Arial", 14, System.Drawing.FontStyle.Bold),
-                Location = new System.Drawing.Point(120, 20)
+                Width = this.ClientSize.Width,
+                Location = new System.Drawing.Point(150, 20)
             };
 
-            Label userLabel = new Label() { Text = "שם משתמש:", Location = new System.Drawing.Point(50, 70) };
-            TextBox userTextBox = new TextBox() { Location = new System.Drawing.Point(150, 70), Width = 180 };
+            int labelX = 50, inputX = 150, gapY = 40;
+            int currentY = 70;
 
-            Label passLabel = new Label() { Text = "סיסמה:", Location = new System.Drawing.Point(50, 110) };
-            TextBox passTextBox = new TextBox() { Location = new System.Drawing.Point(150, 110), Width = 180, PasswordChar = '*' };
+            // שם משתמש
+            Label userLabel = new Label()
+            {
+                Text = "שם משתמש:",
+                Location = new System.Drawing.Point(labelX, currentY),
+                AutoSize = true
+            };
+            TextBox userTextBox = new TextBox()
+            {
+                Location = new System.Drawing.Point(inputX, currentY),
+                Width = 180,
+                TextAlign = HorizontalAlignment.Right
+            };
 
+            currentY += gapY;
+            // סיסמה
+            Label passLabel = new Label()
+            {
+                Text = "סיסמה:",
+                Location = new System.Drawing.Point(labelX, currentY),
+                AutoSize = true
+            };
+            TextBox passTextBox = new TextBox()
+            {
+                Location = new System.Drawing.Point(inputX, currentY),
+                Width = 180,
+                PasswordChar = '*',
+                TextAlign = HorizontalAlignment.Right
+            };
+
+            currentY += gapY + 10;
+            // כפתור התחבר
             Button loginButton = new Button()
             {
                 Text = "התחבר",
                 Size = new System.Drawing.Size(100, 40),
-                Location = new System.Drawing.Point(150, 160)
+                Location = new System.Drawing.Point(inputX, currentY),
+                RightToLeft = RightToLeft.Yes
             };
-            loginButton.Click += (sender, e) => { PerformLogin(userTextBox.Text, passTextBox.Text); };
+            loginButton.Click += (sender, e) => {
+                if (helper.PerformLogin(userTextBox.Text, passTextBox.Text))
+                    this.Close();
+            };
 
+            // הוספת כל הרכיבים לטופס
             this.Controls.Add(titleLabel);
             this.Controls.Add(userLabel);
             this.Controls.Add(userTextBox);
             this.Controls.Add(passLabel);
             this.Controls.Add(passTextBox);
             this.Controls.Add(loginButton);
-        }
-
-        private void PerformLogin(string username, string password)
-        {
-
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                string query = "SELECT UserID, FullName FROM Users WHERE Username = @Username AND Password = @Password AND IsActive = 1";
-
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Username", username);
-                    command.Parameters.AddWithValue("@Password", password);
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read()) // אם נמצא משתמש מתאים
-                        {
-                            int userId = reader.GetInt32(0);
-                            string fullName = reader.GetString(1);
-
-                            MessageBox.Show($"ברוך הבא, {fullName}!");
-
-                            MainPage main = new MainPage(username);
-                            main.Show();
-                            this.Hide();
-                        }
-                        else
-                        {
-                            MessageBox.Show("שם משתמש או סיסמה שגויים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                }
-            }
-
-
         }
 
 

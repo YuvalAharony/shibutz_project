@@ -90,19 +90,7 @@ namespace EmployeeSchedulingApp
                 Size = new System.Drawing.Size(150, 40),
                 Location = new System.Drawing.Point(390, 80)
             };
-            editBranchShiftsButton.Click += (sender, e) =>
-            {
-                if (branchesListView.SelectedItems.Count > 0)
-                {
-                    Branch selectedBranch = (Branch)branchesListView.SelectedItems[0].Tag;
-                    EditBranchShift editPage = new EditBranchShift(selectedBranch);
-                    editPage.Show();
-                }
-                else
-                {
-                    MessageBox.Show("אנא בחר סניף תחילה", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            };
+            editBranchShiftsButton.Click += EditBranchShiftsButton_Click;
             this.Controls.Add(editBranchShiftsButton);
 
 
@@ -146,7 +134,7 @@ namespace EmployeeSchedulingApp
             };
 
             employeesListView.Columns.Add("שם העובד", 150);
-            employeesListView.Columns.Add("תפקיד", 150);
+           
 
 
 
@@ -185,7 +173,7 @@ namespace EmployeeSchedulingApp
                         using (SqlConnection connection = new SqlConnection(connectionString))
                         {
                             connection.Open();  // Open the connection before using it
-                            EmployeesList = helper.LoadUserEmployees(currentUserName, connection);
+                            EmployeesList = helper.LoadUserEmployees(currentUserName);
                         }  // Connection is automatically closed and disposed here
 
                         // עדכון תצוגת העובדים
@@ -209,7 +197,6 @@ namespace EmployeeSchedulingApp
                 employeesListView.Items.Add(item);
             }
         }
-
 
         private void LoadBranches()
         {
@@ -240,30 +227,86 @@ namespace EmployeeSchedulingApp
         {
             using (Form inputForm = new Form())
             {
-                inputForm.Text = "Generate Random Data";
+                inputForm.Text = "יצירת נתונים אקראיים";
                 inputForm.Size = new System.Drawing.Size(300, 200);
                 inputForm.StartPosition = FormStartPosition.CenterParent;
 
-                Label branchLabel = new Label() { Text = "Number of branches:", Location = new System.Drawing.Point(20, 20), AutoSize = true };
-                NumericUpDown branchCount = new NumericUpDown() { Location = new System.Drawing.Point(150, 20), Minimum = 1, Maximum = 10, Value = 2 };
+                // --- 1) הפיכת כל הטופס ל־RTL ---
+                inputForm.RightToLeft = RightToLeft.Yes;
+                inputForm.RightToLeftLayout = true;
 
-                Label employeeLabel = new Label() { Text = "Total employees:", Location = new System.Drawing.Point(20, 50), AutoSize = true };
-                NumericUpDown employeeCount = new NumericUpDown() { Location = new System.Drawing.Point(150, 50), Minimum = 5, Maximum = 100, Value = 20 };
+                // --- 2) בניית הרכיבים ---
+                Label branchLabel = new Label()
+                {
+                    Text = "מספר סניפים:",
+                    AutoSize = true,
+                    Location = new System.Drawing.Point(20, 20)
+                };
+                branchLabel.RightToLeft = RightToLeft.Yes;
 
-                Button okButton = new Button() { Text = "OK", Location = new System.Drawing.Point(100, 100), DialogResult = DialogResult.OK };
+                NumericUpDown branchCount = new NumericUpDown()
+                {
+                    Location = new System.Drawing.Point(150, 20),
+                    Minimum = 1,
+                    Maximum = 10,
+                    Value = 2,
+                    Width = 60,
+                    TextAlign = HorizontalAlignment.Right
+                };
+                branchCount.RightToLeft = RightToLeft.Yes;
 
-                inputForm.Controls.AddRange(new Control[] { branchLabel, branchCount, employeeLabel, employeeCount, okButton });
+                Label employeeLabel = new Label()
+                {
+                    Text = "מספר עובדים:",
+                    AutoSize = true,
+                    Location = new System.Drawing.Point(20, 60)
+                };
+                employeeLabel.RightToLeft = RightToLeft.Yes;
+
+                NumericUpDown employeeCount = new NumericUpDown()
+                {
+                    Location = new System.Drawing.Point(150, 60),
+                    Minimum = 5,
+                    Maximum = 100,
+                    Value = 20,
+                    Width = 60,
+                    TextAlign = HorizontalAlignment.Right
+                };
+                employeeCount.RightToLeft = RightToLeft.Yes;
+
+                Button okButton = new Button()
+                {
+                    Text = "אישור",
+                    Location = new System.Drawing.Point(100, 120),
+                    DialogResult = DialogResult.OK
+                };
+                okButton.RightToLeft = RightToLeft.Yes;
+
+                // --- 3) הוספת הרכיבים לטופס ---
+                inputForm.Controls.AddRange(new Control[]
+                {
+            branchLabel,
+            branchCount,
+            employeeLabel,
+            employeeCount,
+            okButton
+                });
                 inputForm.AcceptButton = okButton;
 
+                // --- 4) הצגת הדיאלוג ועיבוד התוצאה ---
                 if (inputForm.ShowDialog() == DialogResult.OK)
                 {
                     Cursor.Current = Cursors.WaitCursor;
                     try
                     {
-                        // Run random data generation
-                        RandomDataGenerator.GenerateRandomData((int)branchCount.Value, (int)employeeCount.Value, currentUserName);
+                        // הרצת יצירת הנתונים האקראיים
+                        RandomDataGenerator.GenerateRandomData(
+                            (int)branchCount.Value,
+                            (int)employeeCount.Value,
+                            currentUserName
+                        );
 
-                        // Refresh the display
+                        // רענון התצוגה
                         helper.LoadDataForUser(currentUserName, BranchesList, EmployeesList);
                         LoadBranches();
                         LoadEmployees();
@@ -275,6 +318,7 @@ namespace EmployeeSchedulingApp
                 }
             }
         }
+
         private void OpenAddBranchPage()
         {
             // וודא שהמשתמש הנוכחי מועבר לטופס
@@ -284,12 +328,7 @@ namespace EmployeeSchedulingApp
             {
                 if (addBranchPage.DialogResult == DialogResult.OK)
                 {
-                    // רענון רשימת הסניפים
-                    using (SqlConnection connection = new SqlConnection(connectionString))
-                    {
-                        connection.Open();  // Open the connection
-                        BranchesList = helper.LoadUserBranches(currentUserName, connection);
-                    }  // Connection is automatically closed here
+                    BranchesList = helper.LoadUserBranches(currentUserName);
                     LoadBranches();
                 }
             };
@@ -306,20 +345,13 @@ namespace EmployeeSchedulingApp
             {
                 if (addEmployee.DialogResult == DialogResult.OK)
                 {
-                    // רענון רשימת העובדים על ידי טעינת הנתונים מחדש מהדאטאבייס
-                    using (SqlConnection connection = new SqlConnection(connectionString))
-                    {
-                        connection.Open();  // Open the connection before using it
-                        EmployeesList = helper.LoadUserEmployees(currentUserName, connection);
-                    }  // The connection will be automatically closed and disposed here
-
-                    // עדכון הממשק המשתמש
+                  
+                    EmployeesList = helper.LoadUserEmployees(currentUserName);
                     LoadEmployees();
-                    Console.WriteLine($"רשימת העובדים רועננה. נטענו {EmployeesList.Count} עובדים.");
+                    
                 }
             };
 
-            // שימוש ב-ShowDialog במקום Show כדי לחסום את המסך הראשי עד לסגירת הטופס
             addEmployee.ShowDialog();
         }
 
@@ -403,7 +435,25 @@ namespace EmployeeSchedulingApp
         }
 
 
-
+        private void EditBranchShiftsButton_Click(object sender, EventArgs e)
+        {
+            if (branchesListView.SelectedItems.Count > 0)
+            {
+                var selectedBranch = (Branch)branchesListView.SelectedItems[0].Tag;
+                var editPage = new EditBranchShift(selectedBranch);
+                editPage.Show();
+            }
+            else
+            {
+                MessageBox.Show(
+                    "אנא בחר סניף תחילה",
+                    "שגיאה",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
+        }
 
     }
+
 }

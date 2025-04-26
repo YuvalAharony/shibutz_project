@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Windows.Forms;
 
@@ -154,9 +155,9 @@ namespace Final
 
                                 // יצירת אובייקט העובד עם המידע הנחוץ
                                 Employee employee = new Employee(
-                                    employeeId, name, new System.Collections.Generic.List<string>(),
+                                    employeeId, name, new HashSet<string>(),
                                     new System.Collections.Generic.HashSet<int>(),
-                                    rate, salary, hours, isMentor, null
+                                    rate, salary, isMentor, null
                                 );
 
                                 return employee;

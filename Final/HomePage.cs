@@ -26,7 +26,7 @@ namespace EmployeeSchedulingApp
 
             Button loginButton = new Button()
             {
-                Text = "התחבר",
+                Text = "התחברות",
                 Size = new System.Drawing.Size(200, 50),
                 Location = new System.Drawing.Point(300, 150)
             };

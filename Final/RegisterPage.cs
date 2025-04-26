@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Drawing;
 
 
 namespace EmployeeSchedulingApp
@@ -9,6 +10,8 @@ namespace EmployeeSchedulingApp
     public partial class RegisterPage : Form
     {
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+        private static DataBaseHelper helper = new DataBaseHelper();
+
 
         public RegisterPage()
         {
@@ -18,70 +21,89 @@ namespace EmployeeSchedulingApp
         private void SetupUI()
         {
             this.Text = "הרשמה למערכת";
-            this.Size = new System.Drawing.Size(400, 450); // הגדלת החלון
-            this.RightToLeft = RightToLeft.Yes; // תמיכה בעברית מימין לשמאל
+            this.Size = new System.Drawing.Size(400, 450);
 
+            // 1) הפיכת כל ה-Form ל-RTL
+            this.RightToLeft = RightToLeft.Yes;
+            this.RightToLeftLayout = true;
+
+            // כותרת קבועה ומרוכזת
             Label titleLabel = new Label()
             {
                 Text = "צור חשבון חדש",
-                AutoSize = true,
+                AutoSize = false,
                 Font = new System.Drawing.Font("Arial", 14, System.Drawing.FontStyle.Bold),
-                Location = new System.Drawing.Point(120, 20)
+                TextAlign = ContentAlignment.MiddleCenter,
+                Width = this.ClientSize.Width,
+                Location = new System.Drawing.Point(0, 20)
             };
 
+            int labelX = 50, inputX = 150, gapY = 40, currentY = 70;
+
             // שם מלא
-            Label fullNameLabel = new Label() { Text = "שם מלא:", Location = new System.Drawing.Point(50, 70) };
-            TextBox fullNameTextBox = new TextBox() { Location = new System.Drawing.Point(150, 70), Width = 180 };
+            Label fullNameLabel = new Label() { Text = "שם מלא:", Location = new Point(labelX, currentY), AutoSize = true };
+            TextBox fullNameTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180 };
+            fullNameTextBox.TextAlign = HorizontalAlignment.Right;
 
+            currentY += gapY;
             // שם משתמש
-            Label userLabel = new Label() { Text = "שם משתמש:", Location = new System.Drawing.Point(50, 110) };
-            TextBox userTextBox = new TextBox() { Location = new System.Drawing.Point(150, 110), Width = 180 };
+            Label userLabel = new Label() { Text = "שם משתמש:", Location = new Point(labelX, currentY), AutoSize = true };
+            TextBox userTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180 };
+            userTextBox.TextAlign = HorizontalAlignment.Right;
 
-            // מייל
-            Label emailLabel = new Label() { Text = "אימייל:", Location = new System.Drawing.Point(50, 150) };
-            TextBox emailTextBox = new TextBox() { Location = new System.Drawing.Point(150, 150), Width = 180 };
+            currentY += gapY;
+            // אימייל
+            Label emailLabel = new Label() { Text = "אימייל:", Location = new Point(labelX, currentY), AutoSize = true };
+            TextBox emailTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180 };
+            emailTextBox.TextAlign = HorizontalAlignment.Right;
 
+            currentY += gapY;
             // סיסמה
-            Label passLabel = new Label() { Text = "סיסמה:", Location = new System.Drawing.Point(50, 190) };
-            TextBox passTextBox = new TextBox() { Location = new System.Drawing.Point(150, 190), Width = 180, PasswordChar = '*' };
+            Label passLabel = new Label() { Text = "סיסמה:", Location = new Point(labelX, currentY), AutoSize = true };
+            TextBox passTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180, PasswordChar = '*' };
+            passTextBox.TextAlign = HorizontalAlignment.Right;
 
+            currentY += gapY;
             // אימות סיסמה
-            Label confirmPassLabel = new Label() { Text = "אימות סיסמה:", Location = new System.Drawing.Point(50, 230) };
-            TextBox confirmPassTextBox = new TextBox() { Location = new System.Drawing.Point(150, 230), Width = 180, PasswordChar = '*' };
+            Label confirmPassLabel = new Label() { Text = "אימות סיסמה:", Location = new Point(labelX, currentY), AutoSize = true };
+            TextBox confirmPassTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180, PasswordChar = '*' };
+            confirmPassTextBox.TextAlign = HorizontalAlignment.Right;
 
-            // כפתור הרשמה
+            currentY += gapY + 10;
+            // כפתורי פעולה
             Button registerButton = new Button()
             {
                 Text = "הרשם",
-                Size = new System.Drawing.Size(100, 40),
-                Location = new System.Drawing.Point(150, 280)
+                Size = new Size(100, 40),
+                Location = new Point(inputX, currentY),
+                RightToLeft = RightToLeft.Yes
+            };
+            registerButton.Click += (s, e) => {
+                if (helper.PerformRegistration(
+                      userTextBox.Text,
+                      passTextBox.Text,
+                      confirmPassTextBox.Text,
+                      fullNameTextBox.Text,
+                      emailTextBox.Text
+                  ))
+                {
+                    this.Close();
+                }
             };
 
-            // כפתור ביטול
             Button cancelButton = new Button()
             {
                 Text = "ביטול",
-                Size = new System.Drawing.Size(100, 40),
-                Location = new System.Drawing.Point(40, 280)
+                Size = new Size(100, 40),
+                Location = new Point(labelX, currentY),
+                RightToLeft = RightToLeft.Yes
             };
-
-            // עדכון האירוע של כפתור ההרשמה כדי לכלול את השדות החדשים
-            registerButton.Click += (sender, e) => {
-                PerformRegistration(
-                    userTextBox.Text,
-                    passTextBox.Text,
-                    confirmPassTextBox.Text,
-                    fullNameTextBox.Text,
-                    emailTextBox.Text
-                );
-            };
-
-            cancelButton.Click += (sender, e) => {
+            cancelButton.Click += (s, e) => {
                 this.DialogResult = DialogResult.Cancel;
                 this.Close();
             };
 
-            // הוספת כל הרכיבים לטופס
+            // הוספה ל-Form
             this.Controls.Add(titleLabel);
             this.Controls.Add(fullNameLabel);
             this.Controls.Add(fullNameTextBox);
@@ -96,80 +118,7 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(registerButton);
             this.Controls.Add(cancelButton);
         }
-        private void PerformRegistration(string username, string password, string confirmPassword, string fullName, string email)
-        {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
-            {
-                MessageBox.Show("נא למלא את כל השדות.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
 
-            if (password != confirmPassword)
-            {
-                MessageBox.Show("הסיסמאות אינן תואמות.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            string checkUsernameQuery = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
-         
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                using (SqlCommand checkCommand = new SqlCommand(checkUsernameQuery, connection))
-                {
-                    checkCommand.Parameters.AddWithValue("@Username", username);
-                    int userCount = (int)checkCommand.ExecuteScalar();
 
-                    if (userCount > 0)
-                    {
-                        MessageBox.Show("שם המשתמש כבר תפוס, אנא בחר שם משתמש אחר.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-                // שימוש בפרמטרים מונע SQL Injection
-                string query = @"INSERT INTO Users (Username, Password, FullName, Email, IsActive)
-                        VALUES (@Username, @Password, @FullName, @Email, @IsActive);";
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    // הוספת הפרמטרים
-                    command.Parameters.AddWithValue("@Username", username);
-                    command.Parameters.AddWithValue("@Password", password); 
-                    command.Parameters.AddWithValue("@FullName", fullName);
-                    command.Parameters.AddWithValue("@Email", email);
-                    command.Parameters.AddWithValue("@IsActive", 1);
-
-                    // ביצוע השאילתה
-                    int rowsAffected = command.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
-                    {
-                        MessageBox.Show("המשתמש נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        MainPage main = new MainPage(username);
-                        main.Show();
-                        this.Hide();
-                    }
-                    else
-                    {
-                        MessageBox.Show("הוספת המשתמש נכשלה", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-
-            MessageBox.Show("הרשמה הושלמה בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            this.Close();
-        }
-
-        private void InitializeComponent()
-        {
-            this.SuspendLayout();
-            // 
-            // RegisterPage
-            // 
-            this.ClientSize = new System.Drawing.Size(282, 253);
-            this.Name = "RegisterPage";
-            this.ResumeLayout(false);
-
-        }
-
-      
     }
 }

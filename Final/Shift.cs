@@ -10,7 +10,7 @@ namespace Final
 {
     public class Shift
     {
-        public int Id;
+        public int Id { get; set; }
 
 
         public string branch { get; set; }

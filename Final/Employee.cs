@@ -10,16 +10,23 @@ namespace Final
     {
         public int ID { get; set; }
         public string Name { get; set; }
-        public List<String> roles { get; set; }
+        public HashSet<String> roles { get; set; }
         public HashSet<int> requestedShifts { get; set; }
         public HashSet<int> backUprequestedShifts { get; set; }
         public int Rate { get; set; }
         public int HourlySalary { get; set; }
-        public int AssignedHours { get; set; }
         public bool isMentor { get; set; }
         public List<string> Branches { get; set; }
 
-        public Employee(int ID, string name, List<string> roles, HashSet<int> requestedShifts, int rate, int hourlySalary, int assignedHours, bool isMentor, List<string> branches)
+        public int Property
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        public Employee(int ID, string name, HashSet<string> roles, HashSet<int> requestedShifts, int rate, int hourlySalary, bool isMentor, List<string> branches)
         {
             this.ID = ID;
             Name = name;
@@ -35,7 +42,6 @@ namespace Final
             }
             Rate = rate;
             HourlySalary = hourlySalary;
-            AssignedHours = assignedHours;
             this.isMentor = isMentor;
             Branches = branches;
         }

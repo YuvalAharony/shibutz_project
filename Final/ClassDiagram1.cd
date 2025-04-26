@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="EmployeeSchedulingApp.AddBranchPage" Collapsed="true">
+    <Position X="3.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAQAAAAAgAAAAAAAACAAACAAAAAAAABAAAAAA=</HashCode>
+      <FileName>AddBranc.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.AddEmployeePage" Collapsed="true">
+    <Position X="5.75" Y="2.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIACAAAAgAAACAABQCQCACAAAAAAAABBAABAA=</HashCode>
+      <FileName>AddEmployeePage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Branch">
+    <Position X="36.25" Y="3.75" Width="3.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAgAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Branch.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.BranchManagementPage" Collapsed="true">
+    <Position X="13.75" Y="2.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAICAAAAAAAACAAAgCAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>BranchManagmentPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.Chromosome">
+    <Position X="32.5" Y="3.25" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Chromosome.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DataBaseHelper" Collapsed="true">
+    <Position X="36.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAgQAIAIAAAhhAAAAgAAAAGBEAAAAAAgAIAIAAIA=</HashCode>
+      <FileName>DataBaseHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.EditBranchShift" Collapsed="true">
+    <Position X="16.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAgAAABAAAAAAAkQBAAAAAACAAAEIACEAAAABEAAAIA=</HashCode>
+      <FileName>EditBranchShift.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.EditEmployeePage" Collapsed="true">
+    <Position X="28" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAEEAKAAQggAoAAQAAAJACQCAKAAAAgACABDAAAAA=</HashCode>
+      <FileName>EditEmployeePage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.EmployeeLoginPage" Collapsed="true">
+    <Position X="11.25" Y="2.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAQAAgAACAACAACAAAAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>EmployeeLoginPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.EmployeeShiftRequestPage" Collapsed="true">
+    <Position X="8.25" Y="2.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>BAAAEAAAAAIAIAwgQAAggAQCAAAIADABAAgAAAAAIAA=</HashCode>
+      <FileName>EmployeeShiftRequestPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.HomePage" Collapsed="true">
+    <Position X="23.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAICAAAAAAAACAAAACAAAAAAAAABAABAAAAAA=</HashCode>
+      <FileName>HomePage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.LoginPage" Collapsed="true">
+    <Position X="21" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQCAAAAgAAACAAAACAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>LoginPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.MainPage" Collapsed="true">
+    <Position X="18.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAIAIAAASACACAgAAAAAAAADAAAGASIAAACABAAAAAQ=</HashCode>
+      <FileName>MainPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.Population">
+    <Position X="32.75" Y="1" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Population.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.Program" Collapsed="true">
+    <Position X="36.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AKIDGAEIADAAAAwIBAAxAKUQGACAgAADEgQBhgMJCCk=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.RandomDataGenerator" Collapsed="true">
+    <Position X="38.5" Y="2.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgSBAAAAogAABAAgAAEABCACAAAACQACBAAAgA=</HashCode>
+      <FileName>RandomDataGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EmployeeSchedulingApp.RegisterPage" Collapsed="true">
+    <Position X="30.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAgAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>RegisterPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.Shift">
+    <Position X="33.25" Y="5.75" Width="4.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAiAAAAAAAAAAAAAAAAAEFECAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Shift.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.ShiftDisplayInfo" Collapsed="true">
+    <Position X="36.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAEAAACAABEAAAAAAAAAAAEAAAAAAA=</HashCode>
+      <FileName>ShiftDisplayInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.ViewShiftDetailPage" Collapsed="true">
+    <Position X="25.5" Y="2.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAAAAAAAAAAACCAIAAAAAAAAAQAAAAQA=</HashCode>
+      <FileName>ViewShiftDetailsPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Final.ViewShiftsPage" Collapsed="true">
+    <Position X="1.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAABQACAAAAAAACCAAAgCAAAAAAAAAAgABAAAAAA=</HashCode>
+      <FileName>ViewShiftsPage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="System.Windows.Forms.Form" Collapsed="true">
+    <Position X="15.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Final.Employee">
+    <Position X="3.25" Y="4.25" Width="3.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>QIQEAAAAAAAAgAAAAAECAAQAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Employee.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

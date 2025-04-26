@@ -9,7 +9,7 @@ namespace Final
     public class Population
     {
         public List<Chromosome> Chromoshomes { get; set; }
-        public int Size;
+        public int Size { get; set; }
 
         public Population(List<Chromosome> chromoshomes, int size)
         {

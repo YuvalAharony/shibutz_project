@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Final
@@ -17,17 +18,16 @@ namespace Final
         private Dictionary<string, List<ShiftDisplayInfo>> branchShifts; // מילון לשמירת המשמרות לפי סניף
         private static DataBaseHelper helper = new DataBaseHelper();
 
-
         public AddEmployeePage(String userName)
         {
             InitializeComponent();
             currentUserName = userName;
             branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
             SetupUI();
-            helper.LoadUserBranches(userName,new SqlConnection(connectionString));
+            LoadAvailableBranches();
         }
 
- 
+
         private void SetupUI()
         {
             this.Text = "הוספת עובד חדש";
@@ -78,18 +78,25 @@ namespace Final
             };
             currentY += gap;
 
-            // תפקיד (ComboBox)
-            Label roleLabel = new Label() { Text = "תפקיד:", Location = new System.Drawing.Point(labelX, currentY) };
-            ComboBox roleComboBox = new ComboBox()
+            // תפקידים (CheckedListBox)
+            Label roleLabel = new Label() { Text = "תפקידים:", Location = new System.Drawing.Point(labelX, currentY) };
+
+            // יצירת CheckedListBox לתפקידים
+            CheckedListBox rolesCheckedListBox = new CheckedListBox()
             {
                 Location = new System.Drawing.Point(controlX, currentY),
                 Width = controlWidth,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                Name = "roleComboBox"
+                Height = 80, // גובה מתאים להצגת מספר פריטים
+                CheckOnClick = true,
+                Name = "rolesCheckedListBox"
             };
-            roleComboBox.Items.AddRange(new string[] { "Waiter", "Chef", "Bartender", "Manager" });
-            roleComboBox.SelectedIndex = 0; // בחירת ברירת מחדל
-            currentY += gap;
+
+            // הוספת התפקידים האפשריים
+            string[] roles = { "Waiter", "Chef", "Bartender", "Manager" };
+            rolesCheckedListBox.Items.AddRange(roles);
+
+            currentY += rolesCheckedListBox.Height + 5; // התאמת המיקום האנכי
+
 
             // שכר שעתי
             Label salaryLabel = new Label() { Text = "שכר שעתי:", Location = new System.Drawing.Point(labelX, currentY) };
@@ -124,7 +131,6 @@ namespace Final
                 Name = "branchesCheckedListBox"
             };
 
-            branchesCheckedListBox.ItemCheck += BranchesCheckedListBox_ItemCheck;
             currentY += branchesCheckedListBox.Height + 20;
 
             // כפתור שמירה
@@ -136,15 +142,21 @@ namespace Final
                 Name = "saveButton"
             };
             saveButton.Click += (sender, e) => {
+                // יצירת רשימת התפקידים שנבחרו
+                HashSet<string> selectedRoles = new HashSet<string>();
+                foreach (var item in rolesCheckedListBox.CheckedItems)
+                {
+                    selectedRoles.Add(item.ToString());
+                }
+
                 SaveEmployee(
                     idTextBox.Text,
                     nameTextBox.Text,
                     phoneTextBox.Text,
                     emailTextBox.Text,
                     rateTextBox.Text,
-                    roleComboBox.SelectedItem?.ToString(),
+                    selectedRoles,
                     salaryTextBox.Text,
-                   
                     isExperiencedCheckBox.Checked,
                     passwordTextBox.Text
                 );
@@ -171,7 +183,6 @@ namespace Final
             this.Controls.Add(emailLabel);
             this.Controls.Add(emailTextBox);
             this.Controls.Add(roleLabel);
-            this.Controls.Add(roleComboBox);
             this.Controls.Add(salaryLabel);
             this.Controls.Add(salaryTextBox);
             this.Controls.Add(rateLabel);
@@ -183,126 +194,120 @@ namespace Final
             this.Controls.Add(cancelButton);
             this.Controls.Add(passwordLabel);
             this.Controls.Add(passwordTextBox);
+            this.Controls.Add(roleLabel);
+            this.Controls.Add(rolesCheckedListBox);
         }
 
         // פונקציה לטעינת הסניפים הזמינים למשתמש הנוכחי
-        //private void LoadAvailableBranches()
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection connection = new SqlConnection(connectionString))
-        //        {
-        //            connection.Open();
-
-        //            string query = @"
-        //                SELECT b.BranchID, b.Name 
-        //                FROM Branches b
-        //                INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
-        //                INNER JOIN Users u ON ub.UserID = u.UserID
-        //                WHERE u.Username = @Username";
-
-        //            using (SqlCommand command = new SqlCommand(query, connection))
-        //            {
-        //                command.Parameters.AddWithValue("@Username", currentUserName);
-
-        //                using (SqlDataReader reader = command.ExecuteReader())
-        //                {
-        //                    branchesCheckedListBox.Items.Clear();
-
-        //                    while (reader.Read())
-        //                    {
-        //                        string branchName = reader.GetString(1);
-        //                        branchesCheckedListBox.Items.Add(branchName);
-
-        //                        // טעינת המשמרות של הסניף
-        //                        LoadBranchShifts(reader.GetInt32(0), branchName);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("אירעה שגיאה בטעינת הסניפים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    }
-        //}
-
-        // פונקציה לטעינת המשמרות של סניף מסוים
-        //private void LoadBranchShifts(int branchId, string branchName)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection connection = new SqlConnection(connectionString))
-        //        {
-        //            connection.Open();
-
-        //            string query = @"
-        //                SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
-        //                FROM Shifts s
-        //                INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
-        //                INNER JOIN TimeSlots ts ON s.TimeSlotID=ts.TimeSlotID 
-        //                WHERE s.BranchID = @BranchID";
-
-        //            using (SqlCommand command = new SqlCommand(query, connection))
-        //            {
-        //                command.Parameters.AddWithValue("@BranchID", branchId);
-
-        //                using (SqlDataReader reader = command.ExecuteReader())
-        //                {
-        //                    List<ShiftDisplayInfo> shifts = new List<ShiftDisplayInfo>();
-
-        //                    while (reader.Read())
-        //                    {
-        //                        shifts.Add(new ShiftDisplayInfo
-        //                        {
-        //                            ShiftID = reader.GetInt32(0),
-        //                            BranchName = branchName,
-        //                            TimeSlot = reader.GetString(1),
-        //                            DayOfWeek = reader.GetString(2),
-        //                            ShiftType = reader.GetString(3)
-        //                        });
-        //                    }
-
-        //                    branchShifts[branchName] = shifts;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    }
-        //}
-
-        // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
-        private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        private void LoadAvailableBranches()
         {
-            // הרצה מושהית כדי לאפשר את עדכון הסימון לפני הפעולה
-            this.BeginInvoke(new Action(() =>
+            try
             {
-            }));
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"
+                        SELECT b.BranchID, b.Name 
+                        FROM Branches b
+                        INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
+                        INNER JOIN Users u ON ub.UserID = u.UserID
+                        WHERE u.Username = @Username";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Username", currentUserName);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            branchesCheckedListBox.Items.Clear();
+
+                            while (reader.Read())
+                            {
+                                string branchName = reader.GetString(1);
+                                branchesCheckedListBox.Items.Add(branchName);
+
+                                // טעינת המשמרות של הסניף
+                                LoadBranchShifts(reader.GetInt32(0), branchName);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("אירעה שגיאה בטעינת הסניפים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-       
+        // פונקציה לטעינת המשמרות של סניף מסוים
+        private void LoadBranchShifts(int branchId, string branchName)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"
+                        SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
+                        FROM Shifts s
+                        INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
+                        INNER JOIN TimeSlots ts ON s.TimeSlotID=ts.TimeSlotID 
+                        WHERE s.BranchID = @BranchID";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@BranchID", branchId);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            List<ShiftDisplayInfo> shifts = new List<ShiftDisplayInfo>();
+
+                            while (reader.Read())
+                            {
+                                shifts.Add(new ShiftDisplayInfo
+                                {
+                                    ShiftID = reader.GetInt32(0),
+                                    BranchName = branchName,
+                                    TimeSlot = reader.GetString(1),
+                                    DayOfWeek = reader.GetString(2),
+                                    ShiftType = reader.GetString(3)
+                                });
+                            }
+
+                            branchShifts[branchName] = shifts;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
+
         private void SaveEmployee(
-        string employeeId,  // הוספת פרמטר חדש למזהה עובד
+        string employeeId,
         string name,
         string phone,
         string email,
         string rate,
-        string role,
+        HashSet<string> roles,
         string salary,
         bool isExperienced,
         string password)
         {
-
+            // בדיקת תקינות שדות
             if (string.IsNullOrWhiteSpace(name) ||
-              string.IsNullOrWhiteSpace(role) ||
+              roles.Count == 0 ||  // בדיקה שנבחר לפחות תפקיד אחד
               string.IsNullOrWhiteSpace(salary) ||
               string.IsNullOrWhiteSpace(rate) ||
               string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("נא למלא את כל השדות הדרושים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("נא למלא את כל השדות הדרושים ולבחור לפחות תפקיד אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -337,6 +342,7 @@ namespace Final
 
                 useCustomId = true;
             }
+
             // איסוף הסניפים שנבחרו
             List<string> branchList = new List<string>();
             foreach (var item in branchesCheckedListBox.CheckedItems)
@@ -349,6 +355,7 @@ namespace Final
                 MessageBox.Show("נא לבחור לפחות סניף אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
             try
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
@@ -362,8 +369,8 @@ namespace Final
                         // שימוש במזהה מותאם אישית
                         insertEmployeeQuery = @"
                 SET IDENTITY_INSERT Employees ON;
-                INSERT INTO Employees (EmployeeID, Name, Phone, Email, HourlySalary, Rate, IsMentor, AssignedHours, Password)
-                VALUES (@EmployeeID, @Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @AssignedHours, @Password);
+                INSERT INTO Employees (EmployeeID, Name, Phone, Email, HourlySalary, Rate, IsMentor, Password)
+                VALUES (@EmployeeID, @Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @Password);
                 SET IDENTITY_INSERT Employees OFF;
                 SELECT @EmployeeID;";
                     }
@@ -371,8 +378,8 @@ namespace Final
                     {
                         // שימוש במזהה אוטומטי
                         insertEmployeeQuery = @"
-                INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor, AssignedHours, Password)
-                VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @AssignedHours, @Password);
+                INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor, Password)
+                VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @Password);
                 SELECT CAST(SCOPE_IDENTITY() AS INT);";
                     }
 
@@ -389,47 +396,49 @@ namespace Final
                         command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salary));
                         command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rate));
                         command.Parameters.AddWithValue("@IsMentor", isExperienced);
-                        command.Parameters.AddWithValue("@AssignedHours", 7);
+                        command.Parameters.AddWithValue("@AssignedHours", 7); // ערך ברירת מחדל
                         command.Parameters.AddWithValue("@Password", password);
 
                         // קבלת ה-ID של העובד החדש
                         newEmployeeId = (int)command.ExecuteScalar();
                     }
 
-
-                    // הוספת התפקיד של העובד לטבלת EmployeeRoles
-                    if (!string.IsNullOrEmpty(role))
+                    // הוספת התפקידים של העובד לטבלת EmployeeRoles
+                    if (roles != null && roles.Count > 0)
                     {
-                        // בדיקה אם התפקיד קיים בטבלת Roles, אם לא - הוספתו
-                        int roleId;
-                        string checkRoleQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
-                        using (SqlCommand command = new SqlCommand(checkRoleQuery, connection))
+                        foreach (string roleName in roles)
                         {
-                            command.Parameters.AddWithValue("@RoleName", role);
-                            object result = command.ExecuteScalar();
-
-                            if (result == null) // התפקיד לא קיים
+                            // בדיקה אם התפקיד קיים בטבלת Roles, אם לא - הוספתו
+                            int roleId;
+                            string checkRoleQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
+                            using (SqlCommand command = new SqlCommand(checkRoleQuery, connection))
                             {
-                                string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
-                                using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection))
+                                command.Parameters.AddWithValue("@RoleName", roleName);
+                                object result = command.ExecuteScalar();
+
+                                if (result == null) // התפקיד לא קיים
                                 {
-                                    insertCommand.Parameters.AddWithValue("@RoleName", role);
-                                    roleId = (int)insertCommand.ExecuteScalar();
+                                    string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
+                                    using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection))
+                                    {
+                                        insertCommand.Parameters.AddWithValue("@RoleName", roleName);
+                                        roleId = (int)insertCommand.ExecuteScalar();
+                                    }
+                                }
+                                else
+                                {
+                                    roleId = (int)result;
                                 }
                             }
-                            else
-                            {
-                                roleId = (int)result;
-                            }
-                        }
 
-                        // קישור העובד לתפקיד
-                        string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
-                        using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection))
-                        {
-                            command.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
-                            command.Parameters.AddWithValue("@RoleID", roleId);
-                            command.ExecuteNonQuery();
+                            // קישור העובד לתפקיד
+                            string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
+                            using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection))
+                            {
+                                command.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
+                                command.Parameters.AddWithValue("@RoleID", roleId);
+                                command.ExecuteNonQuery();
+                            }
                         }
                     }
 
@@ -460,17 +469,14 @@ namespace Final
                         }
                     }
 
-                    // הוספת המשמרות המועדפות
-            
                     // הוספה לרשימת העובדים בזיכרון
                     Employee newEmployee = new Employee(
                         newEmployeeId,
                         name,
-                        new List<string> { role },
+                        roles,  // העברת רשימת התפקידים
                         null,
                         Convert.ToInt32(rate),
                         Convert.ToInt32(salary),
-                        7,
                         isExperienced,
                         branchList
                     );
@@ -486,7 +492,5 @@ namespace Final
                 MessageBox.Show($"אירעה שגיאה בהוספת העובד: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-     
     }
 }

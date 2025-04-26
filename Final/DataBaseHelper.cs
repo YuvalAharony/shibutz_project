@@ -5,6 +5,8 @@ using System.Data;
 using System.Data.SqlClient;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 using System.Windows.Forms;
+using EmployeeSchedulingApp;
+using System.Linq;
 
 public class DataBaseHelper
 {
@@ -26,8 +28,8 @@ public class DataBaseHelper
                 connection.Open();
 
                 // טעינת הסניפים והעובדים של המשתמש הנוכחי לרשימות זמניות
-                List<Branch> loadedBranches = LoadUserBranches(username, connection);
-                List<Employee> loadedEmployees = LoadUserEmployees(username, connection);
+                List<Branch> loadedBranches = LoadUserBranches(username);
+                List<Employee> loadedEmployees = LoadUserEmployees(username);
                 // טעינת הסניפים והעובדים של המשתמש הנוכחי לרשימות הרצויות
                 branches.AddRange(loadedBranches);
                 employees.AddRange(loadedEmployees);
@@ -45,168 +47,206 @@ public class DataBaseHelper
 
     #region LoadDataForUser Helper Functions
     //פונקציה הטוענת את הסניפים של המשתמש הנוכחי מבסיס הנתונים
-    public  List<Branch> LoadUserBranches(string username, SqlConnection connection)
+    public List<Branch> LoadUserBranches(string username)
     {
         //אתחול רשימת סניפים חדשה
         List<Branch> branches = new List<Branch>();
-        //שאילתה השולפת מבסיס הנתונים את כל המזהיי הסניפים ושמות הסניפים של המשתמש הנוכחי
-        string query = @"
-               SELECT b.BranchID, b.Name 
-               FROM Branches b
-               INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
-               INNER JOIN Users u ON ub.UserID = u.UserID
-               WHERE u.Username = @Username";
-        //אתחול השאילתה
-        using (SqlCommand command = new SqlCommand(query, connection))
+
+        try
         {
-            //הוספת הפרמטרים לשאילתה
-            command.Parameters.AddWithValue("@Username", username);
-            //הרצת השאילתה לתוך הקורא
-            using (SqlDataReader reader = command.ExecuteReader())
+            //יצירת חיבור חדש לבסיס הנתונים
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                //קריאת תוצאות השאילתה 
-                while (reader.Read())
+                connection.Open();
+
+                //שאילתה השולפת מבסיס הנתונים את כל המזהיי הסניפים ושמות הסניפים של המשתמש הנוכחי
+                string query = @"
+                   SELECT b.BranchID, b.Name 
+                   FROM Branches b
+                   INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
+                   INNER JOIN Users u ON ub.UserID = u.UserID
+                   WHERE u.Username = @Username";
+
+                //אתחול השאילתה
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
-                    //חילוץ נתוני הסניף הבסיסיים
-                    int branchId = reader.GetInt32(0);
-                    string branchName = reader.GetString(1);
-                    //יצירת אובייקט סניף חדש עם כל המידע
-                    Branch branch = new Branch
+                    //הוספת הפרמטרים לשאילתה
+                    command.Parameters.AddWithValue("@Username", username);
+
+                    //הרצת השאילתה לתוך הקורא
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        ID = branchId,
-                        Name = branchName
-                    };
-                    //הוספת הסניף לרשימת הסניפים בתוכנית
-                    branches.Add(branch);
+                        //קריאת תוצאות השאילתה 
+                        while (reader.Read())
+                        {
+                            //חילוץ נתוני הסניף הבסיסיים
+                            int branchId = reader.GetInt32(0);
+                            string branchName = reader.GetString(1);
+
+                            //יצירת אובייקט סניף חדש עם כל המידע
+                            Branch branch = new Branch
+                            {
+                                ID = branchId,
+                                Name = branchName
+                            };
+
+                            //הוספת הסניף לרשימת הסניפים בתוכנית
+                            branches.Add(branch);
+                        }
+                    }
+                }
+
+                //בעבור כל סניף, נטען את המשמרות של הסניף מבסיס הנתונים
+                foreach (Branch branch in branches)
+                {
+                    branch.Shifts = LoadBranchShifts(branch.ID);
                 }
             }
         }
-        //בעבור כל סניף, נטען את המשמרות של הסניף מבסיס הנתונים
-        foreach (Branch branch in branches)
+        catch (Exception ex)
         {
-            branch.Shifts = LoadBranchShifts(branch.ID, connection);
+            MessageBox.Show($"שגיאה בטעינת סניפים: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         return branches;
     }
 
     //פונקציה הטוענת את העובדים של המשתמש הנוכחי מבסיס הנתונים
-    public  List<Employee> LoadUserEmployees(string username, SqlConnection connection)
+    public List<Employee> LoadUserEmployees(string username)
     {
         //אתחול רשימת עובדים חדשה
         List<Employee> employees = new List<Employee>();
 
-        //שאילתה השולפת מבסיס הנתונים את כל הנתונים הרלוונטים על העובד של המשתמש הנוכחי
-        string query = @"
-            SELECT DISTINCT e.EmployeeID, e.Name, e.Phone, e.Email, e.HourlySalary, e.Rate, 
-           e.IsMentor, e.AssignedHours
-           FROM Employees e
-           INNER JOIN EmployeeBranches eb ON e.EmployeeID = eb.EmployeeID
-           INNER JOIN UserBranches ub ON eb.BranchID = ub.BranchID
-           INNER JOIN Users u ON ub.UserID = u.UserID
-           WHERE u.Username = @Username";
-
-        //אתחול השאילתה
-        using (SqlCommand command = new SqlCommand(query, connection))
+        try
         {
-            //הוספת הפרמטרים לשאילתה
-            command.Parameters.AddWithValue("@Username", username);
-
-            //הרצת השאילתה לתוך הקורא
-            using (SqlDataReader reader = command.ExecuteReader())
+            //יצירת חיבור חדש לבסיס הנתונים
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                //קריאת תוצאות השאילתה 
-                while (reader.Read())
+                connection.Open();
+
+                //שאילתה השולפת מבסיס הנתונים את כל הנתונים הרלוונטים על העובד של המשתמש הנוכחי
+                string query = @"
+                SELECT DISTINCT e.EmployeeID, e.Name, e.Phone, e.Email, e.HourlySalary, e.Rate, 
+               e.IsMentor
+               FROM Employees e
+               INNER JOIN EmployeeBranches eb ON e.EmployeeID = eb.EmployeeID
+               INNER JOIN UserBranches ub ON eb.BranchID = ub.BranchID
+               INNER JOIN Users u ON ub.UserID = u.UserID
+               WHERE u.Username = @Username";
+
+                //אתחול השאילתה
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
-                    //חילוץ נתוני העובד הבסיסיים
-                    int employeeId = reader.GetInt32(0);
-                    string name = reader.GetString(1);
-                    string phone = reader.IsDBNull(2) ? null : reader.GetString(2);
-                    string email = reader.IsDBNull(3) ? null : reader.GetString(3);
-                    decimal hourlySalary = reader.GetDecimal(4);
-                    int rate = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
-                    bool isMentor = reader.GetBoolean(6);
-                    int assignedHours = reader.GetInt32(7);
+                    //הוספת הפרמטרים לשאילתה
+                    command.Parameters.AddWithValue("@Username", username);
 
-                    //בעבור כל עובד נטען את התפקידים שלו
-                    List<string> roles = LoadEmployeeRoles(employeeId, connection);
-                    //בעבור כל עובד נטען את המשמרות שהוא יכול לעבוד בהן
-                    HashSet<int> requestedShifts = LoadEmployeePreferredShifts(employeeId, connection);
-                    //בעבור כל עובד נטען את הסניפים שלו
-                    List<string> branches = LoadEmployeeBranches(employeeId, connection);
+                    //הרצת השאילתה לתוך הקורא
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        //קריאת תוצאות השאילתה 
+                        while (reader.Read())
+                        {
+                            //חילוץ נתוני העובד הבסיסיים
+                            int employeeId = reader.GetInt32(0);
+                            string name = reader.GetString(1);
+                            string phone = reader.IsDBNull(2) ? null : reader.GetString(2);
+                            string email = reader.IsDBNull(3) ? null : reader.GetString(3);
+                            decimal hourlySalary = reader.GetDecimal(4);
+                            int rate = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
+                            bool isMentor = reader.GetBoolean(6);
 
-                    //יצירת אובייקט עובד חדש עם כל המידע
-                    Employee employee = new Employee(
-                        employeeId,
-                        name,
-                        roles,
-                        requestedShifts,
-                        rate,
-                        (int)hourlySalary,
-                        assignedHours,
-                        isMentor,
-                        branches
-                    );
-                    //הוספת העובד לרשימת העובדים בתוכנית
-                    employees.Add(employee);
+                            //בעבור כל עובד נטען את התפקידים שלו
+                            HashSet<string> roles = LoadEmployeeRoles(employeeId);
+                            //בעבור כל עובד נטען את המשמרות שהוא יכול לעבוד בהן
+                            HashSet<int> requestedShifts = LoadEmployeePreferredShifts(employeeId);
+                            //בעבור כל עובד נטען את הסניפים שלו
+                            List<string> branches = LoadEmployeeBranches(employeeId);
+
+                            //יצירת אובייקט עובד חדש עם כל המידע
+                            Employee employee = new Employee(
+                                employeeId,
+                                name,
+                                roles,
+                                requestedShifts,
+                                rate,
+                                (int)hourlySalary,
+                                isMentor,
+                                branches
+                            );
+
+                            //הוספת העובד לרשימת העובדים בתוכנית
+                            employees.Add(employee);
+                        }
+                    }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"שגיאה בטעינת עובדים: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         return employees;
     }
 
     //פונקציה הטוענת את המשמרות של סניף מבסיס הנתונים
-    private List<Shift> LoadBranchShifts(int branchId, SqlConnection connection)
+    private List<Shift> LoadBranchShifts(int branchId)
     {
         //אתחול רשימת משמרות חדשה
         List<Shift> shifts = new List<Shift>();
 
         try
         {
-            //שאילתה השולפת מבסיס הנתונים את כל הנתונים הרלוונטים על המשמרות של הסניף הנוכחי
-            string query = @"
+            //יצירת חיבור חדש לבסיס הנתונים
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                //שאילתה השולפת מבסיס הנתונים את כל הנתונים הרלוונטים על המשמרות של הסניף הנוכחי
+                string query = @"
                 SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName, s.IsBusy
                 FROM Shifts s
                 INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
                 INNER JOIN TimeSlots ts on ts.TimeSlotID = s.TimeSlotID
                 WHERE s.BranchID = @BranchID";
 
-            //אתחול השאילתה
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                //הוספת הפרמטרים לשאילתה
-                command.Parameters.AddWithValue("@BranchID", branchId);
-
-                //הרצת השאילתה לתוך הקורא
-                using (SqlDataReader reader = command.ExecuteReader())
+                //אתחול השאילתה
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
-                    //קריאת תוצאות השאילתה
-                    while (reader.Read())
+                    //הוספת הפרמטרים לשאילתה
+                    command.Parameters.AddWithValue("@BranchID", branchId);
+
+                    //הרצת השאילתה לתוך הקורא
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        //חילוץ נתוני המשמרת הבסיסיים
-                        int shiftId = reader.GetInt32(0);
-                        string timeSlot = reader.GetString(1);
-                        string dayOfWeek = reader.GetString(2);
-                        string shiftType = reader.GetString(3);
-                        bool isBusy = reader.GetBoolean(4);
+                        //קריאת תוצאות השאילתה
+                        while (reader.Read())
+                        {
+                            //חילוץ נתוני המשמרת הבסיסיים
+                            int shiftId = reader.GetInt32(0);
+                            string timeSlot = reader.GetString(1);
+                            string dayOfWeek = reader.GetString(2);
+                            string shiftType = reader.GetString(3);
+                            bool isBusy = reader.GetBoolean(4);
 
-                        //טעינת התפקידים הנדרשים למשמרת
-                        Dictionary<string, int> requiredRoles = LoadShiftRequiredRoles(shiftId, connection);
+                            //טעינת התפקידים הנדרשים למשמרת
+                            Dictionary<string, int> requiredRoles = LoadShiftRequiredRoles(shiftId);
 
-                        //יצירת אובייקט משמרת חדש
-                        Shift shift = new Shift(
-                            shiftId,
-                            "Branch " + branchId,
-                            timeSlot,
-                            dayOfWeek,
-                            requiredRoles,
-                            isBusy,
-                            new Dictionary<string, List<Employee>>(),
-                            shiftType
-                        );
-                        //הוספת המשמרת לרשימת המשמרות 
-                        shifts.Add(shift);
+                            //יצירת אובייקט משמרת חדש
+                            Shift shift = new Shift(
+                                shiftId,
+                                "Branch " + branchId,
+                                timeSlot,
+                                dayOfWeek,
+                                requiredRoles,
+                                isBusy,
+                                new Dictionary<string, List<Employee>>(),
+                                shiftType
+                            );
+
+                            //הוספת המשמרת לרשימת המשמרות 
+                            shifts.Add(shift);
+                        }
                     }
                 }
             }
@@ -221,27 +261,27 @@ public class DataBaseHelper
     }
 
     //פונקציה הטוענת את התפקידים שמבוקשים של משמרת מבסיס הנתונים
-    private Dictionary<string, int> LoadShiftRequiredRoles(int shiftId, SqlConnection connection)
+    private Dictionary<string, int> LoadShiftRequiredRoles(int shiftId)
     {
         //אתחול מילון תפקידים נדרשים
         Dictionary<string, int> requiredRoles = new Dictionary<string, int>();
 
         try
         {
-            //יצירת חיבור לבסיס הנתונים
-            using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+            //יצירת חיבור חדש לבסיס הנתונים
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                newConnection.Open();
+                connection.Open();
 
                 //שאילתה השולפת מבסיס הנתונים מידע על התפקידים הנדרשים למשמרת
                 string query = @"
-                    SELECT r.RoleName, sr.RequiredCount
-                    FROM ShiftRequiredRoles sr
-                    INNER JOIN Roles r ON sr.RoleID = r.RoleID
-                    WHERE sr.ShiftID = @ShiftID";
+                SELECT r.RoleName, sr.RequiredCount
+                FROM ShiftRequiredRoles sr
+                INNER JOIN Roles r ON sr.RoleID = r.RoleID
+                WHERE sr.ShiftID = @ShiftID";
 
                 //אתחול השאילתה
-                using (SqlCommand command = new SqlCommand(query, newConnection))
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     //הוספת הפרמטרים לשאילתה
                     command.Parameters.AddWithValue("@ShiftID", shiftId);
@@ -255,6 +295,7 @@ public class DataBaseHelper
                             //חילוץ שם התפקיד וכמות העובדים הנדרשת
                             string roleName = reader.GetString(0);
                             int requiredCount = reader.GetInt32(1);
+
                             //הכנסת הנתונים למילון
                             requiredRoles[roleName] = requiredCount;
                         }
@@ -272,17 +313,17 @@ public class DataBaseHelper
     }
 
     //פונקציה הטוענת את התפקידים של כל עובד מבסיס הנתונים
-    private List<string> LoadEmployeeRoles(int employeeId, SqlConnection connection)
+    HashSet <string> LoadEmployeeRoles(int employeeId)
     {
         //אתחול רשימת תפקידים חדשה
-        List<string> roles = new List<string>();
+        HashSet<string> roles = new HashSet<string>();
 
         try
         {
-            //יצירת חיבור 
-            using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+            //יצירת חיבור חדש לבסיס הנתונים
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                newConnection.Open();
+                connection.Open();
 
                 //ששאילתה השולפת מבסיס הנתונים את תפקידי העובד
                 string query = @"
@@ -292,7 +333,7 @@ public class DataBaseHelper
                 WHERE er.EmployeeID = @EmployeeID";
 
                 //אתחול השאילתה
-                using (SqlCommand command = new SqlCommand(query, newConnection))
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     //הוספת הפרמטרים לשאילתה
                     command.Parameters.AddWithValue("@EmployeeID", employeeId);
@@ -320,17 +361,17 @@ public class DataBaseHelper
     }
 
     //פונקציה הטוענת את המשמרות המבוקשות של כל עובד מבסיס הנתונים
-    private  HashSet<int> LoadEmployeePreferredShifts(int employeeId, SqlConnection connection)
+    private HashSet<int> LoadEmployeePreferredShifts(int employeeId)
     {
         //אתחול האש סט משמרות מועדפות חדש
         HashSet<int> preferredShifts = new HashSet<int>();
 
         try
         {
-            //יצירת חיבור לבסיס הנתונים
-            using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+            //יצירת חיבור חדש לבסיס הנתונים
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                newConnection.Open();
+                connection.Open();
 
                 //שאילתה השולפת מבסיס הנתונים את המשמרות המועדפות של העובד
                 string query = @"
@@ -339,7 +380,7 @@ public class DataBaseHelper
                 WHERE EmployeeID = @EmployeeID";
 
                 //אתחול השאילתה
-                using (SqlCommand command = new SqlCommand(query, newConnection))
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     //הוספת הפרמטרים לשאילתה
                     command.Parameters.AddWithValue("@EmployeeID", employeeId);
@@ -367,17 +408,17 @@ public class DataBaseHelper
     }
 
     //שאילתה הטוענת את הנתונים של כל עובד מבסיס הנתונים
-    private  List<string> LoadEmployeeBranches(int employeeId, SqlConnection connection)
+    private List<string> LoadEmployeeBranches(int employeeId)
     {
         //אתחול רשימת סניפים חדשה
         List<string> branches = new List<string>();
 
         try
         {
-            //יצירת חיבור לבסיס הנתונים
-            using (SqlConnection newConnection = new SqlConnection(connection.ConnectionString))
+            //יצירת חיבור חדש לבסיס הנתונים
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                newConnection.Open();
+                connection.Open();
 
                 //שאילתה השולפת מבסיס הנתונים את הסניפים שהעובד עובד בהם
                 string query = @"
@@ -387,7 +428,7 @@ public class DataBaseHelper
                 WHERE eb.EmployeeID = @EmployeeID";
 
                 //אתחול השאילתה
-                using (SqlCommand command = new SqlCommand(query, newConnection))
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     //הוספת הפרמטרים לשאילתה
                     command.Parameters.AddWithValue("@EmployeeID", employeeId);
@@ -406,7 +447,6 @@ public class DataBaseHelper
             }
         }
         //הצגת הודעת שגיאה למשתשמש אם הייתה שגיאה בטעינת הנתונים מהדאטא בייס
-
         catch (Exception ex)
         {
             Console.WriteLine("Error loading employee branches: " + ex.Message);
@@ -541,6 +581,7 @@ public class DataBaseHelper
         }
     }
 
+
     // פונקציית עזר להוספת משמרת חדשה
     public void AddShift(int branchId, string dayOfWeek, string timeSlot, int shiftTypeId, SqlConnection connection)
     {
@@ -648,8 +689,189 @@ public class DataBaseHelper
         }
     }
 
+    public bool PerformRegistration(string username, string password, string confirmPassword, string fullName, string email)
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
+        {
+            MessageBox.Show("נא למלא את כל השדות.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+
+        if (password != confirmPassword)
+        {
+            MessageBox.Show("הסיסמאות אינן תואמות.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+        string checkUsernameQuery = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+            using (SqlCommand checkCommand = new SqlCommand(checkUsernameQuery, connection))
+            {
+                checkCommand.Parameters.AddWithValue("@Username", username);
+                int userCount = (int)checkCommand.ExecuteScalar();
+
+                if (userCount > 0)
+                {
+                    MessageBox.Show("שם המשתמש כבר תפוס, אנא בחר שם משתמש אחר.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+            // שימוש בפרמטרים מונע SQL Injection
+            string query = @"INSERT INTO Users (Username, Password, FullName, Email, IsActive)
+                        VALUES (@Username, @Password, @FullName, @Email, @IsActive);";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                // הוספת הפרמטרים
+                command.Parameters.AddWithValue("@Username", username);
+                command.Parameters.AddWithValue("@Password", password);
+                command.Parameters.AddWithValue("@FullName", fullName);
+                command.Parameters.AddWithValue("@Email", email);
+                command.Parameters.AddWithValue("@IsActive", 1);
+
+                // ביצוע השאילתה
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if (rowsAffected > 0)
+                {
+                    MessageBox.Show("המשתמש נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MainPage main = new MainPage(username);
+                    main.Show();
+                }
+                else
+                {
+                    MessageBox.Show("הוספת המשתמש נכשלה", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        MessageBox.Show("הרשמה הושלמה בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        return true;
+    }
+
+
+    public bool PerformLogin(string username, string password)
+    {
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            string query = "SELECT UserID, FullName FROM Users WHERE Username = @Username AND Password = @Password AND IsActive = 1";
+
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Username", username);
+                command.Parameters.AddWithValue("@Password", password);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read()) // אם נמצא משתמש מתאים
+                    {
+                        int userId = reader.GetInt32(0);
+                        string fullName = reader.GetString(1);
+
+                        MessageBox.Show($"ברוך הבא, {fullName}!");
+
+                        MainPage main = new MainPage(username);
+                        main.Show();
+                        return true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("שם משתמש או סיסמה שגויים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+            }
+        }
+
+
+    }
+
+
+    public bool AddBranch(string branchName, string userName)
+    {
+        // בדיקת תקינות
+        if (string.IsNullOrEmpty(branchName))
+        {
+            MessageBox.Show("נא להזין שם סניף", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                // בדיקה אם הסניף כבר קיים
+                string checkBranchQuery = "SELECT COUNT(*) FROM Branches WHERE Name = @Name";
+                using (SqlCommand command = new SqlCommand(checkBranchQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Name", branchName);
+                    int count = (int)command.ExecuteScalar();
+
+                    if (count > 0)
+                    {
+                        MessageBox.Show("סניף בשם זה כבר קיים במערכת", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+
+                // הוספת הסניף החדש
+                int branchId;
+                string insertBranchQuery = @"
+                        INSERT INTO Branches (Name)
+                        VALUES (@Name);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT)";
+
+                using (SqlCommand command = new SqlCommand(insertBranchQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Name", branchName);
+                    branchId = (int)command.ExecuteScalar();
+
+                    Console.WriteLine($"נוסף סניף חדש עם מזהה {branchId}");
+                }
+
+                // קישור הסניף למשתמש הנוכחי
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    // קבלת מזהה המשתמש
+                    int userId = GetUserIdByUsername(userName, connection);
+
+                    if (userId > 0)
+                    {
+                        // הוספת הקישור בין המשתמש לסניף
+                        string insertUserBranchQuery = @"
+                                INSERT INTO UserBranches (UserID, BranchID)
+                                VALUES (@UserID, @BranchID)";
+
+                        using (SqlCommand command = new SqlCommand(insertUserBranchQuery, connection))
+                        {
+                            command.Parameters.AddWithValue("@UserID", userId);
+                            command.Parameters.AddWithValue("@BranchID", branchId);
+                            int rowsAffected = command.ExecuteNonQuery();
+                            Console.WriteLine($"קישור המשתמש לסניף - שורות שהושפעו: {rowsAffected}");
+                        }
+                    }
+                }
+            }
+            MessageBox.Show($"הסניף {branchName} נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return true;
+
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"אירעה שגיאה בהוספת הסניף: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+    }
 
 
 
+
+    
 
 }

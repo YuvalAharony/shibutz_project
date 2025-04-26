@@ -271,7 +271,7 @@ namespace Final
 
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            currentEmployee.roles = new System.Collections.Generic.List<string>();
+                            currentEmployee.roles = new HashSet<string>();
 
                             while (reader.Read())
                             {

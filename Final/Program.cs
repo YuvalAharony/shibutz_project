@@ -22,8 +22,8 @@ namespace Final
         public static List<Employee> Employees=new List<Employee>();
         public static DataBaseHelper DataBaseHelper=new DataBaseHelper();
         public static List<Branch> Branches=new List<Branch>();
-        public const int ChromosomesEachGene = 300;
-        public const int Genes = 300;
+        public const int ChromosomesEachGene = 200;
+        public const int Generations = 200;
         public const int hoursPerWeek = 42;
         public const int hoursPerDay = 9;
         public const int hoursPerShift = 9;
@@ -47,7 +47,7 @@ namespace Final
             //יצירת אוכלוסייה ראשונית- שלב 1 באלגוריתם הגנטי 
             pop = initializeFirstPopulation(pop);
             //לולאה הרצה לפי מספר הדורות הנקבע ויוצרת דור חדש של צאצאים
-            for (int i = 0; i < Genes; i++)
+            for (int i = 0; i < Generations; i++)
             {
                 //שיפור הכרומוזומים ע"י הכלאה בין זוגות כרומוזומים
                 crossover(pop);
@@ -60,6 +60,11 @@ namespace Final
             //הדפסת הודעה למשתמש בסיום האלגוריתם שסידור העבודה נוצר בהצלחה
 
             MessageBox.Show("נוצר בהצלחה", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Console.WriteLine(count1);
+            Console.WriteLine("\n");
+
+            Console.WriteLine(count2);
+
 
         }
 
@@ -770,8 +775,7 @@ namespace Final
                 {
                     // בחירת משמרת אקראית מהכרומוזום
                     Shift shift = GetRandomShift(mutatedChromosome, random);
-                    if (shift == null) continue;
-
+                    
                     string shiftKey = $"{shift.day}_{shift.TimeSlot}";
 
                     // הפעלת אסטרטגיות מוטציה מהחשובה לפחות חשובה
@@ -790,20 +794,21 @@ namespace Final
                 // אם הכרומוזום השתפר, חשב מחדש את ציון הכושר והוסף לרשימה
                 if (wasImproved)
                 {
+                    count1++;
                     mutatedChromosome.Fitness = CalculateChromosomeFitness(mutatedChromosome);
                     if (mutatedChromosome.Fitness > originalFitness)
                         newChromosomes.Add(mutatedChromosome);
+                }
+                else
+                {
+                    count2++;
                 }
             }
 
             // הוסף את הכרומוזומים המשופרים לאוכלוסייה
             pop.Chromoshomes.AddRange(newChromosomes);
 
-            // שמור על הכרומוזומים הטובים ביותר
-            pop.Chromoshomes = pop.Chromoshomes
-                .OrderByDescending(ch => ch.Fitness)
-                .Take(ChromosomesEachGene)
-                .ToList();
+
         }
 
         // מיפוי שיבוצי עובדים נוכחיים

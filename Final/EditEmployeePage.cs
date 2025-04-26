@@ -13,13 +13,13 @@ namespace EmployeeSchedulingApp
     {
         private Employee selectedEmployee;
         private TextBox nameTextBox, idTextBox, rateTextBox, salaryTextBox;
-        private TextBox phoneTextBox, emailTextBox; // הוספת שדות טלפון ואימייל
-        private ComboBox roleComboBox;
+        private TextBox phoneTextBox, emailTextBox;
+        private CheckedListBox rolesCheckedListBox; // שינוי מ-ComboBox ל-CheckedListBox
         private CheckBox isExperiencedCheckBox;
-        private CheckedListBox branchesCheckedListBox; // רשימת סניפים
-        private CheckedListBox shiftsCheckedListBox;   // רשימת משמרות
+        private CheckedListBox branchesCheckedListBox;
+        private CheckedListBox shiftsCheckedListBox;
         private Button saveButton, cancelButton;
-        private Dictionary<string, List<ShiftDisplayInfo>> branchShifts; // מילון לשמירת המשמרות לפי סניף
+        private Dictionary<string, List<ShiftDisplayInfo>> branchShifts;
         string currentUserName;
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
@@ -47,10 +47,7 @@ namespace EmployeeSchedulingApp
             this.ClientSize = new System.Drawing.Size(400, 750);
             this.Name = "EditEmployeePage";
             this.ResumeLayout(false);
-
         }
-
-
 
         private void SetupUI()
         {
@@ -117,21 +114,28 @@ namespace EmployeeSchedulingApp
             };
             currentY += verticalSpacing;
 
-            // תפקיד
+            // תפקידים (CheckedListBox במקום ComboBox)
             Label roleLabel = new Label()
             {
-                Text = "תפקיד:",
+                Text = "תפקידים:",
                 Location = new Point(labelX, currentY),
                 AutoSize = true
             };
-            roleComboBox = new ComboBox()
+
+            // יצירת CheckedListBox לתפקידים
+            rolesCheckedListBox = new CheckedListBox()
             {
                 Location = new Point(controlX, currentY),
                 Width = 180,
-                DropDownStyle = ComboBoxStyle.DropDownList
+                Height = 80,
+                CheckOnClick = true
             };
-            roleComboBox.Items.AddRange(new string[] { "Waiter", "Chef", "Bartender", "Manager" });
-            currentY += verticalSpacing;
+
+            // הוספת התפקידים האפשריים
+            string[] roles = { "Waiter", "Chef", "Bartender", "Manager" };
+            rolesCheckedListBox.Items.AddRange(roles);
+
+            currentY += rolesCheckedListBox.Height + 5;
 
             // שכר שעתי
             Label salaryLabel = new Label()
@@ -201,7 +205,6 @@ namespace EmployeeSchedulingApp
                 Location = new Point(labelX, currentY),
                 Width = this.ClientSize.Width - 100,
                 Height = 120,
-
             };
             currentY += 140;
 
@@ -235,7 +238,7 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(emailLabel);
             this.Controls.Add(emailTextBox);
             this.Controls.Add(roleLabel);
-            this.Controls.Add(roleComboBox);
+            this.Controls.Add(rolesCheckedListBox);
             this.Controls.Add(salaryLabel);
             this.Controls.Add(salaryTextBox);
             this.Controls.Add(rateLabel);
@@ -248,6 +251,7 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(saveButton);
             this.Controls.Add(cancelButton);
         }
+
         private void LoadBranchesAndShifts()
         {
             try
@@ -338,8 +342,6 @@ namespace EmployeeSchedulingApp
             }
         }
 
-       
-
         private void LoadBranchShifts(int branchId, string branchName)
         {
             try
@@ -385,16 +387,6 @@ namespace EmployeeSchedulingApp
                 MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-      
-
-
-
-
-
-
-
-
 
         // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
         private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -459,8 +451,9 @@ namespace EmployeeSchedulingApp
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT Phone, Email FROM Employees WHERE EmployeeID = @EmployeeID";
 
+                    // טעינת נתוני טלפון ואימייל
+                    string query = "SELECT Phone, Email FROM Employees WHERE EmployeeID = @EmployeeID";
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
@@ -474,25 +467,37 @@ namespace EmployeeSchedulingApp
                             }
                         }
                     }
+
+                    // טעינת התפקידים הנוכחיים של העובד
+                    string rolesQuery = @"
+                        SELECT r.RoleName
+                        FROM EmployeeRoles er
+                        JOIN Roles r ON er.RoleID = r.RoleID
+                        WHERE er.EmployeeID = @EmployeeID";
+
+                    using (SqlCommand command = new SqlCommand(rolesQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            // סימון התפקידים הקיימים ברשימה
+                            while (reader.Read())
+                            {
+                                string roleName = reader.GetString(0);
+                                int index = rolesCheckedListBox.Items.IndexOf(roleName);
+                                if (index >= 0)
+                                {
+                                    rolesCheckedListBox.SetItemChecked(index, true);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("אירעה שגיאה בטעינת נתוני העובד: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            // בחירת התפקיד הנוכחי
-            if (selectedEmployee.roles != null && selectedEmployee.roles.Count > 0)
-            {
-                string currentRole = selectedEmployee.roles.FirstOrDefault();
-                for (int i = 0; i < roleComboBox.Items.Count; i++)
-                {
-                    if (roleComboBox.Items[i].ToString() == currentRole)
-                    {
-                        roleComboBox.SelectedIndex = i;
-                        break;
-                    }
-                }
             }
 
             salaryTextBox.Text = selectedEmployee.HourlySalary.ToString();
@@ -504,11 +509,11 @@ namespace EmployeeSchedulingApp
         {
             // בדיקת שדות חובה
             if (string.IsNullOrWhiteSpace(nameTextBox.Text) ||
-                roleComboBox.SelectedItem == null ||
+                rolesCheckedListBox.CheckedItems.Count == 0 || // בדיקה שנבחר לפחות תפקיד אחד
                 string.IsNullOrWhiteSpace(salaryTextBox.Text) ||
                 string.IsNullOrWhiteSpace(rateTextBox.Text))
             {
-                MessageBox.Show("נא למלא את כל השדות הדרושים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("נא למלא את כל השדות הדרושים ולבחור לפחות תפקיד אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -552,7 +557,7 @@ namespace EmployeeSchedulingApp
                                 command.ExecuteNonQuery();
                             }
 
-                            // עדכון התפקיד - מחיקת התפקידים הקיימים והוספת התפקיד החדש
+                            // עדכון התפקידים - מחיקת התפקידים הקיימים והוספת התפקידים החדשים
                             string deleteRolesQuery = "DELETE FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
                             using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection, transaction))
                             {
@@ -560,38 +565,42 @@ namespace EmployeeSchedulingApp
                                 command.ExecuteNonQuery();
                             }
 
-                            // בדיקה אם התפקיד קיים, ואם לא - הוספתו
-                            string newRole = roleComboBox.SelectedItem.ToString();
-                            int roleId;
-
-                            string getRoleIdQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
-                            using (SqlCommand command = new SqlCommand(getRoleIdQuery, connection, transaction))
+                            // הוספת התפקידים הנבחרים
+                            foreach (var item in rolesCheckedListBox.CheckedItems)
                             {
-                                command.Parameters.AddWithValue("@RoleName", newRole);
-                                object result = command.ExecuteScalar();
+                                string roleName = item.ToString();
 
-                                if (result == null) // התפקיד לא קיים
+                                // בדיקה אם התפקיד קיים, אם לא - הוספתו
+                                int roleId;
+                                string getRoleIdQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
+                                using (SqlCommand command = new SqlCommand(getRoleIdQuery, connection, transaction))
                                 {
-                                    string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
-                                    using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection, transaction))
+                                    command.Parameters.AddWithValue("@RoleName", roleName);
+                                    object result = command.ExecuteScalar();
+
+                                    if (result == null) // התפקיד לא קיים
                                     {
-                                        insertCommand.Parameters.AddWithValue("@RoleName", newRole);
-                                        roleId = (int)insertCommand.ExecuteScalar();
+                                        string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
+                                        using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection, transaction))
+                                        {
+                                            insertCommand.Parameters.AddWithValue("@RoleName", roleName);
+                                            roleId = (int)insertCommand.ExecuteScalar();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        roleId = (int)result;
                                     }
                                 }
-                                else
-                                {
-                                    roleId = (int)result;
-                                }
-                            }
 
-                            // הוספת התפקיד החדש
-                            string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
-                            using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                command.Parameters.AddWithValue("@RoleID", roleId);
-                                command.ExecuteNonQuery();
+                                // הוספת התפקיד החדש
+                                string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
+                                using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection, transaction))
+                                {
+                                    command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
+                                    command.Parameters.AddWithValue("@RoleID", roleId);
+                                    command.ExecuteNonQuery();
+                                }
                             }
 
                             // עדכון סניפים - מחיקת כל השיוכים הקיימים והוספת החדשים
@@ -656,9 +665,16 @@ namespace EmployeeSchedulingApp
                                 }
                             }
 
+                            // איסוף התפקידים הנבחרים
+                            HashSet<string> selectedRoles = new HashSet<string>();
+                            foreach (var item in rolesCheckedListBox.CheckedItems)
+                            {
+                                selectedRoles.Add(item.ToString());
+                            }
+
                             // עדכון האובייקט בזיכרון
                             selectedEmployee.Name = nameTextBox.Text;
-                            selectedEmployee.roles = new List<string> { roleComboBox.SelectedItem.ToString() };
+                            selectedEmployee.roles = selectedRoles;
                             selectedEmployee.HourlySalary = int.Parse(salaryTextBox.Text);
                             selectedEmployee.Rate = int.Parse(rateTextBox.Text);
                             selectedEmployee.isMentor = isExperiencedCheckBox.Checked;
@@ -687,13 +703,14 @@ namespace EmployeeSchedulingApp
             }
         }
 
-        public EditEmployeePage(Employee employee,string userName)
+        public EditEmployeePage(Employee employee, string userName)
         {
             selectedEmployee = employee;
             InitializeComponent();
             branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
             SetupUI();
             currentUserName = userName;
+
             // מנטרל את האירוע זמנית
             branchesCheckedListBox.ItemCheck -= BranchesCheckedListBox_ItemCheck;
 
