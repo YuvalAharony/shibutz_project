@@ -125,7 +125,6 @@ namespace EmployeeSchedulingApp
                                     TimeSlot = timeSlot,
                                     day = dayOfWeek,
                                     EventType = shiftType,
-                                    IsBusy = isBusy,
                                     AssignedEmployees = new Dictionary<string, List<Employee>>()
                                 };
 
@@ -513,7 +512,6 @@ namespace EmployeeSchedulingApp
                     TimeSlot = "Morning",
                     day = "Sunday",
                     RequiredRoles = new Dictionary<string, int> { { "Waiter", 1 }, { "Chef", 1 }, { "Manager", 1 }, {"Bartender",1 } },
-                    IsBusy = false,
                     AssignedEmployees = new Dictionary<string, List<Employee>>(),
                     EventType = "Regular"
                 };
@@ -557,15 +555,14 @@ namespace EmployeeSchedulingApp
                     $"SET " +
                     $"TimeSlotID = (SELECT ts.TimeSlotID FROM TimeSlots ts WHERE ts.TimeSlotName = @TimeSlotName)," +
                     $"ShiftTypeID = (SELECT st.ShiftTypeID FROM ShiftTypes st WHERE st.TypeName = @ShiftTypeName)," +
-                    $"DayOfWeek = @DayOfWeek,IsBusy = @IsBusy WHERE ShiftID = @ShiftID";
+                    $"DayOfWeek = @DayOfWeek WHERE ShiftID = @ShiftID";
 
                 using (SqlCommand command = new SqlCommand(UpdateShiftQuery, connection))
                 {
                     command.Parameters.AddWithValue("@ShiftID", shift.Id);
                     command.Parameters.AddWithValue("@TimeSlotName", shift.TimeSlot);
                     command.Parameters.AddWithValue("@DayOfWeek", shift.day);
-                    command.Parameters.AddWithValue("@ShiftTypeName", shift.EventType);
-                    command.Parameters.AddWithValue("@IsBusy", shift.IsBusy);
+                    command.Parameters.AddWithValue("@ShiftTypeName", shift.EventType);          
                     command.ExecuteNonQuery();
                 }
 
@@ -620,7 +617,7 @@ namespace EmployeeSchedulingApp
                     command.Parameters.AddWithValue("@TimeSlot", shift.TimeSlot);
                     command.Parameters.AddWithValue("@DayOfWeek", shift.day);
                     command.Parameters.AddWithValue("@ShiftType", shift.EventType);
-                    command.Parameters.AddWithValue("@IsBusy", shift.IsBusy);
+                    
                     newShiftId = (int)command.ExecuteScalar();
                 }
 

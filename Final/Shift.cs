@@ -21,7 +21,7 @@ namespace Final
 
         public Dictionary<string, int> RequiredRoles { get; set; }
 
-        public bool IsBusy { get; set; }
+        //public bool IsBusy { get; set; }
 
         public Dictionary<String,List<Employee>> AssignedEmployees { get; set; }
 
@@ -36,7 +36,6 @@ namespace Final
             this.branch = branch;
             this.TimeSlot = timeSlot;
             this.RequiredRoles = requiredRoles;
-            this.IsBusy = isBusy;
             this.day = day;
             this.AssignedEmployees = assignedEmployees;
             this.EventType = eventType;

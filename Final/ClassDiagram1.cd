@@ -10,11 +10,11 @@
   <Class Name="Final.AddEmployeePage" Collapsed="true">
     <Position X="5.75" Y="2.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAIACAAAAgAAACAABQCQCACAAAAAAAABBAABAA=</HashCode>
+      <HashCode>AAAAAAAIQCAAAAgAAACAABQCQCACAAAAAAAABAAABAA=</HashCode>
       <FileName>AddEmployeePage.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Branch">
+  <Class Name="Branch" Collapsed="true">
     <Position X="36.25" Y="3.75" Width="3.25" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
@@ -31,7 +31,7 @@
       <FileName>BranchManagmentPage.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Final.Chromosome">
+  <Class Name="Final.Chromosome" Collapsed="true">
     <Position X="32.5" Y="3.25" Width="3.5" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
@@ -58,7 +58,7 @@
   <Class Name="EmployeeSchedulingApp.EditEmployeePage" Collapsed="true">
     <Position X="28" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ACAAEEAKAAQggAoAAQAAAJACQCAKAAAAgACABDAAAAA=</HashCode>
+      <HashCode>ACAAEEAKAAQgCAoAAQAAAJACQCAKAAAAgACABDAAAAA=</HashCode>
       <FileName>EditEmployeePage.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -93,7 +93,7 @@
   <Class Name="EmployeeSchedulingApp.MainPage" Collapsed="true">
     <Position X="18.75" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>CAIAIAAASACACAgAAAAAAAADAAAGASIAAACABAAAAAQ=</HashCode>
+      <HashCode>CAIAIABASACACAgAAAAAAAADAAAGASIAAACABAAAAAQ=</HashCode>
       <FileName>MainPage.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -111,7 +111,7 @@
   <Class Name="Final.Program" Collapsed="true">
     <Position X="36.25" Y="2" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AKIDGAEIADAAAAwIBAAxAKUQGACAgAADEgQBhgMJCCk=</HashCode>
+      <HashCode>AKIDGAEAADEAQAwIBAEgAKUQGACAAAADEgQBhgMLiCk=</HashCode>
       <FileName>Program.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -129,7 +129,7 @@
       <FileName>RegisterPage.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Final.Shift">
+  <Class Name="Final.Shift" Collapsed="true">
     <Position X="33.25" Y="5.75" Width="4.5" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
@@ -140,8 +140,11 @@
       <FileName>Shift.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Final.ShiftDisplayInfo" Collapsed="true">
-    <Position X="36.25" Y="3" Width="1.5" />
+  <Class Name="Final.ShiftDisplayInfo">
+    <Position X="39.75" Y="4.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
     <TypeIdentifier>
       <HashCode>AAAgAAAAAAAAAAAEAAACAABEAAAAAAAAAAAEAAAAAAA=</HashCode>
       <FileName>ShiftDisplayInfo.cs</FileName>
@@ -166,7 +169,7 @@
     <TypeIdentifier />
   </Class>
   <Class Name="Final.Employee">
-    <Position X="3.25" Y="4.25" Width="3.5" />
+    <Position X="1.5" Y="4.25" Width="3.5" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
