@@ -119,6 +119,18 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(cancelButton);
         }
 
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // RegisterPage
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "RegisterPage";
+            this.ResumeLayout(false);
 
+        }
+
+     
     }
 }

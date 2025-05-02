@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Final
 {
-    internal class ShiftDisplayInfo
+    public class ShiftDisplayInfo
     {
        
             public int ShiftID { get; set; }

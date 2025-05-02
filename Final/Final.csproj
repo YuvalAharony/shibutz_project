@@ -59,10 +59,6 @@
       <DependentUpon>AddEmployeePage.cs</DependentUpon>
     </Compile>
     <Compile Include="Branch.cs" />
-    <Compile Include="BranchManagmentPage.cs" />
-    <Compile Include="BranchManagmentPage.Designer.cs">
-      <DependentUpon>BranchManagmentPage.cs</DependentUpon>
-    </Compile>
     <Compile Include="Chromosome.cs" />
     <Compile Include="DataBaseHelper.cs" />
     <Compile Include="EditBranchShift.cs">
@@ -137,9 +133,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddEmployeePage.resx">
       <DependentUpon>AddEmployeePage.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="BranchManagmentPage.resx">
-      <DependentUpon>BranchManagmentPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditBranchShift.resx">
       <DependentUpon>EditBranchShift.cs</DependentUpon>

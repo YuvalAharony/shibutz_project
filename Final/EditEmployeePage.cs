@@ -21,22 +21,10 @@ namespace EmployeeSchedulingApp
         private Button saveButton, cancelButton;
         private Dictionary<string, List<ShiftDisplayInfo>> branchShifts;
         string currentUserName;
+        private static DataBaseHelper helper = new DataBaseHelper();
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
-        // מחלקת עזר לתצוגת מידע על משמרות
-        private class ShiftDisplayInfo
-        {
-            public int ShiftID { get; set; }
-            public string BranchName { get; set; }
-            public string DayOfWeek { get; set; }
-            public string TimeSlot { get; set; }
-            public string ShiftType { get; set; }
-
-            public override string ToString()
-            {
-                return $"{BranchName} - {DayOfWeek} {TimeSlot} ({ShiftType})";
-            }
-        }
+      
 
         private void InitializeComponent()
         {
@@ -47,6 +35,7 @@ namespace EmployeeSchedulingApp
             this.ClientSize = new System.Drawing.Size(400, 750);
             this.Name = "EditEmployeePage";
             this.ResumeLayout(false);
+
         }
 
         private void SetupUI()
@@ -227,7 +216,11 @@ namespace EmployeeSchedulingApp
                 Size = new Size(buttonWidth, buttonHeight),
                 Location = new Point(buttonSpacing + buttonWidth + 20, currentY)
             };
-            saveButton.Click += SaveEmployeeChanges;
+            saveButton.Click += SaveEmployeeChanges
+            
+            
+
+            ;
 
             // הוספת כל הרכיבים לטופס
             this.Controls.Add(titleLabel);
@@ -254,139 +247,31 @@ namespace EmployeeSchedulingApp
 
         private void LoadBranchesAndShifts()
         {
-            try
+            branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
+            List<Branch> branches= helper.LoadUserBranches(currentUserName);
+            List<string> EmployeeBranches = helper.LoademployeeBranches(selectedEmployee);
+            foreach (Branch br in branches)
             {
-                // טעינת כל הסניפים
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                branchesCheckedListBox.Items.Add(br.Name);
+                branchShifts[br.Name]=helper.LoadBranchShiftsDetails(br.ID, br.Name);
+                if (EmployeeBranches.Contains(br.Name))
                 {
-                    connection.Open();
-
-                    // טעינת כל הסניפים
-                    string branchesQuery = "SELECT b.BranchID, Name FROM Branches b join UserBranches ub on ub.BranchID=b.BranchID " +
-                        "join Users u on u.UserID=ub.UserID " +
-                        "where u.UserName=@UserName";
-                    using (SqlCommand command = new SqlCommand(branchesQuery, connection))
+                    int index = branchesCheckedListBox.Items.IndexOf(br.Name);
+                    if (index >= 0)
                     {
-                        command.Parameters.AddWithValue("@UserName", currentUserName);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-
-                            while (reader.Read())
-                            {
-                                int branchId = reader.GetInt32(0);
-                                string branchName = reader.GetString(1);
-                                branchesCheckedListBox.Items.Add(branchName);
-
-                                // טעינת המשמרות של הסניף
-                                LoadBranchShifts(branchId, branchName);
-                            }
-                        }
+                        branchesCheckedListBox.SetItemChecked(index, true);
                     }
-
-                    // טעינת הסניפים שהעובד משויך אליהם
-                    string employeeBranchesQuery = @"
-                        SELECT b.Name
-                        FROM Branches b
-                        INNER JOIN EmployeeBranches eb ON b.BranchID = eb.BranchID
-                        WHERE eb.EmployeeID = @EmployeeID";
-
-                    using (SqlCommand command = new SqlCommand(employeeBranchesQuery, connection))
-                    {
-                        command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                string branchName = reader.GetString(0);
-                                int index = branchesCheckedListBox.Items.IndexOf(branchName);
-                                if (index >= 0)
-                                {
-                                    branchesCheckedListBox.SetItemChecked(index, true);
-                                }
-                            }
-                        }
-                    }
-
-                    // טעינת המשמרות המועדפות של העובד
-                    string preferredShiftsQuery = @"
-                        SELECT ShiftID
-                        FROM EmployeePreferredShifts
-                        WHERE EmployeeID = @EmployeeID";
-
-                    HashSet<int> preferredShiftIds = new HashSet<int>();
-                    using (SqlCommand command = new SqlCommand(preferredShiftsQuery, connection))
-                    {
-                        command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                preferredShiftIds.Add(reader.GetInt32(0));
-                            }
-                        }
-                    }
-
-                    // עדכון המשמרות המועדפות של העובד באובייקט
-                    selectedEmployee.requestedShifts = preferredShiftIds;
                 }
 
-                // עדכון רשימת המשמרות
-                UpdateShiftsList();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("אירעה שגיאה בטעינת הסניפים והמשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            HashSet<int> preferredShiftIds = helper.LoademployeePrefferdShifts(selectedEmployee);
+            selectedEmployee.requestedShifts = preferredShiftIds;
+            UpdateShiftsList();
         }
 
-        private void LoadBranchShifts(int branchId, string branchName)
-        {
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
+        
 
-                    string query = @"
-                        SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
-                        FROM Shifts s
-                        INNER JOIN ShiftTypes st ON s.ShiftTypeID = st.ShiftTypeID
-                        INNER JOIN TimeSlots ts ON s.TimeSlotID=ts.TimeSlotID 
-                        WHERE s.BranchID = @BranchID";
-
-                    using (SqlCommand command = new SqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@BranchID", branchId);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            List<ShiftDisplayInfo> shifts = new List<ShiftDisplayInfo>();
-
-                            while (reader.Read())
-                            {
-                                shifts.Add(new ShiftDisplayInfo
-                                {
-                                    ShiftID = reader.GetInt32(0),
-                                    BranchName = branchName,
-                                    TimeSlot = reader.GetString(1),
-                                    DayOfWeek = reader.GetString(2),
-                                    ShiftType = reader.GetString(3)
-                                });
-                            }
-
-                            branchShifts[branchName] = shifts;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+     
 
         // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
         private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -444,7 +329,17 @@ namespace EmployeeSchedulingApp
         private void LoadEmployeeData()
         {
             nameTextBox.Text = selectedEmployee.Name;
-
+            phoneTextBox.Text = helper.LoadEmployeePhone(selectedEmployee.ID);
+            emailTextBox.Text = helper.LoadEmployeeEmail(selectedEmployee.ID);
+            HashSet<string> roles=helper.LoadEmployeeRoles(selectedEmployee.ID);
+            foreach(string roleName in roles)
+            {
+                int index = rolesCheckedListBox.Items.IndexOf(roleName);
+                if (index >= 0)
+                {
+                    rolesCheckedListBox.SetItemChecked(index, true);
+                }
+            }
             // טעינת נתוני טלפון ואימייל מהדאטאבייס
             try
             {
@@ -452,21 +347,7 @@ namespace EmployeeSchedulingApp
                 {
                     connection.Open();
 
-                    // טעינת נתוני טלפון ואימייל
-                    string query = "SELECT Phone, Email FROM Employees WHERE EmployeeID = @EmployeeID";
-                    using (SqlCommand command = new SqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                phoneTextBox.Text = reader["Phone"] != DBNull.Value ? reader["Phone"].ToString() : "";
-                                emailTextBox.Text = reader["Email"] != DBNull.Value ? reader["Email"].ToString() : "";
-                            }
-                        }
-                    }
+                    
 
                     // טעינת התפקידים הנוכחיים של העובד
                     string rolesQuery = @"
@@ -516,7 +397,6 @@ namespace EmployeeSchedulingApp
                 MessageBox.Show("נא למלא את כל השדות הדרושים ולבחור לפחות תפקיד אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
             // בדיקה שלפחות סניף אחד נבחר
             if (branchesCheckedListBox.CheckedItems.Count == 0)
             {
@@ -524,182 +404,53 @@ namespace EmployeeSchedulingApp
                 return;
             }
 
-            try
+            // איסוף התפקידים הנבחרים
+            List<string> selectedRoles = new List<string>();
+            foreach (var item in rolesCheckedListBox.CheckedItems)
             {
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                selectedRoles.Add(item.ToString());
+            }
+
+            // איסוף הסניפים הנבחרים
+            List<string> selectedBranchNames = new List<string>();
+            List<Branch> selectedBranches = new List<Branch>();
+            foreach (var branch in branchesCheckedListBox.CheckedItems)
+            {
+                string branchName = branch.ToString();
+                selectedBranchNames.Add(branchName);
+
+                // קבלת האובייקט Branch המתאים
+                Branch matchingBranch = helper.LoadUserBranches(currentUserName)
+                    .FirstOrDefault(b => b.Name == branchName);
+
+                if (matchingBranch != null)
                 {
-                    connection.Open();
-                    using (SqlTransaction transaction = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            // עדכון פרטי העובד
-                            string updateEmployeeQuery = @"
-                                UPDATE Employees 
-                                SET Name = @Name, 
-                                    Phone = @Phone, 
-                                    Email = @Email, 
-                                    HourlySalary = @HourlySalary, 
-                                    Rate = @Rate, 
-                                    IsMentor = @IsMentor 
-                                WHERE EmployeeID = @EmployeeID";
-
-                            using (SqlCommand command = new SqlCommand(updateEmployeeQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                command.Parameters.AddWithValue("@Name", nameTextBox.Text);
-                                command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phoneTextBox.Text) ? (object)DBNull.Value : phoneTextBox.Text);
-                                command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(emailTextBox.Text) ? (object)DBNull.Value : emailTextBox.Text);
-                                command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salaryTextBox.Text));
-                                command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rateTextBox.Text));
-                                command.Parameters.AddWithValue("@IsMentor", isExperiencedCheckBox.Checked);
-
-                                command.ExecuteNonQuery();
-                            }
-
-                            // עדכון התפקידים - מחיקת התפקידים הקיימים והוספת התפקידים החדשים
-                            string deleteRolesQuery = "DELETE FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
-                            using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                command.ExecuteNonQuery();
-                            }
-
-                            // הוספת התפקידים הנבחרים
-                            foreach (var item in rolesCheckedListBox.CheckedItems)
-                            {
-                                string roleName = item.ToString();
-
-                                // בדיקה אם התפקיד קיים, אם לא - הוספתו
-                                int roleId;
-                                string getRoleIdQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
-                                using (SqlCommand command = new SqlCommand(getRoleIdQuery, connection, transaction))
-                                {
-                                    command.Parameters.AddWithValue("@RoleName", roleName);
-                                    object result = command.ExecuteScalar();
-
-                                    if (result == null) // התפקיד לא קיים
-                                    {
-                                        string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
-                                        using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection, transaction))
-                                        {
-                                            insertCommand.Parameters.AddWithValue("@RoleName", roleName);
-                                            roleId = (int)insertCommand.ExecuteScalar();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        roleId = (int)result;
-                                    }
-                                }
-
-                                // הוספת התפקיד החדש
-                                string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
-                                using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection, transaction))
-                                {
-                                    command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                    command.Parameters.AddWithValue("@RoleID", roleId);
-                                    command.ExecuteNonQuery();
-                                }
-                            }
-
-                            // עדכון סניפים - מחיקת כל השיוכים הקיימים והוספת החדשים
-                            string deleteEmployeeBranchesQuery = "DELETE FROM EmployeeBranches WHERE EmployeeID = @EmployeeID";
-                            using (SqlCommand command = new SqlCommand(deleteEmployeeBranchesQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                command.ExecuteNonQuery();
-                            }
-
-                            // הוספת הסניפים החדשים
-                            List<string> newBranches = new List<string>();
-                            foreach (var branch in branchesCheckedListBox.CheckedItems)
-                            {
-                                string branchName = branch.ToString();
-                                newBranches.Add(branchName);
-
-                                string getBranchIdQuery = "SELECT BranchID FROM Branches WHERE Name = @BranchName";
-                                int branchId;
-
-                                using (SqlCommand command = new SqlCommand(getBranchIdQuery, connection, transaction))
-                                {
-                                    command.Parameters.AddWithValue("@BranchName", branchName);
-                                    object result = command.ExecuteScalar();
-
-                                    if (result != null)
-                                    {
-                                        branchId = (int)result;
-
-                                        string insertEmployeeBranchQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
-                                        using (SqlCommand insertCommand = new SqlCommand(insertEmployeeBranchQuery, connection, transaction))
-                                        {
-                                            insertCommand.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                            insertCommand.Parameters.AddWithValue("@BranchID", branchId);
-                                            insertCommand.ExecuteNonQuery();
-                                        }
-                                    }
-                                }
-                            }
-
-                            // עדכון משמרות מועדפות - מחיקת כל ההעדפות הקיימות והוספת החדשות
-                            string deletePreferredShiftsQuery = "DELETE FROM EmployeePreferredShifts WHERE EmployeeID = @EmployeeID";
-                            using (SqlCommand command = new SqlCommand(deletePreferredShiftsQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                command.ExecuteNonQuery();
-                            }
-
-                            // הוספת המשמרות המועדפות החדשות
-                            HashSet<int> newPreferredShifts = new HashSet<int>();
-                            foreach (ShiftDisplayInfo shift in shiftsCheckedListBox.CheckedItems)
-                            {
-                                int shiftId = shift.ShiftID;
-                                newPreferredShifts.Add(shiftId);
-
-                                string insertPreferredShiftQuery = "INSERT INTO EmployeePreferredShifts (EmployeeID, ShiftID) VALUES (@EmployeeID, @ShiftID)";
-                                using (SqlCommand command = new SqlCommand(insertPreferredShiftQuery, connection, transaction))
-                                {
-                                    command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                    command.Parameters.AddWithValue("@ShiftID", shiftId);
-                                    command.ExecuteNonQuery();
-                                }
-                            }
-
-                            // איסוף התפקידים הנבחרים
-                            HashSet<string> selectedRoles = new HashSet<string>();
-                            foreach (var item in rolesCheckedListBox.CheckedItems)
-                            {
-                                selectedRoles.Add(item.ToString());
-                            }
-
-                            // עדכון האובייקט בזיכרון
-                            selectedEmployee.Name = nameTextBox.Text;
-                            selectedEmployee.roles = selectedRoles;
-                            selectedEmployee.HourlySalary = int.Parse(salaryTextBox.Text);
-                            selectedEmployee.Rate = int.Parse(rateTextBox.Text);
-                            selectedEmployee.isMentor = isExperiencedCheckBox.Checked;
-                            selectedEmployee.Branches = newBranches;
-                            selectedEmployee.requestedShifts = newPreferredShifts;
-
-                            // אישור העסקה
-                            transaction.Commit();
-
-                            MessageBox.Show($"פרטי העובד {selectedEmployee.Name} עודכנו בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            this.DialogResult = DialogResult.OK;
-                            this.Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            // ביטול העסקה במקרה של שגיאה
-                            transaction.Rollback();
-                            throw new Exception("אירעה שגיאה בשמירת השינויים: " + ex.Message);
-                        }
-                    }
+                    selectedBranches.Add(matchingBranch);
                 }
             }
-            catch (Exception ex)
+
+            // איסוף המשמרות המועדפות
+            List<ShiftDisplayInfo> selectedShifts = new List<ShiftDisplayInfo>();
+            foreach (ShiftDisplayInfo shift in shiftsCheckedListBox.CheckedItems)
             {
-                MessageBox.Show(ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                selectedShifts.Add(shift);
+            }
+
+            // שמירת השינויים לעובד
+            if (helper.SaveEmployeeToDataBase(
+                selectedEmployee,
+                nameTextBox.Text,
+                phoneTextBox.Text,
+                emailTextBox.Text,
+                salaryTextBox.Text,
+                rateTextBox.Text,
+                isExperiencedCheckBox.Checked,
+                selectedRoles,
+                selectedBranches,
+                selectedShifts))
+            {
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             }
         }
 

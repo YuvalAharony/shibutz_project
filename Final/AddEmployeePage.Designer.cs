@@ -36,10 +36,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Name = "AddEmployeePage";
-            this.Text = "AddEmployeePage";
             this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.RightToLeftLayout = true;
+            this.Text = "AddEmployeePage";
             this.ResumeLayout(false);
+
         }
 
         #endregion

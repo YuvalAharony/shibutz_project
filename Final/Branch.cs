@@ -13,13 +13,7 @@ public class Branch
         Shifts = new List<Shift>();
     }
 
-    // בנאי עם פרמטרים
-    public Branch(int id, string name, List<Shift> shifts)
-    {
-        this.ID = id;
-        this.Name = name;
-        this.Shifts = shifts ?? new List<Shift>();
-    }
+   
 
     
 

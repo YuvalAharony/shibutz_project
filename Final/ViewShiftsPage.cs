@@ -179,6 +179,6 @@ namespace Final
             return selectedBranch.Shifts.FirstOrDefault(s => s.Id.ToString() == shiftId);
         }
 
-
+      
     }
 }

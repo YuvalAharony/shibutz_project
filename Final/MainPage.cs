@@ -169,12 +169,9 @@ namespace EmployeeSchedulingApp
                     // הוספת אירוע שיתרחש כאשר הטופס נסגר - רענון רשימת העובדים
                     editPage.FormClosed += (s, args) =>
                     {
-                        // רענון רשימת העובדים מבסיס הנתונים
-                        using (SqlConnection connection = new SqlConnection(connectionString))
-                        {
-                            connection.Open();  // Open the connection before using it
+                       
                             EmployeesList = helper.LoadUserEmployees(currentUserName);
-                        }  // Connection is automatically closed and disposed here
+                          // Connection is automatically closed and disposed here
 
                         // עדכון תצוגת העובדים
                         LoadEmployees();
@@ -454,6 +451,7 @@ namespace EmployeeSchedulingApp
             }
         }
 
+      
     }
 
 }

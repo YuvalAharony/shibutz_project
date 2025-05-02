@@ -15,6 +15,7 @@ namespace EmployeeSchedulingApp
         private Shift selectedShift;
         private ListView shiftsListView;
         private Panel editPanel;
+        private static DataBaseHelper helper = new DataBaseHelper();
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
         public EditBranchShift(Branch branch)
@@ -96,94 +97,21 @@ namespace EmployeeSchedulingApp
         private void LoadShifts()
         {
             shiftsListView.Items.Clear();
+            List<Shift> shifts = new List<Shift>();
+            shifts = helper.LoadBranchShifts(currentBranch.ID);
+            foreach (Shift shift in shifts) {
+                shift.RequiredRoles = helper.LoadShiftRequiredRoles(shift.Id);
 
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    using (SqlCommand command = new SqlCommand("sp_GetBranchShifts", connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@BranchID", currentBranch.ID);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                int shiftId = reader.GetInt32(0);
-                                string timeSlot = reader.GetString(1);
-                                string dayOfWeek = reader.GetString(2);
-                                string shiftType = reader.GetString(3);
-                                bool isBusy = reader.GetBoolean(4);
-
-                                // יצירת אובייקט משמרת חדש
-                                Shift shift = new Shift
-                                {
-                                    Id = shiftId,
-                                    branch = currentBranch.Name,
-                                    TimeSlot = timeSlot,
-                                    day = dayOfWeek,
-                                    EventType = shiftType,
-                                    AssignedEmployees = new Dictionary<string, List<Employee>>()
-                                };
-
-                                // טעינת דרישות התפקידים למשמרת
-                                shift.RequiredRoles = LoadShiftRequiredRoles(shiftId);
-
-                                ListViewItem item = new ListViewItem(shift.Id.ToString());
-                                item.SubItems.Add(shift.day);
-                                item.SubItems.Add(shift.TimeSlot);
-                                item.SubItems.Add(shift.EventType);
-                                item.SubItems.Add(shift.GetTotalRequiredEmployees().ToString());
-                                item.Tag = shift;
-                                shiftsListView.Items.Add(item);
-                            }
-                        }
-                    }
-                }
+                ListViewItem item = new ListViewItem(shift.Id.ToString());
+                item.SubItems.Add(shift.day);
+                item.SubItems.Add(shift.TimeSlot);
+                item.SubItems.Add(shift.EventType);
+                item.SubItems.Add(shift.GetTotalRequiredEmployees().ToString());
+                item.Tag = shift;
+                shiftsListView.Items.Add(item);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
             // מיון לפי ימי השבוע ואז לפי זמן
             SortShiftsByDayAndTime();
-        }
-
-        private Dictionary<string, int> LoadShiftRequiredRoles(int shiftId)
-        {
-            Dictionary<string, int> requiredRoles = new Dictionary<string, int>();
-
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    using (SqlCommand command = new SqlCommand("sp_GetShiftRequiredRoles", connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@ShiftID", shiftId);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                string roleName = reader.GetString(0);
-                                int requiredCount = reader.GetInt32(1);
-                                requiredRoles[roleName] = requiredCount;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("אירעה שגיאה בטעינת דרישות התפקידים: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            return requiredRoles;
         }
 
         private void SortShiftsByDayAndTime()
@@ -308,8 +236,8 @@ namespace EmployeeSchedulingApp
                 RightToLeft = RightToLeft.No
             };
 
-            string[] times = { "Morning", "Evening" };
-            timeComboBox.Items.AddRange(times);
+            List<string> times = helper.getTimeSlots();
+            timeComboBox.Items.AddRange(times.ToArray());
             timeComboBox.SelectedItem = selectedShift.TimeSlot;
             editPanel.Controls.Add(timeComboBox);
 
@@ -329,28 +257,9 @@ namespace EmployeeSchedulingApp
                 Size = new Size(180, 25),
                 RightToLeft = RightToLeft.No
             };
-            #region ShiftTypesFromDb
-            List<string> shiftTypes = new List<string>();
+         
+            List<string> shiftTypes =helper.getShiftTypes();
 
-            // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                // מניחים שהעמודה עם שם סוג המשמרת נקראת TypeName
-                string query = "SELECT TypeName FROM ShiftTypes";
-                SqlCommand command = new SqlCommand(query, connection);
-
-                connection.Open();
-
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        // קורא את הערך של TypeName מהשאילתה ומוסיף לרשימה
-                        shiftTypes.Add(reader["TypeName"].ToString());
-                    }
-                }
-            }
-            #endregion
             
             eventTypeComboBox.Items.AddRange(shiftTypes.ToArray());
             eventTypeComboBox.SelectedItem = selectedShift.EventType;
@@ -365,29 +274,9 @@ namespace EmployeeSchedulingApp
                 Location = new Point(350, 170)
             };
             editPanel.Controls.Add(rolesTitle);
-            #region RolesTypesFromDb
-            List<string> roles = new List<string>();
-
-            // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                // מניחים שהעמודה עם שם סוג המשמרת נקראת TypeName
-                string query = "SELECT RoleName FROM Roles";
-                SqlCommand command = new SqlCommand(query, connection);
-
-                connection.Open();
-
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        // קורא את הערך של TypeName מהשאילתה ומוסיף לרשימה
-                        roles.Add(reader["RoleName"].ToString());
-                    }
-                }
-            }
-            #endregion
-   
+            
+            //תפקידים דרושים
+            List<string> roles = helper.getRoles();
             int yPos = 200;
             Dictionary<string, NumericUpDown> roleCountInputs = new Dictionary<string, NumericUpDown>();
 
@@ -451,7 +340,7 @@ namespace EmployeeSchedulingApp
                     }
 
                     // שמירה בבסיס הנתונים
-                    SaveShiftToDatabase(selectedShift);
+                    helper.SaveShiftToDatabase(selectedShift);
 
                     MessageBox.Show("המשמרת עודכנה בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -483,7 +372,7 @@ namespace EmployeeSchedulingApp
                     try
                     {
                         // מחיקה מבסיס הנתונים
-                        DeleteShiftFromDatabase(selectedShift.Id);
+                        helper.DeleteShiftFromDatabase(selectedShift.Id);
 
                         MessageBox.Show("המשמרת נמחקה בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -517,7 +406,7 @@ namespace EmployeeSchedulingApp
                 };
 
                 // הוספה לבסיס הנתונים
-                int newShiftId = AddShiftToDatabase(newShift);
+                int newShiftId = helper.AddShiftToDatabase(currentBranch.ID);
 
                 // עדכון המזהה שהתקבל מהדאטאבייס
                 newShift.Id = newShiftId;
@@ -542,102 +431,6 @@ namespace EmployeeSchedulingApp
             {
                 MessageBox.Show($"אירעה שגיאה בהוספת המשמרת: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void SaveShiftToDatabase(Shift shift)
-        {
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                // עדכון פרטי המשמרת
-                string UpdateShiftQuery = $"UPDATE Shifts " +
-                    $"SET " +
-                    $"TimeSlotID = (SELECT ts.TimeSlotID FROM TimeSlots ts WHERE ts.TimeSlotName = @TimeSlotName)," +
-                    $"ShiftTypeID = (SELECT st.ShiftTypeID FROM ShiftTypes st WHERE st.TypeName = @ShiftTypeName)," +
-                    $"DayOfWeek = @DayOfWeek WHERE ShiftID = @ShiftID";
-
-                using (SqlCommand command = new SqlCommand(UpdateShiftQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@ShiftID", shift.Id);
-                    command.Parameters.AddWithValue("@TimeSlotName", shift.TimeSlot);
-                    command.Parameters.AddWithValue("@DayOfWeek", shift.day);
-                    command.Parameters.AddWithValue("@ShiftTypeName", shift.EventType);          
-                    command.ExecuteNonQuery();
-                }
-
-                
-                foreach (var role in shift.RequiredRoles)
-                {
-                    // עדכון פרטי המשמרת
-                    string UpdateRequirsRolesQuery = $"UPDATE s " +
-                        $"SET s.RequiredCount = @RequiredCount " +
-                        $"FROM ShiftRequiredRoles s " +
-                        $"JOIN Roles r ON s.RoleID = r.RoleID " +
-                        $"WHERE s.ShiftID = @ShiftID AND r.RoleName = @RoleName ";
-                    using (SqlCommand command = new SqlCommand(UpdateRequirsRolesQuery, connection))
-                    {
-                        command.Parameters.AddWithValue("@ShiftID", shift.Id);
-                        command.Parameters.AddWithValue("@RoleName", role.Key);
-                        command.Parameters.AddWithValue("@RequiredCount", role.Value);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-        }
-
-        private void DeleteShiftFromDatabase(int shiftId)
-        {
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                using (SqlCommand command = new SqlCommand("sp_DeleteShift", connection))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@ShiftID", shiftId);
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
-
-        private int AddShiftToDatabase(Shift shift)
-        {
-            int newShiftId;
-
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                // הוספת המשמרת
-                using (SqlCommand command = new SqlCommand("sp_AddShift", connection))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@BranchID", currentBranch.ID);
-                    command.Parameters.AddWithValue("@TimeSlot", shift.TimeSlot);
-                    command.Parameters.AddWithValue("@DayOfWeek", shift.day);
-                    command.Parameters.AddWithValue("@ShiftType", shift.EventType);
-                    
-                    newShiftId = (int)command.ExecuteScalar();
-                }
-
-                // הוספת דרישות התפקידים
-                foreach (var role in shift.RequiredRoles)
-                {
-                    using (SqlCommand command = new SqlCommand("sp_UpdateShiftRequiredRoles", connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@ShiftID", newShiftId);
-                        command.Parameters.AddWithValue("@RoleName", role.Key);
-                        command.Parameters.AddWithValue("@RequiredCount", role.Value);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-
-            return newShiftId;
-        }
-
-       
+        }   
     }
 }
