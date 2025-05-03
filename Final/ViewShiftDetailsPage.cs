@@ -7,12 +7,22 @@ using System.Windows.Forms;
 
 namespace Final
 {
+    // דף לצפייה בפרטי משמרת ועובדים משובצים
     public class ViewShiftDetailPage : Form
     {
+        // המשמרת להצגה
         private Shift shift;
+        // הסניף אליו שייכת המשמרת
         private Branch branch;
+        // טבלה להצגת התפקידים והעובדים במשמרת
         private DataGridView rolesGridView;
 
+        // בנאי המחלקה - יוצר טופס לצפייה בפרטי משמרת
+        // פרמטרים
+        // shift - המשמרת להצגה
+        // branch - הסניף אליו שייכת המשמרת
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים והעובדים במשמרת
         public ViewShiftDetailPage(Shift shift, Branch branch)
         {
             this.shift = shift;
@@ -22,6 +32,10 @@ namespace Final
             LoadRolesAndEmployees();
         }
 
+        // אתחול ממשק המשתמש של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void InitializeUI()
         {
             // Set basic form properties
@@ -65,6 +79,10 @@ namespace Final
             this.Controls.Add(rolesGridView);
         }
 
+        // טעינת התפקידים והעובדים המשובצים במשמרת לטבלה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים והעובדים במשמרת
         private void LoadRolesAndEmployees()
         {
             rolesGridView.Rows.Clear();
@@ -153,6 +171,10 @@ namespace Final
             }
         }
 
+        // אתחול הרכיבים של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -162,9 +184,6 @@ namespace Final
             this.ClientSize = new System.Drawing.Size(282, 253);
             this.Name = "ViewShiftDetailPage";
             this.ResumeLayout(false);
-
         }
-
-        
     }
 }

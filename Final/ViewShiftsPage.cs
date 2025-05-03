@@ -4,13 +4,21 @@ using System.Windows.Forms;
 
 namespace Final
 {
+    // דף לצפייה בסידור המשמרות של סניף
     public partial class ViewShiftsPage : Form
     {
+        // הסניף הנבחר לצפייה
         private Branch selectedBranch;
+        // טבלה להצגת המשמרות
         private DataGridView shiftsDataGridView;
-        // מערך של ימות השבוע – יש להתאים לשפה/פורמט הרצוי
+        // מערך של ימות השבוע
         private readonly string[] daysOfWeek = new string[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
+        // בנאי המחלקה - יוצר טופס לצפייה בסידור המשמרות של סניף
+        // פרמטרים
+        // branch - הסניף לצפייה
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         public ViewShiftsPage(Branch branch)
         {
             selectedBranch = branch;
@@ -20,6 +28,10 @@ namespace Final
             LoadShifts();
         }
 
+        // הגדרת ממשק המשתמש של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = $"סידור משמרות - {selectedBranch.Name}";
@@ -62,6 +74,10 @@ namespace Final
             this.Controls.Add(shiftsDataGridView);
         }
 
+        // טעינת המשמרות לטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         private void LoadShifts()
         {
             shiftsDataGridView.Rows.Clear();
@@ -79,7 +95,7 @@ namespace Final
             {
                 var shifts = bestChromosome.Shifts[selectedBranch.Name];
 
-                // קיבוץ לפי סוג המשמרת (TimeSlot: Morning/Evening)
+                // קיבוץ לפי סוג המשמרת
                 var groupedShifts = shifts.GroupBy(s => s.TimeSlot)
                                           .OrderBy(g => g.Key);
 
@@ -87,22 +103,17 @@ namespace Final
                 {
                     // מערך: תא ראשון = סוג המשמרת, תאים 1..n = ימים
                     string[] row = new string[daysOfWeek.Length + 1];
-                    row[0] = group.Key; // לדוגמה "Morning" או "Evening"
+                    row[0] = group.Key;
 
                     foreach (var shift in group)
                     {
                         int dayIndex = Array.IndexOf(daysOfWeek, shift.day);
                         if (dayIndex >= 0)
                         {
-                            // Previous code:
-                            // string employees = string.Join(Environment.NewLine, shift.AssignedEmployees
-                            //     .Select(empId => Program.Employees.FirstOrDefault(e => e.ID == empId)?.Name ?? "לא ידוע"));
-
-                            // Updated code for Dictionary<String, List<Employee>>:
                             string employees = string.Join(Environment.NewLine,
                                 shift.AssignedEmployees.SelectMany(role => role.Value)
                                     .Select(emp => emp?.Name ?? "לא ידוע")
-                                    .Distinct()); // Added Distinct() to avoid duplicates if an employee appears in multiple roles
+                                    .Distinct());
 
                             if (string.IsNullOrEmpty(row[dayIndex + 1]))
                                 row[dayIndex + 1] = employees;
@@ -120,24 +131,28 @@ namespace Final
             }
         }
 
-        // Add this event handler to your ViewShiftsPage class
-        // Add this event handler to your ViewShiftsPage class
+        // אירוע לחיצה כפולה על תא בטבלת המשמרות - פותח דף פרטי משמרת
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         private void ShiftsGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            // דילוג אם נלחץ כותרת עמודה/שורה או העמודה הראשונה (עמודת "משמרת")
+            // דילוג אם נלחץ כותרת עמודה/שורה או העמודה הראשונה
             if (e.RowIndex < 0 || e.ColumnIndex <= 0)
                 return;
 
             // קבלת היום מכותרת העמודה
             string dayOfWeek = shiftsDataGridView.Columns[e.ColumnIndex].Name;
 
-            // קבלת סוג המשמרת (בוקר/ערב) מתא בעמודה הראשונה
+            // קבלת סוג המשמרת מתא בעמודה הראשונה
             string shiftTime = shiftsDataGridView.Rows[e.RowIndex].Cells[0].Value?.ToString();
 
             if (string.IsNullOrEmpty(shiftTime))
                 return;
 
-            // שליפת ה-Chromosome הטוב ביותר
+            // שליפת הכרומוזום הטוב ביותר
             Chromosome bestChromosome = Program.GetBestChromosome();
             if (bestChromosome == null || !bestChromosome.Shifts.ContainsKey(selectedBranch.Name))
             {
@@ -162,23 +177,23 @@ namespace Final
             }
         }
 
-        // Helper method to get the Shift object from a row
+        // פונקציית עזר לקבלת אובייקט המשמרת משורה בטבלה
+        // פרמטרים
+        // rowIndex - מספר השורה בטבלה
+        // ערך מוחזר: אובייקט המשמרת אם נמצא, אחרת null
+        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         private Shift GetShiftFromRow(int rowIndex)
         {
-            // This implementation depends on how you store shifts in your grid
-            // If you store the shift object in the Tag property, you can do:
+            // בדיקה אם המשמרת נשמרה במאפיין התג של השורה
             if (shiftsDataGridView.Rows[rowIndex].Tag is Shift shift)
             {
                 return shift;
             }
 
-            // Alternative implementation if you store shift ID in the grid
-            // and need to look it up from the branch
+            // מימוש חלופי אם מזהה המשמרת נשמר בטבלה
             string shiftId = shiftsDataGridView.Rows[rowIndex].Cells["Id"].Value.ToString();
 
             return selectedBranch.Shifts.FirstOrDefault(s => s.Id.ToString() == shiftId);
         }
-
-      
     }
 }

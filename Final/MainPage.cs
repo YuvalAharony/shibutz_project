@@ -8,18 +8,29 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace EmployeeSchedulingApp
 {
+    // דף ראשי למערכת ניהול המשמרות והעובדים
     public partial class MainPage : Form
     {
+        // רשימת העובדים במערכת
         private List<Employee> EmployeesList;
+        // רשימת הצגת העובדים בממשק
         private ListView employeesListView;
+        // רשימת הסניפים במערכת
         private List<Branch> BranchesList;
+        // רשימת הצגת הסניפים בממשק
         private ListView branchesListView;
+        // שם המשתמש המחובר כעת
         private string currentUserName;
-        private static DataBaseHelper helper=new DataBaseHelper();
+        // מופע של מחלקת העזר לבסיס הנתונים
+        private static DataBaseHelper helper = new DataBaseHelper();
+        // מחרוזת חיבור לבסיס הנתונים
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True;MultipleActiveResultSets=True";
 
-
-   
+        // בנאי המחלקה - יוצר את העמוד הראשי
+        // פרמטרים
+        // UserName - שם המשתמש המחובר למערכת
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר העובדים והסניפים
         public MainPage(string UserName)
         {
             BranchesList = new List<Branch>();
@@ -33,6 +44,11 @@ namespace EmployeeSchedulingApp
             LoadBranches();
             LoadEmployees();
         }
+
+        // הגדרת ממשק המשתמש של העמוד הראשי
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "מסך ראשי - ניהול הרשת";
@@ -47,8 +63,6 @@ namespace EmployeeSchedulingApp
 
             this.Controls.Add(generateShiftsButton);
 
-
-            
             // Add this button to SetupUI in MainPage class
             Button generateRandomDataButton = new Button()
             {
@@ -93,7 +107,6 @@ namespace EmployeeSchedulingApp
             editBranchShiftsButton.Click += EditBranchShiftsButton_Click;
             this.Controls.Add(editBranchShiftsButton);
 
-
             // הוספת כפתורי מחיקה ליד רשימות הסניפים והעובדים
             Button deleteBranchButton = new Button()
             {
@@ -123,7 +136,6 @@ namespace EmployeeSchedulingApp
             };
             branchesListView.Columns.Add("שם הסניף", 150);
 
-
             employeesListView = new ListView()
             {
                 Location = new System.Drawing.Point(400, 150),
@@ -134,9 +146,6 @@ namespace EmployeeSchedulingApp
             };
 
             employeesListView.Columns.Add("שם העובד", 150);
-           
-
-
 
             this.Controls.Add(titleLabel);
             this.Controls.Add(addBranchButton);
@@ -145,6 +154,11 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(employeesListView);
             employeesListView.MouseDoubleClick += EmployeesListView_MouseDoubleClick;
         }
+
+        // הגדרת אירוע לחיצה כפולה על רשימת העובדים
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupEmployeesListViewDoubleClick()
         {
             // וודא שאירוע הלחיצה הכפולה מחובר
@@ -152,6 +166,12 @@ namespace EmployeeSchedulingApp
             employeesListView.MouseDoubleClick += EmployeesListView_MouseDoubleClick;
         }
 
+        // אירוע לחיצה כפולה על רשימת העובדים - פותח את דף עריכת העובד
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private void EmployeesListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (employeesListView.SelectedItems.Count > 0)
@@ -169,9 +189,8 @@ namespace EmployeeSchedulingApp
                     // הוספת אירוע שיתרחש כאשר הטופס נסגר - רענון רשימת העובדים
                     editPage.FormClosed += (s, args) =>
                     {
-                       
-                            EmployeesList = helper.LoadUserEmployees(currentUserName);
-                          // Connection is automatically closed and disposed here
+                        EmployeesList = helper.LoadUserEmployees(currentUserName);
+                        // Connection is automatically closed and disposed here
 
                         // עדכון תצוגת העובדים
                         LoadEmployees();
@@ -182,7 +201,10 @@ namespace EmployeeSchedulingApp
             }
         }
 
-        
+        // טעינת רשימת העובדים לתצוגה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         public void LoadEmployees()
         {
             employeesListView.Items.Clear(); // מנקה את הרשימה
@@ -195,6 +217,10 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // טעינת רשימת הסניפים לתצוגה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר הסניפים
         private void LoadBranches()
         {
             branchesListView.Items.Clear();
@@ -209,17 +235,26 @@ namespace EmployeeSchedulingApp
             branchesListView.MouseDoubleClick -= OpenViewShiftsPage;
             branchesListView.MouseDoubleClick += OpenViewShiftsPage;
         }
+
+        // אירוע לחיצה כפולה על רשימת הסניפים - פותח את דף הצגת המשמרות
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void OpenViewShiftsPage(object sender, EventArgs e)
         {
-
             Branch selectedBranch = (Branch)branchesListView.SelectedItems[0].Tag;
             ViewShiftsPage viewShiftsPage = new ViewShiftsPage(selectedBranch);
             viewShiftsPage.Show();
-
         }
 
-
-        // Add this button to SetupUI in MainPage class
+        // אירוע לחיצה על כפתור יצירת נתונים אקראיים
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר הנתונים ליצירה
         private void GenerateRandomDataButton_Click(object sender, EventArgs e)
         {
             using (Form inputForm = new Form())
@@ -282,11 +317,11 @@ namespace EmployeeSchedulingApp
                 // --- 3) הוספת הרכיבים לטופס ---
                 inputForm.Controls.AddRange(new Control[]
                 {
-            branchLabel,
-            branchCount,
-            employeeLabel,
-            employeeCount,
-            okButton
+                    branchLabel,
+                    branchCount,
+                    employeeLabel,
+                    employeeCount,
+                    okButton
                 });
                 inputForm.AcceptButton = okButton;
 
@@ -316,6 +351,10 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // פתיחת דף הוספת סניף חדש
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void OpenAddBranchPage()
         {
             // וודא שהמשתמש הנוכחי מועבר לטופס
@@ -332,6 +371,11 @@ namespace EmployeeSchedulingApp
 
             addBranchPage.ShowDialog();
         }
+
+        // פתיחת דף הוספת עובד חדש
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void OpenAddEmployeePage()
         {
             // העברת שם המשתמש הנוכחי לדף הוספת העובד
@@ -342,16 +386,18 @@ namespace EmployeeSchedulingApp
             {
                 if (addEmployee.DialogResult == DialogResult.OK)
                 {
-                  
                     EmployeesList = helper.LoadUserEmployees(currentUserName);
                     LoadEmployees();
-                    
                 }
             };
 
             addEmployee.ShowDialog();
         }
 
+        // אתחול הרכיבים של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -361,8 +407,14 @@ namespace EmployeeSchedulingApp
             this.ClientSize = new System.Drawing.Size(282, 253);
             this.Name = "MainPage";
             this.ResumeLayout(false);
-
         }
+
+        // אירוע לחיצה על כפתור מחיקת סניף
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void DeleteBranchButton_Click(object sender, EventArgs e)
         {
             if (branchesListView.SelectedItems.Count > 0)
@@ -394,6 +446,12 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // אירוע לחיצה על כפתור מחיקת עובד
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private void DeleteEmployeeButton_Click(object sender, EventArgs e)
         {
             if (employeesListView.SelectedItems.Count > 0)
@@ -416,7 +474,7 @@ namespace EmployeeSchedulingApp
                 if (result == DialogResult.Yes)
                 {
                     // מחיקת העובד
-                    if (helper.DeleteEmployee(selectedEmployee.ID));
+                    if (helper.DeleteEmployee(selectedEmployee.ID))
                     {
                         // מחיקה מהרשימה המקומית
                         EmployeesList.RemoveAll(emp => emp.ID == selectedEmployee.ID);
@@ -431,7 +489,12 @@ namespace EmployeeSchedulingApp
             }
         }
 
-
+        // אירוע לחיצה על כפתור עריכת משמרות סניף
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void EditBranchShiftsButton_Click(object sender, EventArgs e)
         {
             if (branchesListView.SelectedItems.Count > 0)
@@ -450,8 +513,5 @@ namespace EmployeeSchedulingApp
                 );
             }
         }
-
-      
     }
-
 }

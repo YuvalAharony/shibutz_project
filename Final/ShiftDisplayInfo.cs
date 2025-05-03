@@ -14,11 +14,9 @@ namespace Final
             public string DayOfWeek { get; set; }
             public string TimeSlot { get; set; }
             public string ShiftType { get; set; }
-
-            public override string ToString()
-            {
-                return $"{BranchName} - {DayOfWeek} {TimeSlot} ({ShiftType})";
-            }
-        
+        public override string ToString()
+        {
+            return $"{BranchName} - {DayOfWeek} {TimeSlot} ({ShiftType})";
+        }
     }
 }

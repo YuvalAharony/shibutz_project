@@ -10,25 +10,41 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Final
 {
+    // דף להוספת עובד חדש למערכת
     public partial class AddEmployeePage : Form
     {
+        // רשימת הסניפים לבחירה
         private CheckedListBox branchesCheckedListBox;
+
+        // שם המשתמש הנוכחי
         private string currentUserName;
+
+        // מחרוזת חיבור לבסיס הנתונים
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
-        private Dictionary<string, List<ShiftDisplayInfo>> branchShifts; // מילון לשמירת המשמרות לפי סניף
+
+        // מילון לשמירת המשמרות לפי סניף
+        private Dictionary<string, List<ShiftDisplayInfo>> branchShifts;
+
+        // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
 
+        // בנאי של המחלקה - יוצר טופס הוספת עובד חדש
+        // פרמטרים
+        // userName - שם המשתמש המחובר למערכת
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         public AddEmployeePage(String userName)
         {
             InitializeComponent();
             currentUserName = userName;
             SetupUI();
             LoadAvaliableBranches();
-
-
         }
 
-
+        // מגדיר את ממשק המשתמש של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "הוספת עובד חדש";
@@ -50,6 +66,7 @@ namespace Final
             int controlX = 150;
             int controlWidth = 180;
 
+            // מזהה העובד
             Label idLabel = new Label() { Text = "מזהה עובד:", Location = new System.Drawing.Point(labelX, currentY) };
             TextBox idTextBox = new TextBox() { Location = new System.Drawing.Point(controlX, currentY), Width = controlWidth, Name = "idTextBox" };
             currentY += gap;
@@ -69,6 +86,7 @@ namespace Final
             TextBox emailTextBox = new TextBox() { Location = new System.Drawing.Point(controlX, currentY), Width = controlWidth, Name = "emailTextBox" };
             currentY += gap;
 
+            // סיסמא
             Label passwordLabel = new Label() { Text = "סיסמה:", Location = new System.Drawing.Point(labelX, currentY) };
             TextBox passwordTextBox = new TextBox()
             {
@@ -79,10 +97,8 @@ namespace Final
             };
             currentY += gap;
 
-            // תפקידים (CheckedListBox)
+            // תפקידים 
             Label roleLabel = new Label() { Text = "תפקידים:", Location = new System.Drawing.Point(labelX, currentY) };
-
-            // יצירת CheckedListBox לתפקידים
             CheckedListBox rolesCheckedListBox = new CheckedListBox()
             {
                 Location = new System.Drawing.Point(controlX, currentY),
@@ -93,11 +109,10 @@ namespace Final
             };
 
             // הוספת התפקידים האפשריים
-            string[] roles = { "Waiter", "Chef", "Bartender", "Manager" };
-            rolesCheckedListBox.Items.AddRange(roles);
+            List<string> roles = helper.getRoles();
+            rolesCheckedListBox.Items.AddRange(roles.ToArray());
 
-            currentY += rolesCheckedListBox.Height + 5; // התאמת המיקום האנכי
-
+            currentY += rolesCheckedListBox.Height + 5; // התאמת המיקום 
 
             // שכר שעתי
             Label salaryLabel = new Label() { Text = "שכר שעתי:", Location = new System.Drawing.Point(labelX, currentY) };
@@ -109,7 +124,7 @@ namespace Final
             TextBox rateTextBox = new TextBox() { Location = new System.Drawing.Point(controlX, currentY), Width = controlWidth, Name = "rateTextBox" };
             currentY += gap;
 
-            // האם מנוסה (CheckBox)
+            // האם עובד מנוסה 
             CheckBox isExperiencedCheckBox = new CheckBox()
             {
                 Text = "האם עובד מנוסה?",
@@ -118,11 +133,9 @@ namespace Final
             };
             currentY += gap;
 
-            // בחירת סניפים - שימוש בשדה שכבר הוגדר במחלקה
+            // בחירת סניפים 
             Label branchesLabel = new Label() { Text = "בחר סניפים:", Location = new System.Drawing.Point(labelX, currentY) };
-            currentY += 20; // מרווח קטן לפני הרשימה
-
-            // אתחול branchesCheckedListBox שכבר הוגדר כשדה של המחלקה
+            currentY += 20; 
             branchesCheckedListBox = new CheckedListBox()
             {
                 Location = new System.Drawing.Point(labelX, currentY),
@@ -131,7 +144,6 @@ namespace Final
                 CheckOnClick = true,
                 Name = "branchesCheckedListBox"
             };
-
             currentY += branchesCheckedListBox.Height + 20;
 
             // כפתור שמירה
@@ -142,34 +154,7 @@ namespace Final
                 Location = new System.Drawing.Point(controlX, currentY),
                 Name = "saveButton"
             };
-            saveButton.Click += (sender, e) => {
-                // יצירת רשימת התפקידים שנבחרו
-                HashSet<string> selectedRoles = new HashSet<string>();
-                foreach (var item in rolesCheckedListBox.CheckedItems)
-                {
-                    selectedRoles.Add(item.ToString());
-                }
-
-
-                if(
-                helper.AddEmployee(
-                    idTextBox.Text,
-                    nameTextBox.Text,
-                    phoneTextBox.Text,
-                    emailTextBox.Text,
-                    rateTextBox.Text,
-                    selectedRoles,
-                    salaryTextBox.Text,
-                    isExperiencedCheckBox.Checked,
-                    passwordTextBox.Text,
-                    branchesCheckedListBox
-                ))
-                {
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
-                }
-               
-            };
+            saveButton.Click += SaveButton_Click;
 
             // כפתור ביטול
             Button cancelButton = new Button()
@@ -181,7 +166,7 @@ namespace Final
             };
             cancelButton.Click += (sender, e) => { this.Close(); };
 
-            // הוספת כל הפקדים לטופס
+            // הוספת כל הרכיבים לטופס
             this.Controls.Add(idLabel);
             this.Controls.Add(idTextBox);
             this.Controls.Add(titleLabel);
@@ -207,6 +192,65 @@ namespace Final
             this.Controls.Add(rolesCheckedListBox);
         }
 
+        // "מטפל באירוע לחיצה על כפתור "שמור
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            // יצירת רשימת התפקידים שנבחרו
+            HashSet<string> selectedRoles = GetSelectedRoles();
+
+            // ניסיון להוספת העובד לבסיס הנתונים
+            TextBox idTextBox = (TextBox)this.Controls["idTextBox"];
+            TextBox nameTextBox = (TextBox)this.Controls["nameTextBox"];
+            TextBox phoneTextBox = (TextBox)this.Controls["phoneTextBox"];
+            TextBox emailTextBox = (TextBox)this.Controls["emailTextBox"];
+            TextBox rateTextBox = (TextBox)this.Controls["rateTextBox"];
+            TextBox salaryTextBox = (TextBox)this.Controls["salaryTextBox"];
+            TextBox passwordTextBox = (TextBox)this.Controls["passwordTextBox"];
+            CheckBox isExperiencedCheckBox = (CheckBox)this.Controls["isExperiencedCheckBox"];
+
+            if (helper.AddEmployee(
+                idTextBox.Text,
+                nameTextBox.Text,
+                phoneTextBox.Text,
+                emailTextBox.Text,
+                rateTextBox.Text,
+                selectedRoles,
+                salaryTextBox.Text,
+                isExperiencedCheckBox.Checked,
+                passwordTextBox.Text,
+                branchesCheckedListBox))
+            {
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+        }
+
+        // אוסף את התפקידים שנבחרו ברשימה
+        // פרמטרים: אין
+        // ערך מוחזר: אוסף התפקידים שנבחרו
+        // O(n) :סיבוכיות
+        private HashSet<string> GetSelectedRoles()
+        {
+            CheckedListBox rolesCheckedListBox = (CheckedListBox)this.Controls["rolesCheckedListBox"];
+            HashSet<string> selectedRoles = new HashSet<string>();
+
+            foreach (var item in rolesCheckedListBox.CheckedItems)
+            {
+                selectedRoles.Add(item.ToString());
+            }
+
+            return selectedRoles;
+        }
+
+        // טוען את הסניפים הזמינים למשתמש
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות
         private void LoadAvaliableBranches()
         {
             List<Branch> branches = helper.LoadUserBranches(currentUserName);
@@ -215,6 +259,5 @@ namespace Final
                 branchesCheckedListBox.Items.Add(br.Name);
             }
         }
-    
     }
 }

@@ -4,13 +4,22 @@ using System.Windows.Forms;
 
 namespace EmployeeSchedulingApp
 {
+    // דף הבית של מערכת ניהול המשמרות
     public partial class HomePage : Form
     {
+        // בנאי המחלקה - יוצר את דף הבית
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         public HomePage()
         {
             SetupUI();
         }
 
+        // הגדרת ממשק המשתמש של דף הבית
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "ברוך הבא למערכת ניהול המשמרות";
@@ -45,6 +54,10 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(registerButton);
         }
 
+        // פותח את דף ההתחברות
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void OpenLoginPage()
         {
             LoginPage login = new LoginPage();
@@ -52,13 +65,15 @@ namespace EmployeeSchedulingApp
             this.Hide();
         }
 
+        // פותח את דף ההרשמה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void OpenRegisterPage()
         {
             RegisterPage register = new RegisterPage();
             register.Show();
             this.Hide();
         }
-
-       
     }
 }

@@ -2,25 +2,33 @@
 using System.Windows.Forms;
 using System.Data.SqlClient;
 
-
 namespace EmployeeSchedulingApp
 {
+    // דף התחברות למערכת ניהול המשמרות
     public partial class LoginPage : Form
     {
+        // מחרוזת חיבור לבסיס הנתונים
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+        // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
 
-
+        // בנאי המחלקה - יוצר את דף ההתחברות
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         public LoginPage()
         {
             SetupUI();
         }
 
+        // הגדרת ממשק המשתמש של דף ההתחברות
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "התחברות למערכת";
             this.Size = new System.Drawing.Size(400, 300);
-
             // 1) הפיכת כל ה־Form ל־RTL
             this.RightToLeft = RightToLeft.Yes;
             this.RightToLeftLayout = true;
@@ -51,8 +59,8 @@ namespace EmployeeSchedulingApp
                 Width = 180,
                 TextAlign = HorizontalAlignment.Right
             };
-
             currentY += gapY;
+
             // סיסמה
             Label passLabel = new Label()
             {
@@ -67,8 +75,8 @@ namespace EmployeeSchedulingApp
                 PasswordChar = '*',
                 TextAlign = HorizontalAlignment.Right
             };
-
             currentY += gapY + 10;
+
             // כפתור התחבר
             Button loginButton = new Button()
             {
@@ -90,7 +98,5 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(passTextBox);
             this.Controls.Add(loginButton);
         }
-
-
     }
 }

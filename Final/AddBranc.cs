@@ -9,13 +9,24 @@ using System.Windows.Forms;
 
 namespace EmployeeSchedulingApp
 {
+    // דף להוספת סניף חדש למערכת
     public partial class AddBranchPage : Form
     {
-        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+        // מחרוזת חיבור לבסיס הנתונים
+        private static string connectionString =
+            "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+
+        // שם המשתמש הנוכחי
         private string currentUserName;
+
+        // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
 
-
+        // בנאי של המחלקה - יוצר טופס הוספת סניף חדש 
+        // פרמטרים
+        // userName - שם המשתמש המחובר למערכת 
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         public AddBranchPage(string userName = null)
         {
             InitializeComponent();
@@ -23,24 +34,31 @@ namespace EmployeeSchedulingApp
             SetupUI();
         }
 
+        // מאתחל את הרכיבים הבסיסיים של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
-            // 
-            // AddBranchPage
-            // 
+
+            // הגדרות בסיסיות לטופס הוספת סניף
             this.ClientSize = new System.Drawing.Size(400, 450);
             this.Name = "AddBranchPage";
             this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.RightToLeftLayout = true;
             this.Text = "הוספת סניף חדש";
-            this.ResumeLayout(false);
 
+            this.ResumeLayout(false);
         }
 
+        // מגדיר את ממשק המשתמש של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
-            // כותרת
+            // יצירת כותרת
             Label titleLabel = new Label
             {
                 Text = "הוספת סניף חדש",
@@ -50,23 +68,25 @@ namespace EmployeeSchedulingApp
             };
             this.Controls.Add(titleLabel);
 
-            // שם הסניף
+            // יצירת תווית ושדה טקסט לשם הסניף
             Label nameLabel = new Label
             {
                 Text = "שם הסניף:",
                 Location = new Point(50, 70),
                 AutoSize = true
             };
+
             TextBox nameTextBox = new TextBox
             {
                 Name = "nameTextBox",
                 Location = new Point(150, 70),
                 Width = 180
             };
+
             this.Controls.Add(nameLabel);
             this.Controls.Add(nameTextBox);
 
-            // כפתורי שמירה וביטול
+            // יצירה והוספת כפתור שמירה
             Button saveButton = new Button
             {
                 Text = "שמור",
@@ -76,6 +96,7 @@ namespace EmployeeSchedulingApp
             saveButton.Click += SaveButton_Click;
             this.Controls.Add(saveButton);
 
+            // יצירה והוספת כפתור ביטול
             Button cancelButton = new Button
             {
                 Text = "ביטול",
@@ -86,27 +107,32 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(cancelButton);
         }
 
+        // מטפל באירוע לחיצה על כפתור "שמור" - מאמת את הקלט ושומר את הסניף החדש
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            // קבלת הערכים מהטופס
+            // קבלת ערך הטקסט משדה שם הסניף
             TextBox nameTextBox = (TextBox)this.Controls["nameTextBox"];
             string branchName = nameTextBox.Text.Trim();
 
-            // בדיקת תקינות
+            // בדיקת תקינות - ודא שהוזן שם סניף
             if (string.IsNullOrEmpty(branchName))
             {
-                MessageBox.Show("נא להזין שם סניף", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("נא להזין שם סניף", "שגיאה",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            // ניסיון להוספת הסניף לבסיס הנתונים
             if (helper.AddBranch(branchName, currentUserName))
             {
                 this.DialogResult = DialogResult.OK;
-                this.Close();   
+                this.Close();
             }
-            
-            ;
         }
-
-      
     }
 }

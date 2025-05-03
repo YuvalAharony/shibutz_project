@@ -9,15 +9,27 @@ using Final;
 
 namespace EmployeeSchedulingApp
 {
+    // דף לעריכת משמרות של סניף במערכת
     public partial class EditBranchShift : Form
     {
+        // הסניף הנוכחי שעליו עובדים
         private Branch currentBranch;
+        // המשמרת הנבחרת לעריכה
         private Shift selectedShift;
+        // רשימה להצגת המשמרות
         private ListView shiftsListView;
+        // פאנל לעריכת משמרת
         private Panel editPanel;
+        // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
+        // מחרוזת חיבור לבסיס הנתונים
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
+        // בנאי המחלקה - יוצר טופס עריכת משמרות לסניף
+        // פרמטרים
+        // branch - הסניף שאת משמרותיו יש לערוך
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         public EditBranchShift(Branch branch)
         {
             currentBranch = branch;
@@ -26,6 +38,10 @@ namespace EmployeeSchedulingApp
             LoadShifts();
         }
 
+        // אתחול הרכיבים של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -38,9 +54,12 @@ namespace EmployeeSchedulingApp
             this.RightToLeftLayout = true;
             this.Text = "עריכת משמרות סניף";
             this.ResumeLayout(false);
-
         }
 
+        // הגדרת ממשק המשתמש של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             // כותרת
@@ -94,12 +113,17 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(editPanel);
         }
 
+        // טעינת משמרות הסניף לרשימה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         private void LoadShifts()
         {
             shiftsListView.Items.Clear();
             List<Shift> shifts = new List<Shift>();
             shifts = helper.LoadBranchShifts(currentBranch.ID);
-            foreach (Shift shift in shifts) {
+            foreach (Shift shift in shifts)
+            {
                 shift.RequiredRoles = helper.LoadShiftRequiredRoles(shift.Id);
 
                 ListViewItem item = new ListViewItem(shift.Id.ToString());
@@ -114,6 +138,10 @@ namespace EmployeeSchedulingApp
             SortShiftsByDayAndTime();
         }
 
+        // מיון המשמרות לפי יום ושעה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n log n) :סיבוכיות כאשר n הוא מספר המשמרות
         private void SortShiftsByDayAndTime()
         {
             // מיון על פי ימים ולאחר מכן זמנים
@@ -173,6 +201,12 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // אירוע שנקרא כאשר המשתמש בוחר משמרת מהרשימה
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void ShiftsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (shiftsListView.SelectedItems.Count > 0)
@@ -182,6 +216,10 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // פתיחת פאנל עריכת משמרת
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים
         private void ShowShiftEditPanel()
         {
             editPanel.Controls.Clear();
@@ -257,10 +295,9 @@ namespace EmployeeSchedulingApp
                 Size = new Size(180, 25),
                 RightToLeft = RightToLeft.No
             };
-         
-            List<string> shiftTypes =helper.getShiftTypes();
 
-            
+            List<string> shiftTypes = helper.getShiftTypes();
+
             eventTypeComboBox.Items.AddRange(shiftTypes.ToArray());
             eventTypeComboBox.SelectedItem = selectedShift.EventType;
             editPanel.Controls.Add(eventTypeComboBox);
@@ -274,7 +311,7 @@ namespace EmployeeSchedulingApp
                 Location = new Point(350, 170)
             };
             editPanel.Controls.Add(rolesTitle);
-            
+
             //תפקידים דרושים
             List<string> roles = helper.getRoles();
             int yPos = 200;
@@ -325,18 +362,15 @@ namespace EmployeeSchedulingApp
                     foreach (string role in roles)
                     {
                         int count = (int)roleCountInputs[role].Value;
-                       
-                       
-                            if (selectedShift.RequiredRoles.ContainsKey(role))
-                            {
-                                selectedShift.RequiredRoles[role] = count;
-                            }
-                            else
-                            {
-                                selectedShift.RequiredRoles.Add(role, count);
-                            }
-                        
-                       
+
+                        if (selectedShift.RequiredRoles.ContainsKey(role))
+                        {
+                            selectedShift.RequiredRoles[role] = count;
+                        }
+                        else
+                        {
+                            selectedShift.RequiredRoles.Add(role, count);
+                        }
                     }
 
                     // שמירה בבסיס הנתונים
@@ -390,6 +424,12 @@ namespace EmployeeSchedulingApp
             editPanel.Controls.Add(deleteButton);
         }
 
+        // אירוע לחיצה על כפתור הוספת משמרת חדשה
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות
         private void AddShiftButton_Click(object sender, EventArgs e)
         {
             try
@@ -400,7 +440,7 @@ namespace EmployeeSchedulingApp
                     branch = currentBranch.Name,
                     TimeSlot = "Morning",
                     day = "Sunday",
-                    RequiredRoles = new Dictionary<string, int> { { "Waiter", 1 }, { "Chef", 1 }, { "Manager", 1 }, {"Bartender",1 } },
+                    RequiredRoles = new Dictionary<string, int> { { "Waiter", 1 }, { "Chef", 1 }, { "Manager", 1 }, { "Bartender", 1 } },
                     AssignedEmployees = new Dictionary<string, List<Employee>>(),
                     EventType = "Regular"
                 };
@@ -422,8 +462,6 @@ namespace EmployeeSchedulingApp
                     if (((Shift)item.Tag).Id == newShiftId)
                     {
                         item.Selected = true;
-                        
-                        ;
                     }
                 }
             }
@@ -431,6 +469,6 @@ namespace EmployeeSchedulingApp
             {
                 MessageBox.Show($"אירעה שגיאה בהוספת המשמרת: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }   
+        }
     }
 }

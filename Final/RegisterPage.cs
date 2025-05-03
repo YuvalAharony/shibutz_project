@@ -1,23 +1,31 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Windows.Forms;
-using System.Data.SqlClient;
 using System.Drawing;
-
 
 namespace EmployeeSchedulingApp
 {
+    // דף הרשמה למערכת ניהול המשמרות
     public partial class RegisterPage : Form
     {
+        // מחרוזת חיבור לבסיס הנתונים
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+        // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
 
-
+        // בנאי המחלקה - יוצר את דף ההרשמה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         public RegisterPage()
         {
             SetupUI();
         }
 
+        // הגדרת ממשק המשתמש של דף ההרשמה
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "הרשמה למערכת";
@@ -119,6 +127,10 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(cancelButton);
         }
 
+        // אתחול הרכיבים של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -128,9 +140,6 @@ namespace EmployeeSchedulingApp
             this.ClientSize = new System.Drawing.Size(282, 253);
             this.Name = "RegisterPage";
             this.ResumeLayout(false);
-
         }
-
-     
     }
 }

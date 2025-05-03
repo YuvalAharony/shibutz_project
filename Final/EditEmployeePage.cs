@@ -9,23 +9,34 @@ using System.Windows.Forms;
 
 namespace EmployeeSchedulingApp
 {
+    // דף לעריכת פרטי עובד במערכת
     public partial class EditEmployeePage : Form
     {
+        // העובד הנבחר לעריכה
         private Employee selectedEmployee;
+        // שדות טקסט למידע על העובד
         private TextBox nameTextBox, idTextBox, rateTextBox, salaryTextBox;
         private TextBox phoneTextBox, emailTextBox;
+        // רשימת תפקידים אפשריים לעובד
         private CheckedListBox rolesCheckedListBox; // שינוי מ-ComboBox ל-CheckedListBox
+        // תיבת סימון האם העובד מנוסה
         private CheckBox isExperiencedCheckBox;
+        // רשימות הסניפים והמשמרות
         private CheckedListBox branchesCheckedListBox;
         private CheckedListBox shiftsCheckedListBox;
+        // כפתורי שמירה וביטול
         private Button saveButton, cancelButton;
+        // אחסון המשמרות לפי סניף
         private Dictionary<string, List<ShiftDisplayInfo>> branchShifts;
+        // שם המשתמש הנוכחי
         string currentUserName;
+        // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
-        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
-      
-
+        // אתחול הרכיבים של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -35,9 +46,12 @@ namespace EmployeeSchedulingApp
             this.ClientSize = new System.Drawing.Size(400, 750);
             this.Name = "EditEmployeePage";
             this.ResumeLayout(false);
-
         }
 
+        // הגדרת ממשק המשתמש של הטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "עריכת עובד";
@@ -216,11 +230,7 @@ namespace EmployeeSchedulingApp
                 Size = new Size(buttonWidth, buttonHeight),
                 Location = new Point(buttonSpacing + buttonWidth + 20, currentY)
             };
-            saveButton.Click += SaveEmployeeChanges
-            
-            
-
-            ;
+            saveButton.Click += SaveEmployeeChanges;
 
             // הוספת כל הרכיבים לטופס
             this.Controls.Add(titleLabel);
@@ -245,15 +255,19 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(cancelButton);
         }
 
+        // טעינת סניפים ומשמרות זמינים לעובד
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר הסניפים
         private void LoadBranchesAndShifts()
         {
             branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
-            List<Branch> branches= helper.LoadUserBranches(currentUserName);
+            List<Branch> branches = helper.LoadUserBranches(currentUserName);
             List<string> EmployeeBranches = helper.LoademployeeBranches(selectedEmployee);
             foreach (Branch br in branches)
             {
                 branchesCheckedListBox.Items.Add(br.Name);
-                branchShifts[br.Name]=helper.LoadBranchShiftsDetails(br.ID, br.Name);
+                branchShifts[br.Name] = helper.LoadBranchShiftsDetails(br.ID, br.Name);
                 if (EmployeeBranches.Contains(br.Name))
                 {
                     int index = branchesCheckedListBox.Items.IndexOf(br.Name);
@@ -262,18 +276,18 @@ namespace EmployeeSchedulingApp
                         branchesCheckedListBox.SetItemChecked(index, true);
                     }
                 }
-
             }
             HashSet<int> preferredShiftIds = helper.LoademployeePrefferdShifts(selectedEmployee);
             selectedEmployee.requestedShifts = preferredShiftIds;
             UpdateShiftsList();
         }
 
-        
-
-     
-
         // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(1) :סיבוכיות
         private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             // הרצה מושהית כדי לאפשר את עדכון הסימון לפני הפעולה
@@ -284,6 +298,9 @@ namespace EmployeeSchedulingApp
         }
 
         // עדכון רשימת המשמרות על פי הסניפים שנבחרו
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n log n) :סיבוכיות כאשר n הוא מספר המשמרות
         private void UpdateShiftsList()
         {
             shiftsCheckedListBox.Items.Clear();
@@ -326,13 +343,17 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // טעינת נתוני העובד לטופס
+        // פרמטרים: אין
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים של העובד
         private void LoadEmployeeData()
         {
             nameTextBox.Text = selectedEmployee.Name;
             phoneTextBox.Text = helper.LoadEmployeePhone(selectedEmployee.ID);
             emailTextBox.Text = helper.LoadEmployeeEmail(selectedEmployee.ID);
-            HashSet<string> roles=helper.LoadEmployeeRoles(selectedEmployee.ID);
-            foreach(string roleName in roles)
+            HashSet<string> roles = helper.LoadEmployeeRoles(selectedEmployee.ID);
+            foreach (string roleName in roles)
             {
                 int index = rolesCheckedListBox.Items.IndexOf(roleName);
                 if (index >= 0)
@@ -341,51 +362,18 @@ namespace EmployeeSchedulingApp
                 }
             }
             // טעינת נתוני טלפון ואימייל מהדאטאבייס
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-
-                    
-
-                    // טעינת התפקידים הנוכחיים של העובד
-                    string rolesQuery = @"
-                        SELECT r.RoleName
-                        FROM EmployeeRoles er
-                        JOIN Roles r ON er.RoleID = r.RoleID
-                        WHERE er.EmployeeID = @EmployeeID";
-
-                    using (SqlCommand command = new SqlCommand(rolesQuery, connection))
-                    {
-                        command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            // סימון התפקידים הקיימים ברשימה
-                            while (reader.Read())
-                            {
-                                string roleName = reader.GetString(0);
-                                int index = rolesCheckedListBox.Items.IndexOf(roleName);
-                                if (index >= 0)
-                                {
-                                    rolesCheckedListBox.SetItemChecked(index, true);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("אירעה שגיאה בטעינת נתוני העובד: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
 
             salaryTextBox.Text = selectedEmployee.HourlySalary.ToString();
             rateTextBox.Text = selectedEmployee.Rate.ToString();
             isExperiencedCheckBox.Checked = selectedEmployee.isMentor;
         }
 
+        // שמירת השינויים לעובד
+        // פרמטרים
+        // sender - האובייקט שהפעיל את האירוע
+        // e - נתוני האירוע
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים והסניפים שנבחרו
         private void SaveEmployeeChanges(object sender, EventArgs e)
         {
             // בדיקת שדות חובה
@@ -454,6 +442,12 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // בנאי המחלקה - יוצר טופס עריכת עובד
+        // פרמטרים
+        // employee - העובד שיש לערוך
+        // userName - שם המשתמש המחובר למערכת
+        // ערך מוחזר: אין
+        // O(n) :סיבוכיות כאשר n הוא מספר הסניפים והתפקידים
         public EditEmployeePage(Employee employee, string userName)
         {
             selectedEmployee = employee;
