@@ -10,7 +10,6 @@ namespace EmployeeSchedulingApp
         // בנאי המחלקה - יוצר את דף הבית
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         public HomePage()
         {
             SetupUI();
@@ -19,7 +18,6 @@ namespace EmployeeSchedulingApp
         // הגדרת ממשק המשתמש של דף הבית
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "ברוך הבא למערכת ניהול המשמרות";
@@ -57,7 +55,6 @@ namespace EmployeeSchedulingApp
         // פותח את דף ההתחברות
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void OpenLoginPage()
         {
             LoginPage login = new LoginPage();
@@ -68,7 +65,6 @@ namespace EmployeeSchedulingApp
         // פותח את דף ההרשמה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void OpenRegisterPage()
         {
             RegisterPage register = new RegisterPage();

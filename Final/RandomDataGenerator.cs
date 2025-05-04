@@ -11,16 +11,19 @@ namespace EmployeeSchedulingApp
         private static Random random = new Random();
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
 
-        // English names for random generation
+        // שמות באנגלית לייצור אקראי
         private static string[] firstNames = { "John", "Michael", "David", "Robert", "James", "William", "Richard", "Thomas", "Joseph", "Daniel", "Matthew", "Anthony", "Mark", "Paul", "Steven", "Andrew", "Kenneth" };
         private static string[] lastNames = { "Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson" };
 
-        // Days of the week
+        // ימי השבוע
         private static string[] daysOfWeek = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
-        /// <summary>
-        /// Main function to generate random data
-        /// </summary>
+        // פונקציה ראשית לייצור נתונים אקראיים
+        // פרמטרים
+        // branchCount - מספר הסניפים ליצירה
+        // totalEmployees - מספר העובדים הכולל ליצירה
+        // username - שם המשתמש שעבורו יווצרו הנתונים
+        // ערך מוחזר: אין
         public static void GenerateRandomData(int branchCount, int totalEmployees, string username)
         {
             try
@@ -29,7 +32,7 @@ namespace EmployeeSchedulingApp
                 {
                     connection.Open();
 
-                    // 1. Find user ID
+                    // מציאת מזהה המשתמש במערכת
                     int userId = GetUserId(connection, username);
                     if (userId == -1)
                     {
@@ -37,7 +40,7 @@ namespace EmployeeSchedulingApp
                         return;
                     }
 
-                    // Ask user for confirmation to delete existing data
+                    // בקשת אישור מהמשתמש למחיקת נתונים קיימים
                     DialogResult result = MessageBox.Show(
                         "This will delete all existing branches, employees, and shifts associated with your account. Are you sure you want to continue?",
                         "Warning",
@@ -49,25 +52,25 @@ namespace EmployeeSchedulingApp
                         return;
                     }
 
-                    // Delete existing data
+                    // מחיקת נתונים קיימים במסד הנתונים
                     DeleteExistingData(connection, userId);
 
-                    // 2. Create shift types if they don't exist
+                    // יצירת סוגי משמרות אם לא קיימים
                     EnsureShiftTypesExist(connection);
 
-                    // 3. Ensure roles exist
+                    // וידוא קיום תפקידים במערכת
                     EnsureRolesExist(connection);
 
-                    // 4. Create branches
+                    // יצירת סניפים חדשים
                     List<int> branchIds = CreateBranches(connection, branchCount, userId);
 
-                    // 5. Create shifts for each branch
+                    // יצירת משמרות לכל סניף
                     foreach (int branchId in branchIds)
                     {
                         CreateShiftsForBranch(connection, branchId);
                     }
 
-                    // 6. Create employees for the entire network and assign them to branches
+                    // יצירת עובדים לכל הרשת והקצאתם לסניפים
                     CreateEmployeesForNetwork(connection, totalEmployees, branchIds);
 
                     MessageBox.Show($"Successfully created {branchCount} branches with {totalEmployees} employees across the network.",
@@ -79,39 +82,17 @@ namespace EmployeeSchedulingApp
                 MessageBox.Show($"Error generating random data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        //private static void ResetIdentityCounters(SqlConnection connection)
-        //{
-        //    try
-        //    {
-        //        // רשימת הטבלאות עם עמודות Identity שצריך לאפס
-        //        string[] tablesToReset = {
-        //    "Branches", "Employees",
-        //    "Shifts", "ShiftTypes"
 
-        //};
-
-        //        foreach (string tableName in tablesToReset)
-        //        {
-        //            string resetQuery = $"DBCC CHECKIDENT ('{tableName}', RESEED, 0)";
-        //            using (SqlCommand command = new SqlCommand(resetQuery, connection))
-        //            {
-        //                command.ExecuteNonQuery();
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show($"Error resetting identity counters: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //        throw;
-        //    }
-        //}
-        #region Helper functions for deleting existing data
-
+        // פונקציה למחיקת נתונים קיימים
+        // פרמטרים
+        // connection - חיבור פתוח למסד הנתונים
+        // userId - מזהה המשתמש שהנתונים שלו יימחקו
+        // ערך מוחזר: אין
         public static void DeleteExistingData(SqlConnection connection, int userId)
         {
             try
             {
-                // Get the list of branches for this user
+                // קבלת רשימת הסניפים של המשתמש
                 List<int> userBranchIds = new List<int>();
                 string branchQuery = "SELECT BranchID FROM UserBranches WHERE UserID = @UserID";
                 using (SqlCommand command = new SqlCommand(branchQuery, connection))
@@ -126,13 +107,13 @@ namespace EmployeeSchedulingApp
                     }
                 }
 
-                // For each branch
+                // עבור כל סניף
                 foreach (int branchId in userBranchIds)
                 {
-                    // Delete shift assignments and required roles
+                    // מחיקת הקצאות משמרות ותפקידים נדרשים
                     DeleteShiftsForBranch(connection, branchId);
 
-                    // Get list of employees in the branch
+                    // קבלת רשימת העובדים בסניף
                     List<int> branchEmployeeIds = new List<int>();
                     string employeeQuery = "SELECT EmployeeID FROM EmployeeBranches WHERE BranchID = @BranchID";
                     using (SqlCommand command = new SqlCommand(employeeQuery, connection))
@@ -147,10 +128,10 @@ namespace EmployeeSchedulingApp
                         }
                     }
 
-                    // Delete employees and their role assignments
+                    // מחיקת עובדים והקצאות תפקידים שלהם
                     foreach (int employeeId in branchEmployeeIds)
                     {
-                        // Delete employee preferred shifts
+                        // מחיקת משמרות מועדפות של העובד
                         string deletePrefShiftsQuery = "DELETE FROM EmployeePreferredShifts WHERE EmployeeID = @EmployeeID";
                         using (SqlCommand command = new SqlCommand(deletePrefShiftsQuery, connection))
                         {
@@ -158,7 +139,7 @@ namespace EmployeeSchedulingApp
                             command.ExecuteNonQuery();
                         }
 
-                        // Delete employee roles
+                        // מחיקת תפקידי העובד
                         string deleteRolesQuery = "DELETE FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
                         using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection))
                         {
@@ -166,7 +147,7 @@ namespace EmployeeSchedulingApp
                             command.ExecuteNonQuery();
                         }
 
-                        // Delete employee-branch association
+                        // מחיקת השיוך בין העובד לסניף
                         string deleteEmployeeBranchQuery = "DELETE FROM EmployeeBranches WHERE EmployeeID = @EmployeeID AND BranchID = @BranchID";
                         using (SqlCommand command = new SqlCommand(deleteEmployeeBranchQuery, connection))
                         {
@@ -175,14 +156,14 @@ namespace EmployeeSchedulingApp
                             command.ExecuteNonQuery();
                         }
 
-                        // Check if employee is associated with other branches
+                        // בדיקה אם העובד משויך לסניפים אחרים
                         string checkOtherBranchesQuery = "SELECT COUNT(*) FROM EmployeeBranches WHERE EmployeeID = @EmployeeID";
                         using (SqlCommand command = new SqlCommand(checkOtherBranchesQuery, connection))
                         {
                             command.Parameters.AddWithValue("@EmployeeID", employeeId);
                             int count = (int)command.ExecuteScalar();
 
-                            // If not associated with other branches, delete entirely
+                            // אם לא משויך לסניפים אחרים, מחיקה מוחלטת
                             if (count == 0)
                             {
                                 string deleteEmployeeQuery = "DELETE FROM Employees WHERE EmployeeID = @EmployeeID";
@@ -195,7 +176,7 @@ namespace EmployeeSchedulingApp
                         }
                     }
 
-                    // Delete user-branch association
+                    // מחיקת השיוך בין המשתמש לסניף
                     string deleteUserBranchQuery = "DELETE FROM UserBranches WHERE BranchID = @BranchID AND UserID = @UserID";
                     using (SqlCommand command = new SqlCommand(deleteUserBranchQuery, connection))
                     {
@@ -204,7 +185,7 @@ namespace EmployeeSchedulingApp
                         command.ExecuteNonQuery();
                     }
 
-                    // Delete branch itself
+                    // מחיקת הסניף עצמו
                     string deleteBranchQuery = "DELETE FROM Branches WHERE BranchID = @BranchID";
                     using (SqlCommand command = new SqlCommand(deleteBranchQuery, connection))
                     {
@@ -216,13 +197,18 @@ namespace EmployeeSchedulingApp
             catch (Exception ex)
             {
                 MessageBox.Show($"Error deleting existing data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                throw; // Re-throw the exception so the calling function knows there was a problem
+                throw; // העברת החריגה הלאה כדי שהפונקציה הקוראת תדע שהייתה בעיה
             }
         }
 
+        // פונקציה למחיקת משמרות מסניף
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // branchId - מזהה הסניף שממנו יש למחוק משמרות
+        // ערך מוחזר: אין
         private static void DeleteShiftsForBranch(SqlConnection connection, int branchId)
         {
-            // Get all shifts for the branch
+            // קבלת כל המשמרות בסניף
             List<int> shiftIds = new List<int>();
             string shiftsQuery = "SELECT ShiftID FROM Shifts WHERE BranchID = @BranchID";
             using (SqlCommand command = new SqlCommand(shiftsQuery, connection))
@@ -237,10 +223,10 @@ namespace EmployeeSchedulingApp
                 }
             }
 
-            // For each shift, delete assignments and required roles
+            // עבור כל משמרת, מחיקת הקצאות ותפקידים נדרשים
             foreach (int shiftId in shiftIds)
             {
-                // Delete employee preferred shifts
+                // מחיקת משמרות מועדפות של עובדים
                 string deletePreferredQuery = "DELETE FROM EmployeePreferredShifts WHERE ShiftID = @ShiftID";
                 using (SqlCommand command = new SqlCommand(deletePreferredQuery, connection))
                 {
@@ -248,7 +234,7 @@ namespace EmployeeSchedulingApp
                     command.ExecuteNonQuery();
                 }
 
-                // Delete shift assignments
+                // מחיקת הקצאות משמרות
                 string deleteAssignmentsQuery = "DELETE FROM ShiftAssignments WHERE ShiftID = @ShiftID";
                 using (SqlCommand command = new SqlCommand(deleteAssignmentsQuery, connection))
                 {
@@ -256,7 +242,7 @@ namespace EmployeeSchedulingApp
                     command.ExecuteNonQuery();
                 }
 
-                // Delete shift required roles
+                // מחיקת תפקידים נדרשים למשמרת
                 string deleteRolesQuery = "DELETE FROM ShiftRequiredRoles WHERE ShiftID = @ShiftID";
                 using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection))
                 {
@@ -265,7 +251,7 @@ namespace EmployeeSchedulingApp
                 }
             }
 
-            // Delete all shifts for the branch
+            // מחיקת כל המשמרות בסניף
             string deleteShiftsQuery = "DELETE FROM Shifts WHERE BranchID = @BranchID";
             using (SqlCommand command = new SqlCommand(deleteShiftsQuery, connection))
             {
@@ -274,10 +260,11 @@ namespace EmployeeSchedulingApp
             }
         }
 
-        #endregion
-
-        #region Helper functions for users and branches
-
+        // פונקציה לקבלת מזהה משתמש לפי שם משתמש
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // username - שם המשתמש לחיפוש
+        // ערך מוחזר: מזהה המשתמש או -1 אם לא נמצא
         private static int GetUserId(SqlConnection connection, string username)
         {
             string query = "SELECT UserID FROM Users WHERE Username = @Username";
@@ -289,11 +276,17 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // פונקציה ליצירת סניפים חדשים
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // count - מספר הסניפים ליצירה
+        // userId - מזהה המשתמש שיהיה בעל הסניפים
+        // ערך מוחזר: רשימת מזהי הסניפים שנוצרו
         private static List<int> CreateBranches(SqlConnection connection, int count, int userId)
         {
             List<int> branchIds = new List<int>();
 
-            // List of possible branch locations
+            // רשימת מיקומים אפשריים לסניפים
             string[] locations = { "New York", "Chicago", "Los Angeles", "Boston", "Miami", "Seattle", "Denver", "Austin", "Atlanta", "Philadelphia" };
 
             for (int i = 0; i < count; i++)
@@ -312,7 +305,7 @@ namespace EmployeeSchedulingApp
                         int branchId = Convert.ToInt32(result);
                         branchIds.Add(branchId);
 
-                        // Assign branch to user
+                        // שיוך הסניף למשתמש
                         string assignQuery = "INSERT INTO UserBranches (UserID, BranchID) VALUES (@UserID, @BranchID)";
                         using (SqlCommand assignCommand = new SqlCommand(assignQuery, connection))
                         {
@@ -327,10 +320,10 @@ namespace EmployeeSchedulingApp
             return branchIds;
         }
 
-        #endregion
-
-        #region Helper functions for shift types,timeSlots and roles
-
+        // פונקציה לוידוא קיום סוגי משמרות במערכת
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // ערך מוחזר: אין
         private static void EnsureShiftTypesExist(SqlConnection connection)
         {
             // וידוא קיום TimeSlots
@@ -379,6 +372,11 @@ namespace EmployeeSchedulingApp
                 }
             }
         }
+
+        // פונקציה לקבלת מזהי סוגי משמרות
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // ערך מוחזר: מילון המכיל את שמות סוגי המשמרות ואת המזהים שלהם
         private static Dictionary<string, int> GetShiftTypeIds(SqlConnection connection)
         {
             Dictionary<string, int> shiftTypeIds = new Dictionary<string, int>();
@@ -400,9 +398,13 @@ namespace EmployeeSchedulingApp
             return shiftTypeIds;
         }
 
+        // פונקציה לוידוא קיום תפקידים במערכת
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // ערך מוחזר: אין
         private static void EnsureRolesExist(SqlConnection connection)
         {
-            // Check if roles already exist
+            // בדיקה אם תפקידים כבר קיימים
             string checkQuery = "SELECT COUNT(*) FROM Roles";
             using (SqlCommand checkCommand = new SqlCommand(checkQuery, connection))
             {
@@ -410,7 +412,7 @@ namespace EmployeeSchedulingApp
 
                 if (count == 0)
                 {
-                    // If no roles exist, add basic roles
+                    // אם אין תפקידים, נוסיף תפקידים בסיסיים
                     string[] roleNames = { "Waiter", "Chef", "Bartender", "Manager" };
 
                     foreach (string role in roleNames)
@@ -426,6 +428,10 @@ namespace EmployeeSchedulingApp
             }
         }
 
+        // פונקציה לקבלת רשימת התפקידים במערכת
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // ערך מוחזר: רשימת זוגות של מזהה תפקיד ושם תפקיד
         private static List<KeyValuePair<int, string>> GetRoles(SqlConnection connection)
         {
             List<KeyValuePair<int, string>> roles = new List<KeyValuePair<int, string>>();
@@ -446,6 +452,11 @@ namespace EmployeeSchedulingApp
 
             return roles;
         }
+
+        // פונקציה לקבלת מזהי פרקי זמן
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // ערך מוחזר: מילון המכיל את שמות פרקי הזמן ואת המזהים שלהם
         private static Dictionary<string, int> GetTimeSlotIds(SqlConnection connection)
         {
             Dictionary<string, int> timeSlotIds = new Dictionary<string, int>();
@@ -467,20 +478,21 @@ namespace EmployeeSchedulingApp
             return timeSlotIds;
         }
 
-
-        #endregion
-
-        #region Helper functions for employees
-
+        // פונקציה ליצירת עובדים לכל הרשת
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // count - מספר העובדים ליצירה
+        // allBranchIds - רשימת מזהי הסניפים להקצאת העובדים
+        // ערך מוחזר: אין
         private static void CreateEmployeesForNetwork(SqlConnection connection, int count, List<int> allBranchIds)
         {
-            // Get all roles
+            // קבלת כל התפקידים
             List<KeyValuePair<int, string>> roles = GetRoles(connection);
 
-            // Keep track of used names to avoid duplicates
+            // מעקב אחר שמות שכבר בשימוש למניעת כפילויות
             HashSet<string> usedNames = new HashSet<string>();
 
-            // Get existing employee names to avoid conflicts
+            // קבלת שמות עובדים קיימים למניעת התנגשויות
             string existingNamesQuery = "SELECT Name FROM Employees";
             using (SqlCommand command = new SqlCommand(existingNamesQuery, connection))
             {
@@ -494,19 +506,19 @@ namespace EmployeeSchedulingApp
             }
 
             int employeesCreated = 0;
-            int maxAttempts = count * 3; // Limit attempts to avoid infinite loop
+            int maxAttempts = count * 3; // הגבלת ניסיונות למניעת לולאה אינסופית
             int attempts = 0;
 
             while (employeesCreated < count && attempts < maxAttempts)
             {
                 attempts++;
 
-                // Create random employee name
+                // יצירת שם עובד אקראי
                 string firstName = firstNames[random.Next(firstNames.Length)];
                 string lastName = lastNames[random.Next(lastNames.Length)];
                 string name = $"{firstName} {lastName}";
 
-                // Skip if name already used
+                // דילוג אם השם כבר בשימוש
                 if (usedNames.Contains(name))
                 {
                     continue;
@@ -515,8 +527,8 @@ namespace EmployeeSchedulingApp
                 usedNames.Add(name);
 
                 int hourlySalary = random.Next(30, 70);
-                int rate = random.Next(1,11);
-                bool isMentor = random.Next(10) < 2; // 20% chance to be a mentor
+                int rate = random.Next(1, 11);
+                bool isMentor = random.Next(10) < 2; // 20% סיכוי להיות מנטור
                 int assignedHours = random.Next(20, 41);
 
                 string query = @"INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor) 
@@ -538,6 +550,8 @@ namespace EmployeeSchedulingApp
                     {
                         employeesCreated++;
                         int employeeId = Convert.ToInt32(result);
+
+                        // עדכון סיסמה זמנית לעובד
                         string updatePassword = @"UPDATE Employees set Password=@Password where EmployeeID=@EmployeeID ";
                         using (SqlCommand command2 = new SqlCommand(updatePassword, connection))
                         {
@@ -545,10 +559,11 @@ namespace EmployeeSchedulingApp
                             command2.Parameters.AddWithValue("@EmployeeID", result);
                             command2.ExecuteScalar();
                         }
-                            // Determine how many branches this employee will work at (1-3)
-                            int branchCount = random.Next(1, Math.Min(4, allBranchIds.Count + 1));
 
-                        // Shuffle branch IDs
+                        // קביעת מספר הסניפים שהעובד יעבוד בהם (1-3)
+                        int branchCount = random.Next(1, Math.Min(4, allBranchIds.Count + 1));
+
+                        // ערבוב מזהי הסניפים
                         var shuffledBranches = new List<int>(allBranchIds);
                         for (int j = 0; j < shuffledBranches.Count; j++)
                         {
@@ -558,10 +573,10 @@ namespace EmployeeSchedulingApp
                             shuffledBranches[k] = temp;
                         }
 
-                        // Select the first few branches
+                        // בחירת הסניפים הראשונים
                         var selectedBranches = shuffledBranches.Take(branchCount).ToList();
 
-                        // Assign employee to selected branches
+                        // הקצאת העובד לסניפים שנבחרו
                         foreach (int branchId in selectedBranches)
                         {
                             string branchAssignQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
@@ -572,15 +587,15 @@ namespace EmployeeSchedulingApp
                                 branchAssignCommand.ExecuteNonQuery();
                             }
 
-                            // Assign preferred shifts for the employee in this branch
+                            // הקצאת משמרות מועדפות לעובד בסניף זה
                             AssignPreferredShiftsForEmployee(connection, employeeId, branchId);
                         }
 
-                        // Assign 1-3 random roles to employee
+                        // הקצאת 1-3 תפקידים אקראיים לעובד
                         int roleCount = random.Next(1, 4);
                         var shuffledRoles = new List<KeyValuePair<int, string>>(roles);
 
-                        // Shuffle the roles list
+                        // ערבוב רשימת התפקידים
                         for (int j = 0; j < shuffledRoles.Count; j++)
                         {
                             int k = random.Next(j, shuffledRoles.Count);
@@ -589,7 +604,7 @@ namespace EmployeeSchedulingApp
                             shuffledRoles[k] = temp;
                         }
 
-                        // Assign the first few roles from the shuffled list
+                        // הקצאת התפקידים הראשונים מהרשימה המעורבבת
                         for (int j = 0; j < Math.Min(roleCount, shuffledRoles.Count); j++)
                         {
                             string roleAssignQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
@@ -604,16 +619,23 @@ namespace EmployeeSchedulingApp
                 }
             }
 
-            // If we couldn't create enough employees due to name collisions
+            // אם לא הצלחנו ליצור מספיק עובדים בשל התנגשויות שמות
             if (employeesCreated < count)
             {
                 MessageBox.Show($"Created only {employeesCreated} out of {count} employees due to name uniqueness constraints.",
                     "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+
+        // פונקציה להקצאת משמרות מועדפות לעובד
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // employeeId - מזהה העובד
+        // branchId - מזהה הסניף
+        // ערך מוחזר: אין
         private static void AssignPreferredShiftsForEmployee(SqlConnection connection, int employeeId, int branchId)
         {
-            // Get list of shifts for this branch
+            // קבלת רשימת משמרות בסניף זה
             List<int> branchShiftIds = new List<int>();
             string shiftsQuery = "SELECT ShiftID FROM Shifts WHERE BranchID = @BranchID";
             using (SqlCommand command = new SqlCommand(shiftsQuery, connection))
@@ -628,14 +650,14 @@ namespace EmployeeSchedulingApp
                 }
             }
 
-            // If no shifts exist for this branch, return
+            // אם אין משמרות בסניף זה, סיום הפונקציה
             if (branchShiftIds.Count == 0)
                 return;
 
-            // Decide how many shifts to prefer (50-80% of available shifts)
+            // החלטה על כמה משמרות מועדפות להקצות (50-80% מהמשמרות הזמינות)
             int preferredShiftsCount = random.Next(branchShiftIds.Count / 3, (branchShiftIds.Count * 8 / 10) + 1);
 
-            // Shuffle the shifts list
+            // ערבוב רשימת המשמרות
             for (int i = 0; i < branchShiftIds.Count; i++)
             {
                 int j = random.Next(i, branchShiftIds.Count);
@@ -644,7 +666,7 @@ namespace EmployeeSchedulingApp
                 branchShiftIds[j] = temp;
             }
 
-            // Assign the preferred shifts
+            // הקצאת המשמרות המועדפות
             for (int i = 0; i < Math.Min(preferredShiftsCount, branchShiftIds.Count); i++)
             {
                 string insertQuery = "INSERT INTO EmployeePreferredShifts (EmployeeID, ShiftID) VALUES (@EmployeeID, @ShiftID)";
@@ -657,30 +679,28 @@ namespace EmployeeSchedulingApp
             }
         }
 
-        #endregion
-
-        #region Helper functions for shifts
-
+        // פונקציה ליצירת משמרות לסניף
+        // פרמטרים:
+        // connection - חיבור פתוח למסד הנתונים
+        // branchId - מזהה הסניף ליצירת המשמרות
+        // ערך מוחזר: אין
         private static void CreateShiftsForBranch(SqlConnection connection, int branchId)
         {
-            // Get TimeSlot IDs
+            // קבלת מזהי פרקי זמן
             Dictionary<string, int> timeSlots = GetTimeSlotIds(connection);
 
-            // Get ShiftType IDs
+            // קבלת מזהי סוגי משמרות
             Dictionary<string, int> shiftTypes = GetShiftTypeIds(connection);
 
-            // Get roles
+            // קבלת תפקידים
             List<KeyValuePair<int, string>> roles = GetRoles(connection);
 
-            // עבור על כל יום בשבוע
+            // עבור כל יום בשבוע
             foreach (string day in daysOfWeek)
             {
-                // עבור על כל סוג זמן (בוקר/ערב)
+                // עבור כל סוג זמן (בוקר/ערב)
                 foreach (var timeSlot in timeSlots)
                 {
-                    // 80% סיכוי ליצור משמרת
-
-
                     // בחירת סוג משמרת אקראי (רגילה/חג/מיוחדת)
                     string shiftTypeName = "Regular"; // ברירת מחדל
                     if (shiftTypes.Count > 0)
@@ -693,11 +713,9 @@ namespace EmployeeSchedulingApp
                     bool isBusy = random.Next(2) == 0; // 50% סיכוי למשמרת עמוסה
 
                     // הוספת המשמרת לדאטאבייס
-
                     string insertShiftQuery = @"INSERT INTO Shifts (BranchID, TimeSlotID, DayOfWeek, ShiftTypeID, IsBusy) 
                          VALUES (@BranchID, @TimeSlotID, @DayOfWeek, @ShiftTypeID, @IsBusy);
                          SELECT SCOPE_IDENTITY();";
-
 
                     using (SqlCommand command = new SqlCommand(insertShiftQuery, connection))
                     {
@@ -735,10 +753,8 @@ namespace EmployeeSchedulingApp
                             }
                         }
                     }
-
                 }
             }
         }
-        #endregion
     }
 }

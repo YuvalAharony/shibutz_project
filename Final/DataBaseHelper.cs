@@ -13,9 +13,13 @@ using System.Security.Cryptography.X509Certificates;
 public class DataBaseHelper
 {
     private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True;MultipleActiveResultSets=True";
-  
 
-    //טעינת כל המידע של המשתמש המחובר למערכת
+    // פונקציה לטעינת כל מידע המשתמש המחובר למערכת
+    // פרמטרים:
+    // username - שם המשתמש המחובר למערכת
+    // branches - רשימת הסניפים שיש לטעון
+    // employees - רשימת העובדים שיש לטעון
+    // ערך מוחזר: אין
     public void LoadDataForUser(string username, List<Branch> branches, List<Employee> employees)
     {
         try
@@ -48,7 +52,10 @@ public class DataBaseHelper
 
 
     #region LoadDataForUser Helper Functions
-    //פונקציה הטוענת את הסניפים של המשתמש הנוכחי מבסיס הנתונים
+    // פונקציה לטעינת רשימת הסניפים של המשתמש המחובר למערכת
+    // פרמטרים:
+    // username - שם המשתמש המחובר למערכת
+    // ערך מוחזר: רשימת סניפים של המשתמש
     public List<Branch> LoadUserBranches(string username)
     {
         //אתחול רשימת סניפים חדשה
@@ -113,7 +120,10 @@ public class DataBaseHelper
         return branches;
     }
 
-    //פונקציה הטוענת את העובדים של המשתמש הנוכחי מבסיס הנתונים
+    // פונקציה לטעינת רשימת העובדים של המשתמש המחובר למערכת
+    // פרמטרים:
+    // username - שם המשתמש המחובר למערכת
+    // ערך מוחזר: רשימת עובדים של המשתמש
     public List<Employee> LoadUserEmployees(string username)
     {
         //אתחול רשימת עובדים חדשה
@@ -191,7 +201,10 @@ public class DataBaseHelper
         return employees;
     }
 
-    //פונקציה הטוענת את המשמרות של סניף מבסיס הנתונים
+    // פונקציה לטעינת רשימת המשמרות של סניף מסוים
+    // פרמטרים:
+    // branchId - מזהה הסניף שאת המשמרות שלו יש לטעון
+    // ערך מוחזר: רשימת משמרות של הסניף
     public List<Shift> LoadBranchShifts(int branchId)
     {
         //אתחול רשימת משמרות חדשה
@@ -262,7 +275,10 @@ public class DataBaseHelper
         return shifts;
     }
 
-    //פונקציה הטוענת את התפקידים שמבוקשים של משמרת מבסיס הנתונים
+    // פונקציה לטעינת מידע על התפקידים הנדרשים למשמרת מסוימת
+    // פרמטרים:
+    // shiftId - מזהה המשמרת שאת התפקידים הנדרשים בה יש לטעון
+    // ערך מוחזר: מילון של שמות תפקידים וכמות העובדים הנדרשת מכל תפקיד
     public Dictionary<string, int> LoadShiftRequiredRoles(int shiftId)
     {
         //אתחול מילון תפקידים נדרשים
@@ -314,8 +330,11 @@ public class DataBaseHelper
         return requiredRoles;
     }
 
-    //פונקציה הטוענת את התפקידים של כל עובד מבסיס הנתונים
-    public HashSet <string> LoadEmployeeRoles(int employeeId)
+    // פונקציה לטעינת רשימת התפקידים של עובד מסוים
+    // פרמטרים:
+    // employeeId - מזהה העובד שאת התפקידים שלו יש לטעון
+    // ערך מוחזר: מערך של שמות תפקידים של העובד
+    public HashSet<string> LoadEmployeeRoles(int employeeId)
     {
         //אתחול רשימת תפקידים חדשה
         HashSet<string> roles = new HashSet<string>();
@@ -362,7 +381,10 @@ public class DataBaseHelper
         return roles;
     }
 
-    //פונקציה הטוענת את המשמרות המבוקשות של כל עובד מבסיס הנתונים
+    // פונקציה לטעינת רשימת המשמרות המועדפות של עובד מסוים
+    // פרמטרים:
+    // employeeId - מזהה העובד שאת המשמרות המועדפות שלו יש לטעון
+    // ערך מוחזר: מערך של מזהי משמרות מועדפות של העובד
     private HashSet<int> LoadEmployeePreferredShifts(int employeeId)
     {
         //אתחול האש סט משמרות מועדפות חדש
@@ -409,7 +431,10 @@ public class DataBaseHelper
         return preferredShifts;
     }
 
-    //שאילתה הטוענת את הנתונים של כל עובד מבסיס הנתונים
+    // פונקציה לטעינת רשימת הסניפים של עובד מסוים
+    // פרמטרים:
+    // employeeId - מזהה העובד שאת הסניפים שלו יש לטעון
+    // ערך מוחזר: רשימת שמות הסניפים של העובד
     private List<string> LoadEmployeeBranches(int employeeId)
     {
         //אתחול רשימת סניפים חדשה
@@ -457,7 +482,11 @@ public class DataBaseHelper
         return branches;
     }
     #endregion
-    //פונקציה המוחקת סניף מבסיס הנתונים
+
+    // פונקציה למחיקת סניף מבסיס הנתונים
+    // פרמטרים:
+    // branchId - מזהה הסניף שיש למחוק
+    // ערך מוחזר: אמת אם המחיקה הצליחה, שקר אחרת
     public bool DeleteBranch(int branchId)
     {
         try
@@ -475,8 +504,6 @@ public class DataBaseHelper
                     //הוספת הפרמטרים לשאילתה
                     command.Parameters.AddWithValue("@BranchID", branchId);
                     command.ExecuteNonQuery();
-
-
                 }
             }
         }
@@ -489,7 +516,10 @@ public class DataBaseHelper
         return true;
     }
 
-    //פונקציה המוחקת עובד מבסיס הנתונים
+    // פונקציה למחיקת עובד מבסיס הנתונים
+    // פרמטרים:
+    // EmployeeID - מזהה העובד שיש למחוק
+    // ערך מוחזר: אמת אם המחיקה הצליחה, שקר אחרת
     public bool DeleteEmployee(int EmployeeID)
     {
         try
@@ -507,8 +537,6 @@ public class DataBaseHelper
                     //הוספת הפרמטרים לשאילתה
                     command.Parameters.AddWithValue("@EmployeeID", EmployeeID);
                     command.ExecuteNonQuery();
-
-
                 }
             }
         }
@@ -521,17 +549,25 @@ public class DataBaseHelper
         return true;
     }
 
-    // פונקציית עזר לקבלת מזהה משתמש לפי שם משתמש
+    // פונקציה לקבלת מזהה משתמש לפי שם משתמש
+    // פרמטרים:
+    // username - שם המשתמש לחיפוש
+    // connection - חיבור פתוח למסד הנתונים
+    // ערך מוחזר: מזהה המשתמש, או -1 אם לא נמצא
     public int GetUserIdByUsername(string username, SqlConnection connection)
     {
         try
         {
+            // הכנת שאילתה לקבלת מזהה המשתמש
             string query = "SELECT UserID FROM Users WHERE Username = @Username";
             using (SqlCommand command = new SqlCommand(query, connection))
             {
+                // הוספת פרמטר שם המשתמש לשאילתה
                 command.Parameters.AddWithValue("@Username", username);
+                // ביצוע השאילתה וקבלת התוצאה
                 object result = command.ExecuteScalar();
 
+                // בדיקה אם נמצאה תוצאה, והחזרתה בתור מספר
                 if (result != null && result != DBNull.Value)
                 {
                     return Convert.ToInt32(result);
@@ -540,13 +576,19 @@ public class DataBaseHelper
         }
         catch (Exception ex)
         {
+            // רישום השגיאה לקונסול
             Console.WriteLine($"שגיאה בקבלת מזהה משתמש: {ex.Message}");
         }
 
+        // מחזיר -1 במקרה של כישלון
         return -1;
     }
 
-    // פונקציית עזר לקבלת מזהה סוג משמרת (או יצירת סוג חדש אם אינו קיים)
+    // פונקציה לקבלת או יצירת סוג משמרת
+    // פרמטרים:
+    // typeName - שם סוג המשמרת
+    // connection - חיבור פתוח למסד הנתונים
+    // ערך מוחזר: מזהה סוג המשמרת, או -1 אם נכשל
     public int GetOrCreateShiftType(string typeName, SqlConnection connection)
     {
         try
@@ -555,9 +597,12 @@ public class DataBaseHelper
             string query = "SELECT ShiftTypeID FROM ShiftTypes WHERE TypeName = @TypeName";
             using (SqlCommand command = new SqlCommand(query, connection))
             {
+                // הוספת פרמטר שם סוג המשמרת לשאילתה
                 command.Parameters.AddWithValue("@TypeName", typeName);
+                // ביצוע השאילתה וקבלת התוצאה
                 object result = command.ExecuteScalar();
 
+                // אם נמצאה תוצאה, החזרת המזהה
                 if (result != null && result != DBNull.Value)
                 {
                     return Convert.ToInt32(result);
@@ -572,19 +617,28 @@ public class DataBaseHelper
 
             using (SqlCommand command = new SqlCommand(insertQuery, connection))
             {
+                // הוספת פרמטר שם סוג המשמרת לשאילתה
                 command.Parameters.AddWithValue("@TypeName", typeName);
+                // ביצוע השאילתה והחזרת המזהה החדש
                 return (int)command.ExecuteScalar();
             }
         }
         catch (Exception ex)
         {
+            // רישום השגיאה לקונסול
             Console.WriteLine($"שגיאה בקבלת/יצירת סוג משמרת: {ex.Message}");
             return -1;
         }
     }
 
-
-    // פונקציית עזר להוספת משמרת חדשה
+    // פונקציה להוספת משמרת חדשה
+    // פרמטרים:
+    // branchId - מזהה הסניף שאליו תתווסף המשמרת
+    // dayOfWeek - יום בשבוע
+    // timeSlot - משבצת זמן
+    // shiftTypeId - מזהה סוג המשמרת
+    // connection - חיבור פתוח למסד הנתונים
+    // ערך מוחזר: אין
     public void AddShift(int branchId, string dayOfWeek, string timeSlot, int shiftTypeId, SqlConnection connection)
     {
         try
@@ -598,11 +652,13 @@ public class DataBaseHelper
             int shiftId;
             using (SqlCommand command = new SqlCommand(insertShiftQuery, connection))
             {
+                // הוספת פרמטרים לשאילתת הוספת המשמרת
                 command.Parameters.AddWithValue("@BranchID", branchId);
                 command.Parameters.AddWithValue("@TimeSlot", timeSlot);
                 command.Parameters.AddWithValue("@DayOfWeek", dayOfWeek);
                 command.Parameters.AddWithValue("@ShiftTypeID", shiftTypeId);
 
+                // ביצוע השאילתה וקבלת מזהה המשמרת החדשה
                 shiftId = (int)command.ExecuteScalar();
                 Console.WriteLine($"נוספה משמרת חדשה: {dayOfWeek}, {timeSlot}, ID: {shiftId}");
             }
@@ -610,20 +666,26 @@ public class DataBaseHelper
             // הוספת דרישות תפקידים בסיסיות למשמרת
             List<string> roles = getRoles();
             Dictionary<string, int> defaultRoles = new Dictionary<string, int>();
-            foreach (String s in roles) {
+            foreach (String s in roles)
+            {
+                // מציאת מזהה התפקיד או יצירת תפקיד חדש
                 int roleId = GetOrCreateRole(s, connection);
+                // הוספת התפקיד כדרישה למשמרת החדשה
                 AddShiftRequiredRole(shiftId, roleId, 1, connection);
             }
-           
-        
         }
         catch (Exception ex)
         {
+            // רישום השגיאה לקונסול
             Console.WriteLine($"שגיאה בהוספת משמרת: {ex.Message}");
         }
     }
 
-    // פונקציית עזר לקבלת מזהה תפקיד (או יצירת תפקיד חדש אם אינו קיים)
+    // פונקציה לקבלת מזהה תפקיד או יצירת תפקיד חדש
+    // פרמטרים:
+    // roleName - שם התפקיד
+    // connection - חיבור פתוח למסד הנתונים
+    // ערך מוחזר: מזהה התפקיד, או -1 אם נכשל
     public int GetOrCreateRole(string roleName, SqlConnection connection)
     {
         try
@@ -632,60 +694,86 @@ public class DataBaseHelper
             string query = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
             using (SqlCommand command = new SqlCommand(query, connection))
             {
+                // הוספת פרמטר שם התפקיד לשאילתה
                 command.Parameters.AddWithValue("@RoleName", roleName);
+                // ביצוע השאילתה וקבלת התוצאה
                 object result = command.ExecuteScalar();
                 return Convert.ToInt32(result);
-
             }
         }
         catch (Exception ex)
         {
+            // רישום השגיאה לקונסול
             Console.WriteLine($"שגיאה בקבלת/יצירת תפקיד: {ex.Message}");
             return -1;
         }
     }
 
-    // פונקציית עזר להוספת דרישת תפקיד למשמרת
+    // פונקציה להוספת דרישת תפקיד למשמרת
+    // פרמטרים:
+    // shiftId - מזהה המשמרת
+    // roleId - מזהה התפקיד
+    // requiredCount - מספר העובדים הנדרש בתפקיד זה
+    // connection - חיבור פתוח למסד הנתונים
+    // ערך מוחזר: אין
     public void AddShiftRequiredRole(int shiftId, int roleId, int requiredCount, SqlConnection connection)
     {
         try
         {
+            // שאילתה להוספת דרישת תפקיד
             string insertQuery = @"
                     INSERT INTO ShiftRequiredRoles (ShiftID, RoleID, RequiredCount)
                     VALUES (@ShiftID, @RoleID, @RequiredCount)";
 
             using (SqlCommand command = new SqlCommand(insertQuery, connection))
             {
+                // הוספת פרמטרים לשאילתה
                 command.Parameters.AddWithValue("@ShiftID", shiftId);
                 command.Parameters.AddWithValue("@RoleID", roleId);
                 command.Parameters.AddWithValue("@RequiredCount", requiredCount);
+                // ביצוע השאילתה
                 command.ExecuteNonQuery();
             }
         }
         catch (Exception ex)
         {
+            // רישום השגיאה לקונסול
             Console.WriteLine($"שגיאה בהוספת דרישת תפקיד: {ex.Message}");
         }
     }
 
+    // פונקציה לרישום משתמש חדש למערכת
+    // פרמטרים:
+    // username - שם המשתמש החדש
+    // password - סיסמת המשתמש
+    // confirmPassword - אימות סיסמה
+    // fullName - שם מלא של המשתמש
+    // email - כתובת דוא"ל
+    // ערך מוחזר: אמת אם הרישום הצליח, שקר אחרת
     public bool PerformRegistration(string username, string password, string confirmPassword, string fullName, string email)
     {
+        // בדיקת תקינות השדות
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
         {
             MessageBox.Show("נא למלא את כל השדות.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
 
+        // בדיקת התאמת סיסמאות
         if (password != confirmPassword)
         {
             MessageBox.Show("הסיסמאות אינן תואמות.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
+
+        // שאילתה לבדיקה אם שם המשתמש כבר קיים
         string checkUsernameQuery = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
 
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             connection.Open();
+
+            // בדיקה אם שם המשתמש כבר תפוס
             using (SqlCommand checkCommand = new SqlCommand(checkUsernameQuery, connection))
             {
                 checkCommand.Parameters.AddWithValue("@Username", username);
@@ -697,6 +785,7 @@ public class DataBaseHelper
                     return false;
                 }
             }
+
             // שימוש בפרמטרים מונע SQL Injection
             string query = @"INSERT INTO Users (Username, Password, FullName, Email, IsActive)
                         VALUES (@Username, @Password, @FullName, @Email, @IsActive);";
@@ -714,6 +803,7 @@ public class DataBaseHelper
 
                 if (rowsAffected > 0)
                 {
+                    // הצגת הודעת הצלחה ופתיחת המסך הראשי
                     MessageBox.Show("המשתמש נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     MainPage main = new MainPage(username);
                     main.Show();
@@ -725,22 +815,28 @@ public class DataBaseHelper
             }
         }
 
+        // הצגת הודעת סיום הרשמה
         MessageBox.Show("הרשמה הושלמה בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
         return true;
     }
 
-
+    // פונקציה לביצוע התחברות למערכת
+    // פרמטרים:
+    // username - שם המשתמש
+    // password - סיסמת המשתמש
+    // ערך מוחזר: אמת אם ההתחברות הצליחה, שקר אחרת
     public bool PerformLogin(string username, string password)
     {
-
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             connection.Open();
 
+            // שאילתה לבדיקת התאמת שם משתמש וסיסמה
             string query = "SELECT UserID, FullName FROM Users WHERE Username = @Username AND Password = @Password AND IsActive = 1";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
+                // הוספת פרמטרים לשאילתה
                 command.Parameters.AddWithValue("@Username", username);
                 command.Parameters.AddWithValue("@Password", password);
 
@@ -748,28 +844,34 @@ public class DataBaseHelper
                 {
                     if (reader.Read()) // אם נמצא משתמש מתאים
                     {
+                        // חילוץ נתוני המשתמש
                         int userId = reader.GetInt32(0);
                         string fullName = reader.GetString(1);
 
+                        // הצגת הודעת ברכה
                         MessageBox.Show($"ברוך הבא, {fullName}!");
 
+                        // פתיחת המסך הראשי
                         MainPage main = new MainPage(username);
                         main.Show();
                         return true;
                     }
                     else
                     {
+                        // הצגת הודעת שגיאה
                         MessageBox.Show("שם משתמש או סיסמה שגויים.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return false;
                     }
                 }
             }
         }
-
-
     }
 
-
+    // פונקציה להוספת סניף חדש
+    // פרמטרים:
+    // branchName - שם הסניף החדש
+    // userName - שם המשתמש שמוסיף את הסניף
+    // ערך מוחזר: אמת אם ההוספה הצליחה, שקר אחרת
     public bool AddBranch(string branchName, string userName)
     {
         // בדיקת תקינות
@@ -808,7 +910,9 @@ public class DataBaseHelper
 
                 using (SqlCommand command = new SqlCommand(insertBranchQuery, connection))
                 {
+                    // הוספת פרמטר שם הסניף
                     command.Parameters.AddWithValue("@Name", branchName);
+                    // ביצוע השאילתה וקבלת מזהה הסניף החדש
                     branchId = (int)command.ExecuteScalar();
 
                     Console.WriteLine($"נוסף סניף חדש עם מזהה {branchId}");
@@ -829,25 +933,42 @@ public class DataBaseHelper
 
                         using (SqlCommand command = new SqlCommand(insertUserBranchQuery, connection))
                         {
+                            // הוספת פרמטרים לשאילתה
                             command.Parameters.AddWithValue("@UserID", userId);
                             command.Parameters.AddWithValue("@BranchID", branchId);
+                            // ביצוע השאילתה
                             int rowsAffected = command.ExecuteNonQuery();
                             Console.WriteLine($"קישור המשתמש לסניף - שורות שהושפעו: {rowsAffected}");
                         }
                     }
                 }
             }
+
+            // הצגת הודעת הצלחה
             MessageBox.Show($"הסניף {branchName} נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return true;
-
         }
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה
             MessageBox.Show($"אירעה שגיאה בהוספת הסניף: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
     }
 
+    // פונקציה להוספת עובד חדש
+    // פרמטרים:
+    // employeeId - מזהה עובד (אופציונלי)
+    // name - שם העובד
+    // phone - מספר טלפון
+    // email - דוא"ל
+    // rate - דירוג העובד
+    // roles - מערך של תפקידים
+    // salary - שכר שעתי
+    // isExperienced - האם העובד מנוסה/מנטור
+    // password - סיסמת העובד
+    // branchesCheckedListBox - תיבת בחירה של סניפים
+    // ערך מוחזר: אמת אם ההוספה הצליחה, שקר אחרת
     public bool AddEmployee(
      string employeeId,
      string name,
@@ -874,8 +995,10 @@ public class DataBaseHelper
         int newEmployeeId = 0;
         bool useCustomId = false;
 
+        // בדיקה אם יש מזהה עובד ספציפי
         if (!string.IsNullOrWhiteSpace(employeeId))
         {
+            // וידוא שמזהה העובד הוא מספר
             if (!int.TryParse(employeeId, out newEmployeeId))
             {
                 MessageBox.Show("מזהה העובד חייב להיות מספר.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -896,7 +1019,7 @@ public class DataBaseHelper
                     {
                         MessageBox.Show("מזהה העובד כבר קיים במערכת.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return false;
-                    } 
+                    }
                 }
             }
 
@@ -910,6 +1033,7 @@ public class DataBaseHelper
             branchList.Add(item.ToString());
         }
 
+        // בדיקה שנבחר לפחות סניף אחד
         if (branchList.Count == 0)
         {
             MessageBox.Show("נא לבחור לפחות סניף אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -947,9 +1071,11 @@ public class DataBaseHelper
                 {
                     if (useCustomId)
                     {
+                        // הוספת פרמטר מזהה העובד אם משתמשים במזהה מותאם אישית
                         command.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
                     }
 
+                    // הוספת שאר הפרמטרים לשאילתה
                     command.Parameters.AddWithValue("@Name", name);
                     command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
                     command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
@@ -978,6 +1104,7 @@ public class DataBaseHelper
 
                             if (result == null) // התפקיד לא קיים
                             {
+                                // יצירת תפקיד חדש
                                 string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
                                 using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection))
                                 {
@@ -1042,23 +1169,62 @@ public class DataBaseHelper
                 );
                 Program.Employees.Add(newEmployee);
 
+                // הצגת הודעת הצלחה
                 MessageBox.Show($"העובד {name} נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;
             }
         }
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה
             MessageBox.Show($"אירעה שגיאה בהוספת העובד: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
     }
 
-
+    // פונקציה לשמירת שינויים במשמרת לבסיס הנתונים
+    // פרמטרים:
+    // shift - אובייקט המשמרת לשמירה
+    // ערך מוחזר: אין
     public void SaveShiftToDatabase(Shift shift)
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             connection.Open();
+
+            // בדיקה אם יש משמרת אחרת באותו יום ושעה באותו סניף (מלבד המשמרת הנוכחית)
+            string checkDuplicateQuery = @"
+            SELECT COUNT(*) FROM Shifts 
+            WHERE BranchID = (SELECT BranchID FROM Shifts WHERE ShiftID = @ShiftID)
+            AND TimeSlotID = (SELECT ts.TimeSlotID FROM TimeSlots ts WHERE ts.TimeSlotName = @TimeSlotName)
+            AND DayOfWeek = @DayOfWeek
+            AND ShiftID <> @ShiftID";
+
+            using (SqlCommand checkCommand = new SqlCommand(checkDuplicateQuery, connection))
+            {
+                // הוספת פרמטרים לבדיקת כפילויות
+                checkCommand.Parameters.AddWithValue("@ShiftID", shift.Id);
+                checkCommand.Parameters.AddWithValue("@TimeSlotName", shift.TimeSlot);
+                checkCommand.Parameters.AddWithValue("@DayOfWeek", shift.day);
+
+                // בדיקה אם קיימת משמרת דומה
+                int count = (int)checkCommand.ExecuteScalar();
+
+                if (count > 0)
+                {
+                    // כבר קיימת משמרת אחרת באותו זמן ויום - הצגת הודעה למשתמש
+                    MessageBox.Show(
+                        $"לא ניתן לעדכן משמרת: כבר קיימת משמרת ביום {shift.day} בשעות {shift.TimeSlot} בסניף זה.",
+                        "שגיאה",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    // מחיקת המשמרת הנוכחית אם יש כפילות
+                    DeleteShiftFromDatabase(shift.Id);
+                    return;
+                }
+            }
+
+            // רק אם אין כפילות, ממשיכים לקוד העדכון
 
             // עדכון פרטי המשמרת
             string UpdateShiftQuery = $"UPDATE Shifts " +
@@ -1069,6 +1235,7 @@ public class DataBaseHelper
 
             using (SqlCommand command = new SqlCommand(UpdateShiftQuery, connection))
             {
+                // הוספת פרמטרים לעדכון המשמרת
                 command.Parameters.AddWithValue("@ShiftID", shift.Id);
                 command.Parameters.AddWithValue("@TimeSlotName", shift.TimeSlot);
                 command.Parameters.AddWithValue("@DayOfWeek", shift.day);
@@ -1076,7 +1243,7 @@ public class DataBaseHelper
                 command.ExecuteNonQuery();
             }
 
-
+            // עדכון התפקידים הנדרשים למשמרת
             foreach (var role in shift.RequiredRoles)
             {
                 // עדכון פרטי המשמרת
@@ -1085,34 +1252,44 @@ public class DataBaseHelper
                     $"FROM ShiftRequiredRoles s " +
                     $"JOIN Roles r ON s.RoleID = r.RoleID " +
                     $"WHERE s.ShiftID = @ShiftID AND r.RoleName = @RoleName ";
+
                 using (SqlCommand command = new SqlCommand(UpdateRequirsRolesQuery, connection))
                 {
+                    // הוספת פרמטרים לעדכון דרישות התפקידים
                     command.Parameters.AddWithValue("@ShiftID", shift.Id);
                     command.Parameters.AddWithValue("@RoleName", role.Key);
                     command.Parameters.AddWithValue("@RequiredCount", role.Value);
                     command.ExecuteNonQuery();
                 }
             }
+
+            // הודעת הצלחה למשתמש
+            MessageBox.Show("משמרת עודכנה בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 
+    // פונקציה לקבלת רשימת התפקידים מבסיס הנתונים
+    // פרמטרים: אין
+    // ערך מוחזר: רשימת שמות תפקידים
     public List<string> getRoles()
     {
-        List<string> roles = new List<string>();    
-        // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
+        List<string> roles = new List<string>();
+        // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת Roles
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            // מניחים שהעמודה עם שם סוג המשמרת נקראת TypeName
+            // שאילתה לקבלת כל התפקידים
             string query = "SELECT RoleName FROM Roles";
             SqlCommand command = new SqlCommand(query, connection);
 
+            // פתיחת החיבור לבסיס הנתונים
             connection.Open();
 
+            // קריאת הנתונים והוספתם לרשימה
             using (SqlDataReader reader = command.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    // קורא את הערך של TypeName מהשאילתה ומוסיף לרשימה
+                    // קורא את הערך של RoleName מהשאילתה ומוסיף לרשימה
                     roles.Add(reader["RoleName"].ToString());
                 }
             }
@@ -1120,18 +1297,23 @@ public class DataBaseHelper
         return roles;
     }
 
+    // פונקציה לקבלת רשימת סוגי המשמרות מבסיס הנתונים
+    // פרמטרים: אין
+    // ערך מוחזר: רשימת שמות סוגי משמרות
     public List<string> getShiftTypes()
     {
-        List<string> shiftTypes=new List<string>();
+        List<string> shiftTypes = new List<string>();
         // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            // מניחים שהעמודה עם שם סוג המשמרת נקראת TypeName
+            // שאילתה לקבלת כל סוגי המשמרות
             string query = "SELECT TypeName FROM ShiftTypes";
             SqlCommand command = new SqlCommand(query, connection);
 
+            // פתיחת החיבור לבסיס הנתונים
             connection.Open();
 
+            // קריאת הנתונים והוספתם לרשימה
             using (SqlDataReader reader = command.ExecuteReader())
             {
                 while (reader.Read())
@@ -1144,23 +1326,28 @@ public class DataBaseHelper
         return shiftTypes;
     }
 
+    // פונקציה לקבלת רשימת משבצות הזמן מבסיס הנתונים
+    // פרמטרים: אין
+    // ערך מוחזר: רשימת שמות משבצות זמן
     public List<string> getTimeSlots()
     {
         List<string> TimeSlots = new List<string>();
-        // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
+        // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת TimeSlots
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
-            // מניחים שהעמודה עם שם סוג המשמרת נקראת TypeName
+            // שאילתה לקבלת כל משבצות הזמן
             string query = "SELECT TimeSlotName FROM TimeSlots";
             SqlCommand command = new SqlCommand(query, connection);
 
+            // פתיחת החיבור לבסיס הנתונים
             connection.Open();
 
+            // קריאת הנתונים והוספתם לרשימה
             using (SqlDataReader reader = command.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    // קורא את הערך של TypeName מהשאילתה ומוסיף לרשימה
+                    // קורא את הערך של TimeSlotName מהשאילתה ומוסיף לרשימה
                     TimeSlots.Add(reader["TimeSlotName"].ToString());
                 }
             }
@@ -1168,20 +1355,31 @@ public class DataBaseHelper
         return TimeSlots;
     }
 
+    // פונקציה למחיקת משמרת מבסיס הנתונים
+    // פרמטרים:
+    // shiftId - מזהה המשמרת למחיקה
+    // ערך מוחזר: אין
     public void DeleteShiftFromDatabase(int shiftId)
     {
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             connection.Open();
 
+            // קריאה לפרוצדורה שמורה שמוחקת משמרת
             using (SqlCommand command = new SqlCommand("sp_DeleteShift", connection))
             {
                 command.CommandType = CommandType.StoredProcedure;
+                // הוספת פרמטר מזהה המשמרת
                 command.Parameters.AddWithValue("@ShiftID", shiftId);
                 command.ExecuteNonQuery();
             }
         }
     }
+
+    // פונקציה להוספת משמרת לבסיס הנתונים
+    // פרמטרים:
+    // branchId - מזהה הסניף שאליו תתווסף המשמרת
+    // ערך מוחזר: מזהה המשמרת החדשה
     public int AddShiftToDatabase(int branchId)
     {
         int newShiftId = 0;
@@ -1214,7 +1412,9 @@ public class DataBaseHelper
                 string getTimeSlotIdQuery = "SELECT TimeSlotID FROM TimeSlots WHERE TimeSlotName = @TimeSlot";
                 using (SqlCommand getTimeSlotIdCommand = new SqlCommand(getTimeSlotIdQuery, connection))
                 {
+                    // הוספת פרמטר שם משבצת הזמן
                     getTimeSlotIdCommand.Parameters.AddWithValue("@TimeSlot", timeSlot);
+                    // ביצוע השאילתה וקבלת מזהה משבצת הזמן
                     var result = getTimeSlotIdCommand.ExecuteScalar();
                     timeSlotId = Convert.ToInt32(result);
                 }
@@ -1224,7 +1424,9 @@ public class DataBaseHelper
                 string getShiftTypeIdQuery = "SELECT ShiftTypeID FROM ShiftTypes WHERE TypeName = @ShiftType";
                 using (SqlCommand getShiftTypeIdCommand = new SqlCommand(getShiftTypeIdQuery, connection))
                 {
+                    // הוספת פרמטר שם סוג המשמרת
                     getShiftTypeIdCommand.Parameters.AddWithValue("@ShiftType", shiftType);
+                    // ביצוע השאילתה וקבלת מזהה סוג המשמרת
                     var result = getShiftTypeIdCommand.ExecuteScalar();
                     shiftTypeId = Convert.ToInt32(result);
                 }
@@ -1242,7 +1444,6 @@ public class DataBaseHelper
                     insertShiftCommand.Parameters.AddWithValue("@TimeSlotID", timeSlotId);
                     insertShiftCommand.Parameters.AddWithValue("@DayOfWeek", "Sunday");
                     insertShiftCommand.Parameters.AddWithValue("@ShiftTypeID", shiftTypeId);
-                   
 
                     //ביצוע השאילתה וקבלת המזהה של המשמרת החדשה
                     newShiftId = (int)insertShiftCommand.ExecuteScalar();
@@ -1255,13 +1456,16 @@ public class DataBaseHelper
                     string getRoleIdQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
                     using (SqlCommand getRoleIdCommand = new SqlCommand(getRoleIdQuery, connection))
                     {
+                        // הוספת פרמטר שם התפקיד
                         getRoleIdCommand.Parameters.AddWithValue("@RoleName", role.Key);
+                        // ביצוע השאילתה וקבלת מזהה התפקיד
                         var roleIdResult = getRoleIdCommand.ExecuteScalar();
 
                         if (roleIdResult != null)
                         {
                             roleId = Convert.ToInt32(roleIdResult);
 
+                            // הוספת התפקיד כדרישה למשמרת
                             string insertRoleQuery = @"
                         INSERT INTO ShiftRequiredRoles (ShiftID, RoleID, RequiredCount)
                         VALUES (@ShiftID, @RoleID, @RequiredCount)";
@@ -1290,15 +1494,20 @@ public class DataBaseHelper
         return newShiftId;
     }
 
+    // פונקציה לטעינת הסניפים של עובד מסוים
+    // פרמטרים:
+    // selectedEmployee - אובייקט העובד שאת הסניפים שלו יש לטעון
+    // ערך מוחזר: רשימת שמות הסניפים של העובד
     public List<String> LoademployeeBranches(Employee selectedEmployee)
     {
-        List <String> branches = new List <String>();
+        List<String> branches = new List<String>();
         // טעינת הסניפים שהעובד משויך אליהם
         try
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+                // שאילתה לקבלת הסניפים של העובד
                 string employeeBranchesQuery = @"
                         SELECT b.Name
                         FROM Branches b
@@ -1307,33 +1516,36 @@ public class DataBaseHelper
 
                 using (SqlCommand command = new SqlCommand(employeeBranchesQuery, connection))
                 {
+                    // הוספת פרמטר מזהה העובד
                     command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
 
+                    // קריאת התוצאות והוספתן לרשימה
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             string branchName = reader.GetString(0);
                             branches.Add(branchName);
-
                         }
                     }
                 }
                 return branches;
             }
         }
-
-
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה במקרה של כישלון
             MessageBox.Show("אירעה שגיאה בטעינת הסניפים : " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return null;
         }
     }
 
+    // פונקציה לטעינת המשמרות המועדפות של עובד מסוים
+    // פרמטרים:
+    // selectedEmployee - אובייקט העובד שאת המשמרות המועדפות שלו יש לטעון
+    // ערך מוחזר: מערך של מזהי המשמרות המועדפות של העובד
     public HashSet<int> LoademployeePrefferdShifts(Employee selectedEmployee)
     {
-        
         try
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -1348,8 +1560,10 @@ public class DataBaseHelper
                 HashSet<int> preferredShiftIds = new HashSet<int>();
                 using (SqlCommand command = new SqlCommand(preferredShiftsQuery, connection))
                 {
+                    // הוספת פרמטר מזהה העובד
                     command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
 
+                    // קריאת התוצאות והוספתן למערך
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -1359,17 +1573,22 @@ public class DataBaseHelper
                     }
                 }
                 return preferredShiftIds;
-
             }
         }
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה במקרה של כישלון
             MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return null;
         }
     }
 
-    public  List<ShiftDisplayInfo> LoadBranchShiftsDetails(int branchId, string branchName)
+    // פונקציה לטעינת פרטי המשמרות של סניף מסוים
+    // פרמטרים:
+    // branchId - מזהה הסניף שאת המשמרות שלו יש לטעון
+    // branchName - שם הסניף
+    // ערך מוחזר: רשימת אובייקטים המכילים פרטי משמרות
+    public List<ShiftDisplayInfo> LoadBranchShiftsDetails(int branchId, string branchName)
     {
         List<ShiftDisplayInfo> branchShifts = new List<ShiftDisplayInfo>();
         try
@@ -1378,6 +1597,7 @@ public class DataBaseHelper
             {
                 connection.Open();
 
+                // שאילתה לקבלת פרטי המשמרות של הסניף
                 string query = @"
                         SELECT s.ShiftID, ts.TimeSlotName, s.DayOfWeek, st.TypeName
                         FROM Shifts s
@@ -1387,8 +1607,10 @@ public class DataBaseHelper
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
+                    // הוספת פרמטר מזהה הסניף
                     command.Parameters.AddWithValue("@BranchID", branchId);
 
+                    // קריאת התוצאות ויצירת אובייקטי מידע על משמרות
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         List<ShiftDisplayInfo> shifts = new List<ShiftDisplayInfo>();
@@ -1413,11 +1635,25 @@ public class DataBaseHelper
         }
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה במקרה של כישלון
             MessageBox.Show("אירעה שגיאה בטעינת המשמרות: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return null;
         }
     }
 
+    // פונקציה לשמירת פרטי עובד לבסיס הנתונים
+    // פרמטרים:
+    // selectedEmployee - העובד שאת פרטיו יש לשמור
+    // name - שם העובד המעודכן
+    // phone - מספר הטלפון המעודכן
+    // email - כתובת הדוא"ל המעודכנת
+    // salary - השכר השעתי המעודכן
+    // rate - הדירוג המעודכן
+    // isExperienced - סטטוס המנטור המעודכן
+    // roles - רשימת התפקידים המעודכנת
+    // branches - רשימת הסניפים המעודכנת
+    // shifts - רשימת המשמרות המועדפות המעודכנת
+    // ערך מוחזר: אמת אם העדכון הצליח, שקר אחרת
     public bool SaveEmployeeToDataBase(Employee selectedEmployee, string name, string phone, string email,
         string salary, string rate, bool isExperienced, List<string> roles,
         List<Branch> branches, List<ShiftDisplayInfo> shifts)
@@ -1427,6 +1663,7 @@ public class DataBaseHelper
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+                // שימוש בטרנזקציה כדי להבטיח שכל העדכונים יתבצעו או יבוטלו יחד
                 using (SqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
@@ -1444,6 +1681,7 @@ public class DataBaseHelper
 
                         using (SqlCommand command = new SqlCommand(updateEmployeeQuery, connection, transaction))
                         {
+                            // הוספת פרמטרים לעדכון פרטי העובד הבסיסיים
                             command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
                             command.Parameters.AddWithValue("@Name", name);
                             command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
@@ -1459,6 +1697,7 @@ public class DataBaseHelper
                         string deleteRolesQuery = "DELETE FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
                         using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection, transaction))
                         {
+                            // הוספת פרמטר מזהה העובד
                             command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
                             command.ExecuteNonQuery();
                         }
@@ -1476,6 +1715,7 @@ public class DataBaseHelper
 
                                 if (result == null) // התפקיד לא קיים
                                 {
+                                    // יצירת תפקיד חדש
                                     string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
                                     using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection, transaction))
                                     {
@@ -1489,7 +1729,7 @@ public class DataBaseHelper
                                 }
                             }
 
-                            // הוספת התפקיד החדש
+                            // הוספת התפקיד החדש לעובד
                             string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
                             using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection, transaction))
                             {
@@ -1513,6 +1753,7 @@ public class DataBaseHelper
                         {
                             newBranches.Add(branch.Name);
 
+                            // הוספת שיוך עובד-סניף חדש
                             string insertEmployeeBranchQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
                             using (SqlCommand insertCommand = new SqlCommand(insertEmployeeBranchQuery, connection, transaction))
                             {
@@ -1537,6 +1778,7 @@ public class DataBaseHelper
                             int shiftId = shift.ShiftID;
                             newPreferredShifts.Add(shiftId);
 
+                            // הוספת שיוך עובד-משמרת מועדפת
                             string insertPreferredShiftQuery = "INSERT INTO EmployeePreferredShifts (EmployeeID, ShiftID) VALUES (@EmployeeID, @ShiftID)";
                             using (SqlCommand command = new SqlCommand(insertPreferredShiftQuery, connection, transaction))
                             {
@@ -1558,6 +1800,7 @@ public class DataBaseHelper
                         // אישור העסקה
                         transaction.Commit();
 
+                        // הצגת הודעת הצלחה
                         MessageBox.Show($"פרטי העובד {selectedEmployee.Name} עודכנו בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return true;
                     }
@@ -1572,32 +1815,38 @@ public class DataBaseHelper
         }
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה
             MessageBox.Show(ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
     }
 
+    // פונקציה לטעינת מספר הטלפון של עובד מסוים
+    // פרמטרים:
+    // employeeID - מזהה העובד שאת מספר הטלפון שלו יש לטעון
+    // ערך מוחזר: מספר הטלפון של העובד
     public string LoadEmployeePhone(int employeeID)
     {
-        string phone="";
+        string phone = "";
         try
         {
-
-
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+                // שאילתה לקבלת מספר הטלפון של העובד
                 string query = "SELECT Phone FROM Employees WHERE EmployeeID = @EmployeeID";
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
+                    // הוספת פרמטר מזהה העובד
                     command.Parameters.AddWithValue("@EmployeeID", employeeID);
 
+                    // קריאת התוצאה
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
+                            // טיפול במקרה של ערך null
                             phone = reader["Phone"] != DBNull.Value ? reader["Phone"].ToString() : "";
-
                         }
                     }
                 }
@@ -1606,32 +1855,38 @@ public class DataBaseHelper
         }
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה במקרה של כישלון
             MessageBox.Show("אירעה שגיאה בטעינת נתוני העובד: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return null;
         }
     }
 
+    // פונקציה לטעינת כתובת הדוא"ל של עובד מסוים
+    // פרמטרים:
+    // employeeID - מזהה העובד שאת כתובת הדוא"ל שלו יש לטעון
+    // ערך מוחזר: כתובת הדוא"ל של העובד
     public string LoadEmployeeEmail(int employeeID)
     {
         string Email = "";
         try
         {
-
-
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+                // שאילתה לקבלת כתובת הדוא"ל של העובד
                 string query = "SELECT Email FROM Employees WHERE EmployeeID = @EmployeeID";
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
+                    // הוספת פרמטר מזהה העובד
                     command.Parameters.AddWithValue("@EmployeeID", employeeID);
 
+                    // קריאת התוצאה
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
+                            // טיפול במקרה של ערך null
                             Email = reader["Email"] != DBNull.Value ? reader["Email"].ToString() : "";
-
                         }
                     }
                 }
@@ -1640,11 +1895,9 @@ public class DataBaseHelper
         }
         catch (Exception ex)
         {
+            // הצגת הודעת שגיאה במקרה של כישלון
             MessageBox.Show("אירעה שגיאה בטעינת נתוני העובד: " + ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return null;
         }
     }
-
-
-
-    }
+}

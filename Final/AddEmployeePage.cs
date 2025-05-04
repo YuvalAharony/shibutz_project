@@ -32,7 +32,6 @@ namespace Final
         // פרמטרים
         // userName - שם המשתמש המחובר למערכת
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         public AddEmployeePage(String userName)
         {
             InitializeComponent();
@@ -44,7 +43,6 @@ namespace Final
         // מגדיר את ממשק המשתמש של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "הוספת עובד חדש";
@@ -129,7 +127,9 @@ namespace Final
             {
                 Text = "האם עובד מנוסה?",
                 Location = new System.Drawing.Point(controlX, currentY),
-                Name = "isExperiencedCheckBox"
+                Name = "isExperiencedCheckBox",
+                AutoSize = true
+
             };
             currentY += gap;
 
@@ -197,7 +197,6 @@ namespace Final
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SaveButton_Click(object sender, EventArgs e)
         {
             // יצירת רשימת התפקידים שנבחרו
@@ -233,7 +232,6 @@ namespace Final
         // אוסף את התפקידים שנבחרו ברשימה
         // פרמטרים: אין
         // ערך מוחזר: אוסף התפקידים שנבחרו
-        // O(n) :סיבוכיות
         private HashSet<string> GetSelectedRoles()
         {
             CheckedListBox rolesCheckedListBox = (CheckedListBox)this.Controls["rolesCheckedListBox"];
@@ -250,7 +248,6 @@ namespace Final
         // טוען את הסניפים הזמינים למשתמש
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות
         private void LoadAvaliableBranches()
         {
             List<Branch> branches = helper.LoadUserBranches(currentUserName);

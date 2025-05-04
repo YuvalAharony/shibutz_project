@@ -22,28 +22,27 @@ namespace Final
         // shift - המשמרת להצגה
         // branch - הסניף אליו שייכת המשמרת
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים והעובדים במשמרת
         public ViewShiftDetailPage(Shift shift, Branch branch)
         {
             this.shift = shift;
             this.branch = branch;
-            InitializeUI();
-            // Add this line to the constructor or InitializeComponent/SetupUI method
+            SetupUI();
             LoadRolesAndEmployees();
         }
 
-        // אתחול ממשק המשתמש של הטופס
+        // פונקציה להגדרת ממשק המשתמש
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
-        private void InitializeUI()
+        private void SetupUI()
         {
-            // Set basic form properties
+            // הגדרת כותרת החלון
             this.Text = $"פרטי משמרת - {branch.Name} - {shift.day} {shift.TimeSlot}";
+            // קביעת גודל החלון
             this.Size = new System.Drawing.Size(600, 400);
-            this.RightToLeft = RightToLeft.Yes; // For Hebrew support
+            // הגדרת כיוון טקסט מימין לשמאל
+            this.RightToLeft = RightToLeft.Yes;
 
-            // Create title label
+            // יצירת כותרת ראשית
             Label titleLabel = new Label()
             {
                 Text = $"עובדים ותפקידים במשמרת: {branch.Name} - {shift.day} {shift.TimeSlot}",
@@ -51,9 +50,10 @@ namespace Final
                 Font = new System.Drawing.Font("Arial", 14, System.Drawing.FontStyle.Bold),
                 Location = new System.Drawing.Point(20, 20)
             };
+            // הוספת התווית לחלון
             this.Controls.Add(titleLabel);
 
-            // Create grid for roles and assigned employees
+            // יצירת טבלת תפקידים
             rolesGridView = new DataGridView()
             {
                 Location = new System.Drawing.Point(20, 60),
@@ -69,25 +69,25 @@ namespace Final
                 RightToLeft = RightToLeft.Yes
             };
 
-            // Add columns to the grid
+            // הוספת עמודות לטבלה
             rolesGridView.Columns.Add("Role", "תפקיד");
             rolesGridView.Columns.Add("Required", "נדרש");
             rolesGridView.Columns.Add("Employee", "עובד משובץ");
             rolesGridView.Columns.Add("Rate", "דירוג");
             rolesGridView.Columns.Add("IsMentor", "חונך");
 
+            // הוספת הטבלה לחלון
             this.Controls.Add(rolesGridView);
         }
 
         // טעינת התפקידים והעובדים המשובצים במשמרת לטבלה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים והעובדים במשמרת
         private void LoadRolesAndEmployees()
         {
             rolesGridView.Rows.Clear();
 
-            // נסה למצוא את המשמרת ב-Chromosome הטוב ביותר
+            // מציאת הכרומוזום הטוב ביותר
             Shift bestShift = null;
             Chromosome bestChromosome = Program.GetBestChromosome();
 
@@ -171,19 +171,7 @@ namespace Final
             }
         }
 
-        // אתחול הרכיבים של הטופס
-        // פרמטרים: אין
-        // ערך מוחזר: אין
-        // O(1) :סיבוכיות
-        private void InitializeComponent()
-        {
-            this.SuspendLayout();
-            // 
-            // ViewShiftDetailPage
-            // 
-            this.ClientSize = new System.Drawing.Size(282, 253);
-            this.Name = "ViewShiftDetailPage";
-            this.ResumeLayout(false);
-        }
+
+      
     }
 }

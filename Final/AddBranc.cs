@@ -26,7 +26,6 @@ namespace EmployeeSchedulingApp
         // פרמטרים
         // userName - שם המשתמש המחובר למערכת 
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         public AddBranchPage(string userName = null)
         {
             InitializeComponent();
@@ -37,7 +36,6 @@ namespace EmployeeSchedulingApp
         // מאתחל את הרכיבים הבסיסיים של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -55,7 +53,6 @@ namespace EmployeeSchedulingApp
         // מגדיר את ממשק המשתמש של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             // יצירת כותרת
@@ -112,7 +109,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SaveButton_Click(object sender, EventArgs e)
         {
             // קבלת ערך הטקסט משדה שם הסניף

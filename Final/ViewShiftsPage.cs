@@ -18,7 +18,6 @@ namespace Final
         // פרמטרים
         // branch - הסניף לצפייה
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         public ViewShiftsPage(Branch branch)
         {
             selectedBranch = branch;
@@ -31,7 +30,6 @@ namespace Final
         // הגדרת ממשק המשתמש של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = $"סידור משמרות - {selectedBranch.Name}";
@@ -77,7 +75,6 @@ namespace Final
         // טעינת המשמרות לטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         private void LoadShifts()
         {
             shiftsDataGridView.Rows.Clear();
@@ -136,7 +133,6 @@ namespace Final
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         private void ShiftsGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             // דילוג אם נלחץ כותרת עמודה/שורה או העמודה הראשונה
@@ -177,23 +173,9 @@ namespace Final
             }
         }
 
-        // פונקציית עזר לקבלת אובייקט המשמרת משורה בטבלה
-        // פרמטרים
-        // rowIndex - מספר השורה בטבלה
-        // ערך מוחזר: אובייקט המשמרת אם נמצא, אחרת null
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
-        private Shift GetShiftFromRow(int rowIndex)
-        {
-            // בדיקה אם המשמרת נשמרה במאפיין התג של השורה
-            if (shiftsDataGridView.Rows[rowIndex].Tag is Shift shift)
-            {
-                return shift;
-            }
 
-            // מימוש חלופי אם מזהה המשמרת נשמר בטבלה
-            string shiftId = shiftsDataGridView.Rows[rowIndex].Cells["Id"].Value.ToString();
 
-            return selectedBranch.Shifts.FirstOrDefault(s => s.Id.ToString() == shiftId);
-        }
+
+       
     }
 }

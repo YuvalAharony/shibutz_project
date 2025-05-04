@@ -14,12 +14,10 @@ namespace Final
         // גודל האוכלוסייה
         public int Size { get; set; }
 
-        // בנאי המחלקה - יוצר אוכלוסייה עם רשימת כרומוזומים מוגדרת
-        public Population(List<Chromosome> chromoshomes, int size)
+      
+        public Population(int size)
         {
-            Chromoshomes = chromoshomes;
             Size = size;
         }
-
     }
 }

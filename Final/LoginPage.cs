@@ -15,7 +15,6 @@ namespace EmployeeSchedulingApp
         // בנאי המחלקה - יוצר את דף ההתחברות
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         public LoginPage()
         {
             SetupUI();
@@ -24,12 +23,10 @@ namespace EmployeeSchedulingApp
         // הגדרת ממשק המשתמש של דף ההתחברות
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "התחברות למערכת";
             this.Size = new System.Drawing.Size(400, 300);
-            // 1) הפיכת כל ה־Form ל־RTL
             this.RightToLeft = RightToLeft.Yes;
             this.RightToLeftLayout = true;
 

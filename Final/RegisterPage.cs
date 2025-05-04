@@ -16,7 +16,6 @@ namespace EmployeeSchedulingApp
         // בנאי המחלקה - יוצר את דף ההרשמה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         public RegisterPage()
         {
             SetupUI();
@@ -25,13 +24,13 @@ namespace EmployeeSchedulingApp
         // הגדרת ממשק המשתמש של דף ההרשמה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
+
         private void SetupUI()
         {
             this.Text = "הרשמה למערכת";
             this.Size = new System.Drawing.Size(400, 450);
 
-            // 1) הפיכת כל ה-Form ל-RTL
+
             this.RightToLeft = RightToLeft.Yes;
             this.RightToLeftLayout = true;
 
@@ -111,7 +110,7 @@ namespace EmployeeSchedulingApp
                 this.Close();
             };
 
-            // הוספה ל-Form
+            // הוספת רכיבים
             this.Controls.Add(titleLabel);
             this.Controls.Add(fullNameLabel);
             this.Controls.Add(fullNameTextBox);
@@ -130,16 +129,17 @@ namespace EmployeeSchedulingApp
         // אתחול הרכיבים של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
+
         private void InitializeComponent()
         {
             this.SuspendLayout();
-            // 
-            // RegisterPage
-            // 
+
             this.ClientSize = new System.Drawing.Size(282, 253);
             this.Name = "RegisterPage";
             this.ResumeLayout(false);
+
         }
+
+   
     }
 }

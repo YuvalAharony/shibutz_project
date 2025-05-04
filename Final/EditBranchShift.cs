@@ -29,7 +29,6 @@ namespace EmployeeSchedulingApp
         // פרמטרים
         // branch - הסניף שאת משמרותיו יש לערוך
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         public EditBranchShift(Branch branch)
         {
             currentBranch = branch;
@@ -41,7 +40,6 @@ namespace EmployeeSchedulingApp
         // אתחול הרכיבים של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -54,12 +52,12 @@ namespace EmployeeSchedulingApp
             this.RightToLeftLayout = true;
             this.Text = "עריכת משמרות סניף";
             this.ResumeLayout(false);
+
         }
 
         // הגדרת ממשק המשתמש של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             // כותרת
@@ -116,7 +114,6 @@ namespace EmployeeSchedulingApp
         // טעינת משמרות הסניף לרשימה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות בסניף
         private void LoadShifts()
         {
             shiftsListView.Items.Clear();
@@ -141,7 +138,6 @@ namespace EmployeeSchedulingApp
         // מיון המשמרות לפי יום ושעה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n log n) :סיבוכיות כאשר n הוא מספר המשמרות
         private void SortShiftsByDayAndTime()
         {
             // מיון על פי ימים ולאחר מכן זמנים
@@ -206,7 +202,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void ShiftsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (shiftsListView.SelectedItems.Count > 0)
@@ -219,7 +214,6 @@ namespace EmployeeSchedulingApp
         // פתיחת פאנל עריכת משמרת
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים
         private void ShowShiftEditPanel()
         {
             editPanel.Controls.Clear();
@@ -376,7 +370,6 @@ namespace EmployeeSchedulingApp
                     // שמירה בבסיס הנתונים
                     helper.SaveShiftToDatabase(selectedShift);
 
-                    MessageBox.Show("המשמרת עודכנה בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // רענון הרשימה
                     LoadShifts();
@@ -429,7 +422,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות
         private void AddShiftButton_Click(object sender, EventArgs e)
         {
             try
@@ -470,5 +462,7 @@ namespace EmployeeSchedulingApp
                 MessageBox.Show($"אירעה שגיאה בהוספת המשמרת: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+     
     }
 }

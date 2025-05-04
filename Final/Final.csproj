@@ -74,18 +74,6 @@
       <DependentUpon>EditEmployeePage.cs</DependentUpon>
     </Compile>
     <Compile Include="Employee.cs" />
-    <Compile Include="EmployeeLoginPage.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="EmployeeLoginPage.Designer.cs">
-      <DependentUpon>EmployeeLoginPage.cs</DependentUpon>
-    </Compile>
-    <Compile Include="EmployeeShiftRequestPage.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="EmployeeShiftRequestPage.Designer.cs">
-      <DependentUpon>EmployeeShiftRequestPage.cs</DependentUpon>
-    </Compile>
     <Compile Include="HomePage.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -139,12 +127,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EditEmployeePage.resx">
       <DependentUpon>EditEmployeePage.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="EmployeeLoginPage.resx">
-      <DependentUpon>EmployeeLoginPage.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="EmployeeShiftRequestPage.resx">
-      <DependentUpon>EmployeeShiftRequestPage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HomePage.resx">
       <DependentUpon>HomePage.cs</DependentUpon>

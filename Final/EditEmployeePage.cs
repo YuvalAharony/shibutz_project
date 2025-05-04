@@ -36,7 +36,6 @@ namespace EmployeeSchedulingApp
         // אתחול הרכיבים של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -46,12 +45,12 @@ namespace EmployeeSchedulingApp
             this.ClientSize = new System.Drawing.Size(400, 750);
             this.Name = "EditEmployeePage";
             this.ResumeLayout(false);
+
         }
 
         // הגדרת ממשק המשתמש של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "עריכת עובד";
@@ -117,7 +116,7 @@ namespace EmployeeSchedulingApp
             };
             currentY += verticalSpacing;
 
-            // תפקידים (CheckedListBox במקום ComboBox)
+            // תפקידים 
             Label roleLabel = new Label()
             {
                 Text = "תפקידים:",
@@ -125,7 +124,6 @@ namespace EmployeeSchedulingApp
                 AutoSize = true
             };
 
-            // יצירת CheckedListBox לתפקידים
             rolesCheckedListBox = new CheckedListBox()
             {
                 Location = new Point(controlX, currentY),
@@ -135,8 +133,8 @@ namespace EmployeeSchedulingApp
             };
 
             // הוספת התפקידים האפשריים
-            string[] roles = { "Waiter", "Chef", "Bartender", "Manager" };
-            rolesCheckedListBox.Items.AddRange(roles);
+            List<string>roles = helper.getRoles();
+            rolesCheckedListBox.Items.AddRange(roles.ToArray());
 
             currentY += rolesCheckedListBox.Height + 5;
 
@@ -258,7 +256,6 @@ namespace EmployeeSchedulingApp
         // טעינת סניפים ומשמרות זמינים לעובד
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר הסניפים
         private void LoadBranchesAndShifts()
         {
             branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
@@ -282,12 +279,13 @@ namespace EmployeeSchedulingApp
             UpdateShiftsList();
         }
 
+     
+
         // אירוע שמופעל כאשר מסמנים או מבטלים סימון של סניף
         // פרמטרים
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void BranchesCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             // הרצה מושהית כדי לאפשר את עדכון הסימון לפני הפעולה
@@ -300,7 +298,6 @@ namespace EmployeeSchedulingApp
         // עדכון רשימת המשמרות על פי הסניפים שנבחרו
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n log n) :סיבוכיות כאשר n הוא מספר המשמרות
         private void UpdateShiftsList()
         {
             shiftsCheckedListBox.Items.Clear();
@@ -346,7 +343,6 @@ namespace EmployeeSchedulingApp
         // טעינת נתוני העובד לטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים של העובד
         private void LoadEmployeeData()
         {
             nameTextBox.Text = selectedEmployee.Name;
@@ -373,7 +369,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר התפקידים והסניפים שנבחרו
         private void SaveEmployeeChanges(object sender, EventArgs e)
         {
             // בדיקת שדות חובה
@@ -447,7 +442,6 @@ namespace EmployeeSchedulingApp
         // employee - העובד שיש לערוך
         // userName - שם המשתמש המחובר למערכת
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר הסניפים והתפקידים
         public EditEmployeePage(Employee employee, string userName)
         {
             selectedEmployee = employee;

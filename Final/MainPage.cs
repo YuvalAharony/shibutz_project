@@ -30,7 +30,6 @@ namespace EmployeeSchedulingApp
         // פרמטרים
         // UserName - שם המשתמש המחובר למערכת
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים והסניפים
         public MainPage(string UserName)
         {
             BranchesList = new List<Branch>();
@@ -40,7 +39,6 @@ namespace EmployeeSchedulingApp
 
             SetupUI();
 
-            // Add these lines to populate the UI
             LoadBranches();
             LoadEmployees();
         }
@@ -48,7 +46,6 @@ namespace EmployeeSchedulingApp
         // הגדרת ממשק המשתמש של העמוד הראשי
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupUI()
         {
             this.Text = "מסך ראשי - ניהול הרשת";
@@ -63,12 +60,11 @@ namespace EmployeeSchedulingApp
 
             this.Controls.Add(generateShiftsButton);
 
-            // Add this button to SetupUI in MainPage class
             Button generateRandomDataButton = new Button()
             {
                 Text = "צור נתונים באופן רנדומלי",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(500, 500)
+                Location = new System.Drawing.Point(550, 80)
             };
             generateRandomDataButton.Click += GenerateRandomDataButton_Click;
             this.Controls.Add(generateRandomDataButton);
@@ -158,7 +154,6 @@ namespace EmployeeSchedulingApp
         // הגדרת אירוע לחיצה כפולה על רשימת העובדים
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void SetupEmployeesListViewDoubleClick()
         {
             // וודא שאירוע הלחיצה הכפולה מחובר
@@ -171,7 +166,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private void EmployeesListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (employeesListView.SelectedItems.Count > 0)
@@ -190,7 +184,6 @@ namespace EmployeeSchedulingApp
                     editPage.FormClosed += (s, args) =>
                     {
                         EmployeesList = helper.LoadUserEmployees(currentUserName);
-                        // Connection is automatically closed and disposed here
 
                         // עדכון תצוגת העובדים
                         LoadEmployees();
@@ -204,7 +197,6 @@ namespace EmployeeSchedulingApp
         // טעינת רשימת העובדים לתצוגה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         public void LoadEmployees()
         {
             employeesListView.Items.Clear(); // מנקה את הרשימה
@@ -220,7 +212,6 @@ namespace EmployeeSchedulingApp
         // טעינת רשימת הסניפים לתצוגה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר הסניפים
         private void LoadBranches()
         {
             branchesListView.Items.Clear();
@@ -241,7 +232,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void OpenViewShiftsPage(object sender, EventArgs e)
         {
             Branch selectedBranch = (Branch)branchesListView.SelectedItems[0].Tag;
@@ -254,7 +244,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר הנתונים ליצירה
         private void GenerateRandomDataButton_Click(object sender, EventArgs e)
         {
             using (Form inputForm = new Form())
@@ -263,11 +252,10 @@ namespace EmployeeSchedulingApp
                 inputForm.Size = new System.Drawing.Size(300, 200);
                 inputForm.StartPosition = FormStartPosition.CenterParent;
 
-                // --- 1) הפיכת כל הטופס ל־RTL ---
                 inputForm.RightToLeft = RightToLeft.Yes;
                 inputForm.RightToLeftLayout = true;
 
-                // --- 2) בניית הרכיבים ---
+                //  בניית הרכיבים
                 Label branchLabel = new Label()
                 {
                     Text = "מספר סניפים:",
@@ -314,7 +302,7 @@ namespace EmployeeSchedulingApp
                 };
                 okButton.RightToLeft = RightToLeft.Yes;
 
-                // --- 3) הוספת הרכיבים לטופס ---
+                //הוספת הרכיבים לטופס
                 inputForm.Controls.AddRange(new Control[]
                 {
                     branchLabel,
@@ -325,7 +313,7 @@ namespace EmployeeSchedulingApp
                 });
                 inputForm.AcceptButton = okButton;
 
-                // --- 4) הצגת הדיאלוג ועיבוד התוצאה ---
+                //  הצגת הדיאלוג ועיבוד התוצאה 
                 if (inputForm.ShowDialog() == DialogResult.OK)
                 {
                     Cursor.Current = Cursors.WaitCursor;
@@ -354,7 +342,6 @@ namespace EmployeeSchedulingApp
         // פתיחת דף הוספת סניף חדש
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void OpenAddBranchPage()
         {
             // וודא שהמשתמש הנוכחי מועבר לטופס
@@ -375,7 +362,6 @@ namespace EmployeeSchedulingApp
         // פתיחת דף הוספת עובד חדש
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void OpenAddEmployeePage()
         {
             // העברת שם המשתמש הנוכחי לדף הוספת העובד
@@ -397,7 +383,6 @@ namespace EmployeeSchedulingApp
         // אתחול הרכיבים של הטופס
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -407,6 +392,7 @@ namespace EmployeeSchedulingApp
             this.ClientSize = new System.Drawing.Size(282, 253);
             this.Name = "MainPage";
             this.ResumeLayout(false);
+
         }
 
         // אירוע לחיצה על כפתור מחיקת סניף
@@ -414,7 +400,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void DeleteBranchButton_Click(object sender, EventArgs e)
         {
             if (branchesListView.SelectedItems.Count > 0)
@@ -451,7 +436,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private void DeleteEmployeeButton_Click(object sender, EventArgs e)
         {
             if (employeesListView.SelectedItems.Count > 0)
@@ -494,7 +478,6 @@ namespace EmployeeSchedulingApp
         // sender - האובייקט שהפעיל את האירוע
         // e - נתוני האירוע
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private void EditBranchShiftsButton_Click(object sender, EventArgs e)
         {
             if (branchesListView.SelectedItems.Count > 0)
@@ -513,5 +496,7 @@ namespace EmployeeSchedulingApp
                 );
             }
         }
+
+      
     }
 }

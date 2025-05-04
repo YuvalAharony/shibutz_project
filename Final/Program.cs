@@ -21,7 +21,7 @@ namespace Final
         public static List<Employee> Employees = new List<Employee>();
         public static DataBaseHelper DataBaseHelper = new DataBaseHelper();
         public static List<Branch> Branches = new List<Branch>();
-        public static Population pop;
+        public static Population pop=new Population(ChromosomesEachGene);
 
 
         // קבועים להגדרת האלגוריתם הגנטי
@@ -59,7 +59,6 @@ namespace Final
         // פרמטרים
         // username - שם המשתמש שעבורו יש ליצור את הסידור
         // ערך מוחזר: אין
-        // O(n*m*g) :סיבוכיות כאשר n הוא מספר העובדים, m הוא מספר המשמרות וg הוא מספר הדורות
         public static void createSceduele(string username)
         {
             InitializeAlgorithm(username);
@@ -71,7 +70,6 @@ namespace Final
         // פרמטרים
         // username - שם המשתמש שעבורו יש לאתחל את האלגוריתם
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static void InitializeAlgorithm(string username)
         {
             // איפוס מונים
@@ -80,7 +78,7 @@ namespace Final
             generationCount = 0;
 
             //יצירת אוכלוסייה חדשה בכל פעם שמפעילים את האלגוריתם
-            pop = new Population(new List<Chromosome>(), ChromosomesEachGene);
+            pop = new Population( ChromosomesEachGene);
 
             //טעינת כל הנתונים של המשתמש המחובר
             DataBaseHelper.LoadDataForUser(username, Branches, Employees);
@@ -92,7 +90,6 @@ namespace Final
         // פונקציה המריצה את האלגוריתם הגנטי
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(g*n*m) :סיבוכיות כאשר g הוא מספר הדורות, n הוא מספר הכרומוזומים וm הוא מספר המשמרות
         private static void RunGeneticAlgorithm()
         {
             double previousBestFitness = double.MinValue;
@@ -135,7 +132,6 @@ namespace Final
         // פונקציה להצגת תוצאות האלגוריתם
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private static void ShowResults()
         {
             // הצגת הצלחה למשתמש
@@ -150,7 +146,6 @@ namespace Final
         // פרמטרים
         // pop - אוכלוסייה ריקה להכנסת הכרומוזומים אליה
         // ערך מוחזר: אוכלוסייה מלאה בכרומוזומים
-        // O(n*m) :סיבוכיות כאשר n הוא גודל האוכלוסייה ו-m הוא מספר המשמרות
         public static Population initializeFirstPopulation(Population pop)
         {
             //מיון עובדים לפי ציון-ניתן למיין רק פעם אחת כי הציון לא משתנה
@@ -177,7 +172,6 @@ namespace Final
         // פונקציה שמשחזרת את המשמרות המבוקשות של כל עובד
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(n*m) :סיבוכיות כאשר n הוא מספר העובדים ו-m הוא מספר המשמרות לעובד
         public static void RestoreEmployeesRequestedShifts()
         {
             foreach (Employee emp in Employees)//מעבר על רשימת העובדים
@@ -195,7 +189,6 @@ namespace Final
         // פרמטרים
         // employeesSortedByRate - רשימת עובדים ממויינת לפי ציון
         // ערך מוחזר: כרומוזום חדש
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         private static Chromosome initializeChoromosome(List<Employee> employeesSortedByRate)
         {
             //מיפוי עובדים לפי משמרות מבוקשות
@@ -225,7 +218,6 @@ namespace Final
         // פונקציה ליצירת העתקים של הסניפים והמשמרות
         // פרמטרים: אין
         // ערך מוחזר: רשימת הסניפים המועתקים
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         private static List<Branch> CopyBranchesAndShifts()
         {
             List<Branch> branchesCopy = new List<Branch>();
@@ -264,7 +256,6 @@ namespace Final
         // פרמטרים
         // employees - רשימת העובדים למיון
         // ערך מוחזר: רשימת העובדים ממויינת לפי זמינות
-        // O(n log n) :סיבוכיות כאשר n הוא מספר העובדים
         public static List<Employee> sort_employees_by_availabilty(List<Employee> employees)
         {
             return employees.OrderBy(e => e.requestedShifts?.Count ?? 0).ToList();
@@ -274,7 +265,6 @@ namespace Final
         // פרמטרים
         // employees - רשימת העובדים למיון
         // ערך מוחזר: רשימת העובדים ממויינת לפי ציון
-        // O(n log n) :סיבוכיות כאשר n הוא מספר העובדים
         public static List<Employee> sort_employees_by_rate(List<Employee> employees)
         {
             return employees.OrderByDescending(e => e.Rate).ToList();
@@ -283,7 +273,6 @@ namespace Final
         // פונקציה הממפה את העובדים לפי משמרות מבוקשות
         // פרמטרים: אין
         // ערך מוחזר: מילון של משמרות והעובדים שביקשו אותן
-        // O(n*m) :סיבוכיות כאשר n הוא מספר העובדים ו-m הוא מספר המשמרות המבוקשות לעובד
         public static Dictionary<int, List<Employee>> mappingEmployeesByRequestedShifts()
         {
             return Employees
@@ -295,7 +284,6 @@ namespace Final
         // פונקציה הממפה את העובדים לפי התפקיד שלהם
         // פרמטרים: אין
         // ערך מוחזר: מילון של תפקידים והעובדים שמתאימים להם
-        // O(n*r) :סיבוכיות כאשר n הוא מספר העובדים ו-r הוא מספר התפקידים לעובד
         public static Dictionary<string, List<Employee>> mappingEmployeesByRole()
         {
             return Employees
@@ -309,7 +297,6 @@ namespace Final
         // employee - העובד שיש לבדוק
         // assignedShift - המשמרת שהעובד שובץ בה
         // ערך מוחזר: רשימת מזהי המשמרות החופפות
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         public static List<int> GetOverlappingShifts(Employee employee, Shift assignedShift)
         {
             //בדיקה שיש עובד ומשמרת
@@ -340,7 +327,6 @@ namespace Final
         // פרמטרים
         // shiftId - מזהה המשמרת לחיפוש
         // ערך מוחזר: אובייקט המשמרת אם נמצא, אחרת null
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         public static Shift FindShiftById(int shiftId)
         {
             //מעבר על כל המשמרות בכל הסניפים והחזרת המשמרת אם המזהים חופפים
@@ -364,7 +350,6 @@ namespace Final
         // employeesMappedByRequestedRoles - מילון של עובדים לפי תפקידים
         // employeesSortedByRate - רשימת עובדים ממוינת לפי ציון
         // ערך מוחזר: רשימת המשמרות של הסניף לאחר המילוי
-        // O(s*r*e) :סיבוכיות כאשר s הוא מספר המשמרות, r הוא מספר התפקידים ו-e הוא מספר העובדים
         public static List<Shift> fill_brach_shifts(Branch br, Dictionary<int, List<Employee>> employeesMappedByRequestedShifts,
             Dictionary<string, List<Employee>> employeesMappedByRequestedRoles,
             List<Employee> employeesSortedByRate)
@@ -390,7 +375,6 @@ namespace Final
         // employeesMappedByRequestedRoles - מילון של עובדים לפי תפקידים
         // employeesSortedByRate - רשימת עובדים ממוינת לפי ציון
         // ערך מוחזר: אין
-        // O(r*n) :סיבוכיות כאשר r הוא מספר התפקידים ו-n הוא מספר העובדים
         private static void FillShiftWithEmployees(
             Shift sh,
             Dictionary<int, List<Employee>> employeesMappedByRequestedShifts,
@@ -426,7 +410,6 @@ namespace Final
         // employeesSortedByRate - רשימת עובדים ממוינת לפי ציון
         // employeesSortedByavailabilty - רשימת עובדים ממוינת לפי זמינות
         // ערך מוחזר: רשימת העובדים שנבחרה
-        // O(1) :סיבוכיות
         private static List<Employee> ChooseAssignmentStrategy(
             List<Employee> employeesSortedByRate,
             List<Employee> employeesSortedByavailabilty)
@@ -452,7 +435,6 @@ namespace Final
         // employeesAvaliableForRole - רשימת העובדים המתאימים לתפקיד
         // employeesMappedByRequestedShifts - מילון של עובדים לפי משמרות מבוקשות
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static void AssignEmployeeToShift(
             Shift sh,
             string role,
@@ -494,7 +476,6 @@ namespace Final
         // shift - המשמרת שהעובד שובץ בה
         // employeesMappedByRequestedShifts - מילון של עובדים לפי משמרות מבוקשות
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות החופפות
         private static void HandleOverlappingShifts(
             Employee employee,
             Shift shift,
@@ -527,7 +508,6 @@ namespace Final
         // פרמטרים
         // pop - האוכלוסייה שעליה יש לבצע הכלאה
         // ערך מוחזר: אין
-        // O(n*m) :סיבוכיות כאשר n הוא גודל האוכלוסייה ו-m הוא מספר המשמרות בכרומוזום
         public static void crossover(Population pop)
         {
             //אתחול רשימת הכרומוזומים החדשים
@@ -551,7 +531,6 @@ namespace Final
         // פרמטרים
         // chromosomes - רשימת הכרומוזומים
         // ערך מוחזר: העתק של הכרומוזום הטוב ביותר
-        // O(m) :סיבוכיות כאשר m הוא מספר המשמרות בכרומוזום
         private static Chromosome SaveEliteChromosome(List<Chromosome> chromosomes)
         {
             Chromosome bestChromosome = null;
@@ -567,7 +546,6 @@ namespace Final
         // newOffspring - רשימת הצאצאים החדשים
         // desiredOffspringCount - מספר הצאצאים הרצוי
         // ערך מוחזר: אין
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הצאצאים ו-m הוא מספר המשמרות בכרומוזום
         private static void CreateNewOffspring(
             List<Chromosome> parentChromosomes,
             List<Chromosome> newOffspring,
@@ -599,7 +577,6 @@ namespace Final
         // parent2 - הורה שני
         // chromosomes - רשימת הכרומוזומים האפשריים
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private static void EnsureDifferentParents(
             Chromosome parent1,
             Chromosome parent2,
@@ -620,7 +597,6 @@ namespace Final
         // pop - האוכלוסייה לעדכון
         // bestChromosome - הכרומוזום הטוב ביותר
         // ערך מוחזר: אין
-        // O(n log n) :סיבוכיות כאשר n הוא גודל האוכלוסייה
         private static void SelectBestChromosomesForNextGeneration(Population pop, Chromosome bestChromosome)
         {
             // בחירת הכרומוזומים הטובים ביותר
@@ -638,7 +614,6 @@ namespace Final
         // פרמטרים
         // chromosomes - רשימת הכרומוזומים
         // ערך מוחזר: הכרומוזום הנבחר
-        // O(1) :סיבוכיות
         private static Chromosome SelectParentByTournament(List<Chromosome> chromosomes)
         {
             // טורניר עם 3 מועמדים אקראיים
@@ -670,7 +645,6 @@ namespace Final
         // parent1 - הורה ראשון
         // parent2 - הורה שני
         // ערך מוחזר: הכרומוזום הצאצא
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         private static Chromosome PerformCrossover(Chromosome parent1, Chromosome parent2)
         {
             Chromosome offspring = new Chromosome();
@@ -699,7 +673,6 @@ namespace Final
         // employeeAssignments - מילון מעקב אחר שיבוץ עובדים
         // branchName - שם הסניף
         // ערך מוחזר: אין
-        // O(n*m) :סיבוכיות כאשר n הוא מספר המשמרות ו-m הוא מספר העובדים במשמרת
         private static void CreateOffspringShiftsForBranch(
             Chromosome parent1,
             Chromosome parent2,
@@ -710,7 +683,7 @@ namespace Final
             // יצירת מיפוי המשמרות לפי זמן בשבוע
             Dictionary<string, Shift> shiftsMap1 = CreateShiftsMap(parent1, branchName);
             Dictionary<string, Shift> shiftsMap2 = CreateShiftsMap(parent2, branchName);
-
+           
             // קבלת כל זמני המשמרות
             HashSet<string> allSlots = new HashSet<string>(shiftsMap1.Keys.Concat(shiftsMap2.Keys));
 
@@ -726,11 +699,19 @@ namespace Final
         // parent - הורה
         // branchName - שם הסניף
         // ערך מוחזר: מילון של מזהי משמרות ואובייקטי משמרות
-        // O(n) :סיבוכיות כאשר n הוא מספר המשמרות
         private static Dictionary<string, Shift> CreateShiftsMap(Chromosome parent, string branchName)
         {
-            return parent.Shifts[branchName]
+            try
+            {
+                return parent.Shifts[branchName]
                 .ToDictionary(s => $"{s.day}_{s.TimeSlot}", s => s);
+            }
+            catch
+            {
+                MessageBox.Show("לא ניתן שיהיו שתי משמרות זו", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+            
         }
 
         // פונקציה היוצרת את משמרות הצאצא בפועל
@@ -740,7 +721,6 @@ namespace Final
         // shiftsMap2 - מפת משמרות של הורה שני
         // employeeAssignments - מילון מעקב אחר שיבוץ עובדים
         // ערך מוחזר: רשימת המשמרות החדשות
-        // O(n*m) :סיבוכיות כאשר n הוא מספר המשמרות ו-m הוא מספר העובדים במשמרת
         private static List<Shift> CreateOffspringShifts(
             HashSet<string> slots,
             Dictionary<string, Shift> shiftsMap1,
@@ -773,7 +753,6 @@ namespace Final
         // shiftsMap1 - מפת משמרות של הורה ראשון
         // shiftsMap2 - מפת משמרות של הורה שני
         // ערך מוחזר: אובייקט משמרת חדש
-        // O(1) :סיבוכיות
         private static Shift CreateOffspringShift(
             string slot,
             Dictionary<string, Shift> shiftsMap1,
@@ -806,7 +785,6 @@ namespace Final
         // shiftsMap1 - מפת משמרות של הורה ראשון
         // shiftsMap2 - מפת משמרות של הורה שני
         // ערך מוחזר: אובייקט המשמרת הנבחר
-        // O(1) :סיבוכיות
         private static Shift SelectBaseShift(
             string slot,
             Dictionary<string, Shift> shiftsMap1,
@@ -823,7 +801,6 @@ namespace Final
         // offspringShift - המשמרת החדשה
         // employeeAssignments - מילון מעקב אחר שיבוץ עובדים
         // ערך מוחזר: אין
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים לתפקיד
         private static void AssignEmployeesToOffspringShift(
             string slot,
             Dictionary<string, Shift> shiftsMap1,
@@ -857,7 +834,6 @@ namespace Final
         // shiftsMap - מפת משמרות
         // role - התפקיד המבוקש
         // ערך מוחזר: רשימת העובדים המתאימים לתפקיד
-        // O(1) :סיבוכיות
         private static List<Employee> GetEmployeesForRole(
             string slot,
             Dictionary<string, Shift> shiftsMap,
@@ -882,7 +858,6 @@ namespace Final
         // offspringShift - המשמרת החדשה
         // role - התפקיד המבוקש
         // ערך מוחזר: רשימת העובדים הנבחרים
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static List<Employee> SelectEmployeesByStrategy(
             List<Employee> employees1,
             List<Employee> employees2,
@@ -916,7 +891,6 @@ namespace Final
         // employees1 - רשימת עובדים מהורה ראשון
         // employees2 - רשימת עובדים מהורה שני
         // ערך מוחזר: רשימת עובדים משולבת
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static List<Employee> MixEmployeesFromBothParents(List<Employee> employees1, List<Employee> employees2)
         {
             List<Employee> selectedEmployees = new List<Employee>();
@@ -946,7 +920,6 @@ namespace Final
         // selectedEmployees - רשימת העובדים שנבחרו
         // employeeAssignments - מילון מעקב אחר שיבוץ עובדים
         // ערך מוחזר: אין
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static void AddSelectedEmployeesToShift(
             Shift offspringShift,
             string role,
@@ -979,7 +952,6 @@ namespace Final
         // shiftKey - מזהה המשמרת
         // employeeAssignments - מילון מעקב אחר שיבוץ עובדים
         // ערך מוחזר: האם העובד משובץ למשמרת חופפת
-        // O(1) :סיבוכיות
         private static bool IsEmployeeAlreadyAssigned(Employee employee, string shiftKey, Dictionary<Employee, HashSet<string>> employeeAssignments)
         {
             return employeeAssignments.ContainsKey(employee) &&
@@ -990,7 +962,6 @@ namespace Final
         // פרמטרים
         // originalShift - המשמרת המקורית
         // ערך מוחזר: העתק של המשמרת
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים במשמרת
         private static Shift CopyShift(Shift originalShift)
         {
             if (originalShift == null)
@@ -1042,7 +1013,6 @@ namespace Final
         // פרמטרים
         // shifts - רשימת המשמרות המקורית
         // ערך מוחזר: העתק של רשימת המשמרות
-        // O(n*m) :סיבוכיות כאשר n הוא מספר המשמרות ו-m הוא מספר העובדים למשמרת
         private static List<Shift> CopyShifts(List<Shift> shifts)
         {
             //החזרת רשימה ריקה אם אין משמרות
@@ -1064,7 +1034,6 @@ namespace Final
         // פרמטרים
         // original - הכרומוזום המקורי
         // ערך מוחזר: העתק של הכרומוזום
-        // O(n*m*k) :סיבוכיות כאשר n הוא מספר הסניפים, m הוא מספר המשמרות לסניף ו-k הוא מספר העובדים למשמרת
         private static Chromosome CopyChromosome(Chromosome original)
         {
             //החזרת ערך ריק אם הכרומוזום ריק
@@ -1095,7 +1064,6 @@ namespace Final
         // פרמטרים
         // pop - האוכלוסייה שעליה יש לבצע מוטציה
         // ערך מוחזר: אין
-        // O(n*m) :סיבוכיות כאשר n הוא גודל האוכלוסייה ו-m הוא מספר נסיונות המוטציה לכרומוזום
         public static void Mutation(Population pop)
         {
             List<Chromosome> newChromosomes = new List<Chromosome>();
@@ -1130,7 +1098,6 @@ namespace Final
         // פונקציה הבודקת אם האלגוריתם נמצא בשלב מאוחר
         // פרמטרים: אין
         // ערך מוחזר: האם האלגוריתם נמצא בשלב מאוחר
-        // O(1) :סיבוכיות
         private static bool IsLateStageOfAlgorithm()
         {
             // חישוב יחס התקדמות לפי מוטציות מוצלחות/לא מוצלחות
@@ -1147,7 +1114,6 @@ namespace Final
         // isLateStage - האם האלגוריתם נמצא בשלב מאוחר
         // wasImproved - פרמטר יציאה המציין אם הכרומוזום השתפר
         // ערך מוחזר: הכרומוזום לאחר מוטציה
-        // O(n*m) :סיבוכיות כאשר n הוא מספר ניסיונות המוטציה ו-m הוא מספר העובדים במשמרת
         private static Chromosome MutateChromosome(
             Chromosome chromosome,
             int mutationAttemptsPerChromosome,
@@ -1177,7 +1143,6 @@ namespace Final
         // employee - העובד לבדיקה
         // currentShift - המשמרת הנוכחית
         // ערך מוחזר: האם העובד משובץ למשמרת חופפת
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         private static bool IsEmployeeAssignedToOverlappingShift(Chromosome chromosome, Employee employee, Shift currentShift)
         {
             // מעבר על כל הסניפים בכרומוזום
@@ -1212,7 +1177,6 @@ namespace Final
         // isLateStage - האם האלגוריתם נמצא בשלב מאוחר
         // ch - הכרומוזום המקורי
         // ערך מוחזר: האם בוצעה מוטציה מוצלחת
-        // O(m) :סיבוכיות כאשר m הוא מספר העובדים במשמרת
         private static bool ChooseMutationStrategy(Shift shift, bool isLateStage, Chromosome ch)
         {
             bool wasImproved = false;
@@ -1248,7 +1212,6 @@ namespace Final
         // wasImproved - האם בוצעה מוטציה מוצלחת
         // newChromosomes - רשימת הכרומוזומים החדשים
         // ערך מוחזר: אין
-        // O(m) :סיבוכיות כאשר m הוא מספר הקריאות לחישוב ציון הכושר
         private static void UpdateMutationStatistics(
             Chromosome mutatedChromosome,
             double originalFitness,
@@ -1279,7 +1242,6 @@ namespace Final
         // shift - המשמרת לביצוע מוטציה
         // ch - הכרומוזום המקורי
         // ערך מוחזר: האם בוצעה מוטציה מוצלחת
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים לתפקיד
         private static bool PerformLargeMutation(Shift shift, Chromosome ch)
         {
             if (shift == null || shift.AssignedEmployees == null || shift.AssignedEmployees.Count == 0)
@@ -1318,7 +1280,6 @@ namespace Final
         // chromosome - הכרומוזום לבדיקה
         // currentShift - המשמרת הנוכחית
         // ערך מוחזר: רשימת העובדים הזמינים להחלפה
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static List<Employee> FindPotentialReplacements(string role, int shiftId, HashSet<Employee> currentEmployees, Chromosome chromosome, Shift currentShift)
         {
             return Employees
@@ -1337,7 +1298,6 @@ namespace Final
         // numToReplace - מספר העובדים להחלפה
         // shiftId - מזהה המשמרת
         // ערך מוחזר: האם בוצעה החלפה מוצלחת
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים להחלפה
         private static bool ReplaceEmployees(
             List<Employee> employees,
             List<Employee> potentialReplacements,
@@ -1371,7 +1331,6 @@ namespace Final
         // shift - המשמרת לביצוע מוטציה
         // ch - הכרומוזום המקורי
         // ערך מוחזר: האם בוצעה מוטציה מוצלחת
-        // O(1) :סיבוכיות
         private static bool PerformStandardMutation(Shift shift, Chromosome ch)
         {
             // בחירה רנדומלית של האסטרטגיה שנבחר בה
@@ -1404,7 +1363,6 @@ namespace Final
         // פרמטרים
         // shift - המשמרת לבדיקה
         // ערך מוחזר: האם יש במשמרת עובד מנוסה
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים במשמרת
         private static bool ShiftHasMentor(Shift shift)
         {
             if (shift.AssignedEmployees == null) return false;
@@ -1419,7 +1377,6 @@ namespace Final
         // shift - המשמרת לעדכון
         // ch - הכרומוזום המקורי
         // ערך מוחזר: האם הצליח להוסיף עובד מנוסה
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static bool TryAddMentor(Shift shift, Chromosome ch)
         {
             // ננסה להוסיף עובד מנוסה למשמרת
@@ -1438,7 +1395,6 @@ namespace Final
         // shiftId - מזהה המשמרת
         // ch - הכרומוזום המקורי
         // ערך מוחזר: האם הצליח להוסיף עובד מנוסה
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static bool TryAddMentorToRole(string role, List<Employee> employees, int shiftId, Chromosome ch)
         {
             //נחפש עובד לא מנסה
@@ -1473,7 +1429,6 @@ namespace Final
         // shift - המשמרת למילוי
         // ch - הכרומוזום המקורי
         // ערך מוחזר: האם הצליח למלא מקומות ריקים
-        // O(r*n) :סיבוכיות כאשר r הוא מספר התפקידים ו-n הוא מספר העובדים
         private static bool TryFillEmptyPositions(Shift shift, Chromosome ch)
         {
             //נחזיר שקר אם לא צריך עובדים כלל במשמרת
@@ -1523,7 +1478,6 @@ namespace Final
         // פרמטרים
         // shift - המשמרת לבדיקה
         // ערך מוחזר: אוסף העובדים המשובצים למשמרת
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static HashSet<Employee> GetEmployeesAlreadyAssignedToShift(Shift shift)
         {
             var assignedEmps = new HashSet<Employee>();
@@ -1541,7 +1495,6 @@ namespace Final
         // assignedEmps - העובדים שכבר משובצים למשמרת
         // ch - הכרומוזום המקורי
         // ערך מוחזר: רשימת העובדים הזמינים
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static List<Employee> FindAvailableEmployeesForRole(string role, int shiftId, HashSet<Employee> assignedEmps, Chromosome ch)
         {
             return Program.Employees
@@ -1559,7 +1512,6 @@ namespace Final
         // shift - המשמרת לשדרוג
         // ch - הכרומוזום המקורי
         // ערך מוחזר: האם הצליח לשדרג עובדים
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static bool TryUpgradeEmployees(Shift shift, Chromosome ch)
         {
             if (shift.AssignedEmployees == null || shift.AssignedEmployees.Count == 0)
@@ -1593,7 +1545,6 @@ namespace Final
         // lowestRole - פרמטר יציאה: התפקיד של העובד עם הציון הנמוך ביותר
         // lowestIndex - פרמטר יציאה: האינדקס של העובד עם הציון הנמוך ביותר
         // ערך מוחזר: העובד עם הציון הנמוך ביותר
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static Employee FindLowestRatedEmployee(
             Shift shift, out string lowestRole, out int lowestIndex)
         {
@@ -1626,8 +1577,7 @@ namespace Final
         // shiftId - מזהה המשמרת
         // employeesInShift - העובדים הנוכחיים במשמרת
         // ch - הכרומוזום המקורי
-        // ערך מוחזר: עובד טוב יותר אם נמצא, אחרת null
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
+        //null ערך מוחזר: עובד טוב יותר אם נמצא, אחרת
         private static Employee FindBetterEmployeeForRole(
             string role, Employee currentEmployee, int shiftId, HashSet<Employee> employeesInShift, Chromosome ch)
         {
@@ -1645,7 +1595,6 @@ namespace Final
         // פרמטרים
         // chromosome - הכרומוזום לבחירת משמרת ממנו
         // ערך מוחזר: משמרת אקראית מהכרומוזום
-        // O(1) :סיבוכיות
         private static Shift GetRandomShift(Chromosome chromosome)
         {
             if (chromosome.Shifts.Count == 0) return null;
@@ -1665,7 +1614,6 @@ namespace Final
         // פרמטרים
         // chromosome - הכרומוזום לחישוב ציון הכושר
         // ערך מוחזר: ציון הכושר של הכרומוזום
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         public static double CalculateChromosomeFitness(Chromosome chromosome)
         {
             // החזרת ערך מינימלי אם הכרומוזם ריק
@@ -1694,7 +1642,6 @@ namespace Final
         // weeklyHoursPerEmployee - מילון לשמירת מספר השעות השבועיות לכל עובד
         // dailyHoursPerEmployee - מילון לשמירת מספר השעות היומיות לכל עובד
         // ערך מוחזר: ציון הכושר הכולל של הכרומוזום
-        // O(n*m) :סיבוכיות כאשר n הוא מספר הסניפים ו-m הוא מספר המשמרות לסניף
         private static double CalculateFitnessForAllBranches(
             Chromosome chromosome,
             Dictionary<Employee, double> weeklyHoursPerEmployee,
@@ -1712,7 +1659,6 @@ namespace Final
         // weeklyHoursPerEmployee - מילון לשמירת מספר השעות השבועיות לכל עובד
         // dailyHoursPerEmployee - מילון לשמירת מספר השעות היומיות לכל עובד
         // ערך מוחזר: ציון הכושר לאחר הקנסות
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static double ApplyHoursConstraintsPenalties(
             double totalFitness,
             Dictionary<Employee, double> weeklyHoursPerEmployee,
@@ -1732,7 +1678,6 @@ namespace Final
         // totalFitness - ציון הכושר הכולל
         // weeklyHoursPerEmployee - מילון לשמירת מספר השעות השבועיות לכל עובד
         // ערך מוחזר: ציון הכושר לאחר הקנסות
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים
         private static double ApplyWeeklyHoursConstraints(
             double totalFitness,
             Dictionary<Employee, double> weeklyHoursPerEmployee)
@@ -1756,7 +1701,6 @@ namespace Final
         // totalFitness - ציון הכושר הכולל
         // dailyHoursPerEmployee - מילון לשמירת מספר השעות היומיות לכל עובד
         // ערך מוחזר: ציון הכושר לאחר הקנסות
-        // O(n*d) :סיבוכיות כאשר n הוא מספר העובדים ו-d הוא מספר הימים
         private static double ApplyDailyHoursConstraints(
             double totalFitness,
             Dictionary<Employee, Dictionary<string, double>> dailyHoursPerEmployee)
@@ -1786,7 +1730,6 @@ namespace Final
         // weeklyHoursPerEmployee - מילון לשמירת מספר השעות השבועיות לכל עובד
         // dailyHoursPerEmployee - מילון לשמירת מספר השעות היומיות לכל עובד
         // ערך מוחזר: ציון הכושר של המשמרת
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים במשמרת
         private static double CalculateShiftFitness(Shift shift,
             Dictionary<Employee, double> weeklyHoursPerEmployee,
             Dictionary<Employee, Dictionary<string, double>> dailyHoursPerEmployee)
@@ -1825,7 +1768,6 @@ namespace Final
         // totalEmployees - מספר העובדים בפועל
         // requiredEmployees - מספר העובדים הנדרשים
         // ערך מוחזר: ציון הכושר לאחר הקנסות
-        // O(1) :סיבוכיות
         private static double CalculateEmployeeCountFitness(
             double shiftFitness, int totalEmployees, int requiredEmployees)
         {
@@ -1844,7 +1786,6 @@ namespace Final
         // shift - המשמרת לחישוב
         // hours - מספר השעות במשמרת
         // ערך מוחזר: עלות המשמרת
-        // O(n) :סיבוכיות כאשר n הוא מספר העובדים במשמרת
         private static double CalculateShiftCost(Shift shift, double hours)
         {
             double totalCost = 0;
@@ -1865,7 +1806,6 @@ namespace Final
         // פרמטרים
         // shift - המשמרת לבדיקה
         // ערך מוחזר: מספר העובדים במשמרת
-        // O(r) :סיבוכיות כאשר r הוא מספר התפקידים
         private static int GetTotalEmployeesInShift(Shift shift)
         {
             return shift.AssignedEmployees.Values.Sum(lst => lst.Count);
@@ -1877,7 +1817,6 @@ namespace Final
         // weeklyHoursPerEmployee - מילון לשמירת מספר השעות השבועיות לכל עובד
         // dailyHoursPerEmployee - מילון לשמירת מספר השעות היומיות לכל עובד
         // ערך מוחזר: אין
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static void UpdateEmployeeWorkingHours(
             Shift shift,
             Dictionary<Employee, double> weeklyHoursPerEmployee,
@@ -1903,7 +1842,6 @@ namespace Final
         // weeklyHoursPerEmployee - מילון לשמירת מספר השעות השבועיות לכל עובד
         // dailyHoursPerEmployee - מילון לשמירת מספר השעות היומיות לכל עובד
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         private static void UpdateWorkingHours(Employee employee, string day, double hours,
             Dictionary<Employee, double> weeklyHoursPerEmployee,
             Dictionary<Employee, Dictionary<string, double>> dailyHoursPerEmployee)
@@ -1937,7 +1875,6 @@ namespace Final
         // shift - המשמרת לחישוב
         // shiftFitness - ציון הכושר הנוכחי
         // ערך מוחזר: ציון הכושר המעודכן
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static double CalculateMentorPresenceFitness(Shift shift, double shiftFitness)
         {
             // בדיקה אם יש עובד מנוסה
@@ -1962,7 +1899,6 @@ namespace Final
         // shift - המשמרת לחישוב
         // shiftFitness - ציון הכושר הנוכחי
         // ערך מוחזר: ציון הכושר המעודכן
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static double CalculateEmployeeRatingVsEventTypeFitness(Shift shift, double shiftFitness)
         {
             // חישוב הציון הממוצע של העובדים במשמרת
@@ -2000,7 +1936,6 @@ namespace Final
         // shift - המשמרת לחישוב
         // shiftFitness - ציון הכושר הנוכחי
         // ערך מוחזר: ציון הכושר המעודכן
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static double CalculateTeamBalanceFitness(Shift shift, double shiftFitness)
         {
             // בדיקת אילוץ - תמהיל צוותי מאוזן
@@ -2019,7 +1954,6 @@ namespace Final
         // shift - המשמרת לחישוב
         // shiftFitness - ציון הכושר הנוכחי
         // ערך מוחזר: ציון הכושר המעודכן
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static double CalculateShiftCostFitness(Shift shift, double shiftFitness)
         {
             // בדיקת אילוץ - מינימום עלות משמרת
@@ -2033,7 +1967,6 @@ namespace Final
         // פרמטרים
         // shift - המשמרת לחישוב
         // ערך מוחזר: הציון הממוצע של העובדים במשמרת
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static double CalculateAverageEmployeeRate(Shift shift)
         {
             //קבלת מספר העובדים
@@ -2057,7 +1990,6 @@ namespace Final
         // פרמטרים
         // shift - המשמרת לחישוב
         // ערך מוחזר: יחס העובדים המנוסים מתוך סך העובדים
-        // O(r*e) :סיבוכיות כאשר r הוא מספר התפקידים ו-e הוא מספר העובדים בתפקיד
         private static double CalculateExperiencedRatio(Shift shift)
         {
             //קבלת מספר העובדים
@@ -2085,18 +2017,31 @@ namespace Final
         // פונקציה המחזירה את הכרומוזום הטוב ביותר באוכלוסייה
         // פרמטרים: אין
         // ערך מוחזר: הכרומוזום הטוב ביותר
-        // O(n log n) :סיבוכיות כאשר n הוא גודל האוכלוסייה
         public static Chromosome GetBestChromosome()
         {
-            //מיון הכרומוזומיים בסדר יורד והחזרת הכרומוזום הטוב ביותר
-            return pop.Chromoshomes.OrderByDescending(ch => ch.Fitness).FirstOrDefault();
+            // שומרים הפניה לכרומוזום הטוב ביותר במקום למיין את כל האוכלוסייה
+            Chromosome bestChromosome = null;
+            double bestFitness = double.MinValue;
+            if (pop.Chromoshomes == null)
+            {
+                return null;
+            }
+            foreach (var chromosome in pop.Chromoshomes)
+            {
+                if (chromosome.Fitness > bestFitness)
+                {
+                    bestFitness = chromosome.Fitness;
+                    bestChromosome = chromosome;
+                }
+            }
+
+            return bestChromosome;
         }
         #endregion
 
         // הפעלת האפליקציה
         // פרמטרים: אין
         // ערך מוחזר: אין
-        // O(1) :סיבוכיות
         static void Main()
         {
             Application.EnableVisualStyles();
