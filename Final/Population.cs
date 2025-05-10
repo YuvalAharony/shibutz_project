@@ -14,9 +14,9 @@ namespace Final
         // גודל האוכלוסייה
         public int Size { get; set; }
 
-      
-        public Population(int size)
+        public Population(List<Chromosome> chromoshomes, int size)
         {
+            Chromoshomes = chromoshomes;
             Size = size;
         }
     }

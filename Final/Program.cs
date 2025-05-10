@@ -21,7 +21,7 @@ namespace Final
         public static List<Employee> Employees = new List<Employee>();
         public static DataBaseHelper DataBaseHelper = new DataBaseHelper();
         public static List<Branch> Branches = new List<Branch>();
-        public static Population pop=new Population(ChromosomesEachGene);
+        public static Population pop;
 
 
         // קבועים להגדרת האלגוריתם הגנטי
@@ -78,8 +78,7 @@ namespace Final
             generationCount = 0;
 
             //יצירת אוכלוסייה חדשה בכל פעם שמפעילים את האלגוריתם
-            pop = new Population( ChromosomesEachGene);
-
+            pop = new Population(new List<Chromosome>(), ChromosomesEachGene);
             //טעינת כל הנתונים של המשתמש המחובר
             DataBaseHelper.LoadDataForUser(username, Branches, Employees);
 

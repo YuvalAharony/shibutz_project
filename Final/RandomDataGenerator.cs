@@ -234,14 +234,6 @@ namespace EmployeeSchedulingApp
                     command.ExecuteNonQuery();
                 }
 
-                // מחיקת הקצאות משמרות
-                string deleteAssignmentsQuery = "DELETE FROM ShiftAssignments WHERE ShiftID = @ShiftID";
-                using (SqlCommand command = new SqlCommand(deleteAssignmentsQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@ShiftID", shiftId);
-                    command.ExecuteNonQuery();
-                }
-
                 // מחיקת תפקידים נדרשים למשמרת
                 string deleteRolesQuery = "DELETE FROM ShiftRequiredRoles WHERE ShiftID = @ShiftID";
                 using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection))

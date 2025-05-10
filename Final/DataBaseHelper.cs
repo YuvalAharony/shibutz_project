@@ -51,7 +51,7 @@ public class DataBaseHelper
     }
 
 
-    #region LoadDataForUser Helper Functions
+    
     // פונקציה לטעינת רשימת הסניפים של המשתמש המחובר למערכת
     // פרמטרים:
     // username - שם המשתמש המחובר למערכת
@@ -481,7 +481,7 @@ public class DataBaseHelper
 
         return branches;
     }
-    #endregion
+   
 
     // פונקציה למחיקת סניף מבסיס הנתונים
     // פרמטרים:
