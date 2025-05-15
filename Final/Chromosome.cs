@@ -10,7 +10,7 @@ namespace Final
     public class Chromosome
     {
         // מילון המכיל את המשמרות לפי סניפים
-        public Dictionary<String, List<Shift>> Shifts { get; set; } = new Dictionary<String, List<Shift>>();
+        public Dictionary<String, List<Shift>> Shifts { get; set; } 
 
         // ציון הכושר  של הכרומוזום
         public double Fitness { get; set; }
@@ -19,7 +19,7 @@ namespace Final
         public Chromosome()
         {
             this.Shifts = new Dictionary<string, List<Shift>>();
-            Fitness = 0;
+            this.Fitness = 0;
         }
     }
 }

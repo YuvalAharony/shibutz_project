@@ -17,21 +17,9 @@ namespace Final
         public string EventType { get; set; }
 
         // בנאי ברירת מחדל
-        // פרמטרים: אין
-        // ערך מוחזר: אין
         public Shift() { }
 
-        // בנאי עם פרמטרים
-        // פרמטרים:
-        // id - מזהה המשמרת
-        // branch - שם הסניף
-        // timeSlot - משבצת זמן
-        // day - יום בשבוע
-        // requiredRoles - מילון של תפקידים נדרשים ומספר העובדים הנדרש לכל תפקיד
-        // isBusy - האם המשמרת עמוסה
-        // assignedEmployees - מילון של עובדים משויכים למשמרת לפי תפקיד
-        // eventType - סוג המשמרת
-        // ערך מוחזר: אין
+        //בנאי
         public Shift(int id, string branch, string timeSlot, string day, Dictionary<string, int> requiredRoles, bool isBusy, Dictionary<String, List<Employee>
            > assignedEmployees, string eventType)
         {

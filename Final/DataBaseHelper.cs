@@ -1082,7 +1082,6 @@ public class DataBaseHelper
                     command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salary));
                     command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rate));
                     command.Parameters.AddWithValue("@IsMentor", isExperienced);
-                    command.Parameters.AddWithValue("@AssignedHours", 7); // ערך ברירת מחדל
                     command.Parameters.AddWithValue("@Password", password);
 
                     // קבלת ה-ID של העובד החדש
@@ -1303,7 +1302,7 @@ public class DataBaseHelper
     public List<string> getShiftTypes()
     {
         List<string> shiftTypes = new List<string>();
-        // שימוש ב־SqlConnection ו־SqlCommand לשליפת הנתונים מטבלת ShiftTypes
+        
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             // שאילתה לקבלת כל סוגי המשמרות
@@ -1359,21 +1358,34 @@ public class DataBaseHelper
     // פרמטרים:
     // shiftId - מזהה המשמרת למחיקה
     // ערך מוחזר: אין
-    public void DeleteShiftFromDatabase(int shiftId)
+    public bool DeleteShiftFromDatabase(int shiftId)
     {
-        using (SqlConnection connection = new SqlConnection(connectionString))
+        try
         {
-            connection.Open();
-
-            // קריאה לפרוצדורה שמורה שמוחקת משמרת
-            using (SqlCommand command = new SqlCommand("sp_DeleteShift", connection))
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                command.CommandType = CommandType.StoredProcedure;
-                // הוספת פרמטר מזהה המשמרת
-                command.Parameters.AddWithValue("@ShiftID", shiftId);
-                command.ExecuteNonQuery();
+                connection.Open();
+                // שאילתה למחיקת משמרת
+                string DeleteShift = @"
+                    DELETE FROM Shifts WHERE shiftID= @ShiftID";
+
+                using (SqlCommand command = new SqlCommand(DeleteShift, connection))
+                {
+                    // הוספת פרמטרים לשאילתה
+                    command.Parameters.AddWithValue("@ShiftID", shiftId);
+                    // ביצוע השאילתה
+                    command.ExecuteNonQuery();
+                }
+
             }
         }
+        catch (Exception ex)
+        {
+            // הדפסת הודעת שגיאה
+            Console.WriteLine($"שגיאה במחיקת המשמרת: {ex.Message}");
+            return false;
+        }
+        return true;
     }
 
     // פונקציה להוספת משמרת לבסיס הנתונים

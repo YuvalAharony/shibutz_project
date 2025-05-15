@@ -21,7 +21,7 @@ namespace Final
         public static List<Employee> Employees = new List<Employee>();
         public static DataBaseHelper DataBaseHelper = new DataBaseHelper();
         public static List<Branch> Branches = new List<Branch>();
-        public static Population pop;
+        public static Population pop=new Population(new List<Chromosome>());
 
 
         // קבועים להגדרת האלגוריתם הגנטי
@@ -30,7 +30,7 @@ namespace Final
         public const int hoursPerWeek = 42;
         public const int hoursPerDay = 9;
         public const int hoursPerShift = 9;
-        const int maxGenerationsWithoutImprovement = 30;
+        const int maxGenerationsWithoutImprovement = 50;
 
 
         // קבועים למשקלים של פונקציית הכושר
@@ -78,7 +78,7 @@ namespace Final
             generationCount = 0;
 
             //יצירת אוכלוסייה חדשה בכל פעם שמפעילים את האלגוריתם
-            pop = new Population(new List<Chromosome>(), ChromosomesEachGene);
+            pop = new Population(new List<Chromosome>());
             //טעינת כל הנתונים של המשתמש המחובר
             DataBaseHelper.LoadDataForUser(username, Branches, Employees);
 
@@ -682,6 +682,7 @@ namespace Final
             // יצירת מיפוי המשמרות לפי זמן בשבוע
             Dictionary<string, Shift> shiftsMap1 = CreateShiftsMap(parent1, branchName);
             Dictionary<string, Shift> shiftsMap2 = CreateShiftsMap(parent2, branchName);
+           
            
             // קבלת כל זמני המשמרות
             HashSet<string> allSlots = new HashSet<string>(shiftsMap1.Keys.Concat(shiftsMap2.Keys));

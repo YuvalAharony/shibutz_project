@@ -11,13 +11,10 @@ namespace Final
     {
         // רשימת הכרומוזומים (פתרונות) באוכלוסייה
         public List<Chromosome> Chromoshomes { get; set; }
-        // גודל האוכלוסייה
-        public int Size { get; set; }
 
-        public Population(List<Chromosome> chromoshomes, int size)
+        public Population(List<Chromosome> chromoshomes)
         {
-            Chromoshomes = chromoshomes;
-            Size = size;
+            Chromoshomes = chromoshomes;    
         }
     }
 }
