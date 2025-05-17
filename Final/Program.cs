@@ -30,7 +30,7 @@ namespace Final
         public const int hoursPerWeek = 42;
         public const int hoursPerDay = 9;
         public const int hoursPerShift = 9;
-        const int maxGenerationsWithoutImprovement = 50;
+        public const int maxGenerationsWithoutImprovement = 50;
 
 
         // קבועים למשקלים של פונקציית הכושר
@@ -70,7 +70,7 @@ namespace Final
         // פרמטרים
         // username - שם המשתמש שעבורו יש לאתחל את האלגוריתם
         // ערך מוחזר: אין
-        private static void InitializeAlgorithm(string username)
+        public static void InitializeAlgorithm(string username)
         {
             // איפוס מונים
             succefulMutation = 0;
@@ -89,7 +89,7 @@ namespace Final
         // פונקציה המריצה את האלגוריתם הגנטי
         // פרמטרים: אין
         // ערך מוחזר: אין
-        private static void RunGeneticAlgorithm()
+        public static void RunGeneticAlgorithm()
         {
             double previousBestFitness = double.MinValue;
             int noImprovementCount = 0;
@@ -131,7 +131,7 @@ namespace Final
         // פונקציה להצגת תוצאות האלגוריתם
         // פרמטרים: אין
         // ערך מוחזר: אין
-        private static void ShowResults()
+        public static void ShowResults()
         {
             // הצגת הצלחה למשתמש
             MessageBox.Show("נוצר בהצלחה", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);

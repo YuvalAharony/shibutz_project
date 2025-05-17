@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Final", "Final\Final.csproj", "{2C87699B-C518-471A-9800-C7E656C710BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeSchedulingApp", "EmployeeSchedulingApp\EmployeeSchedulingApp.csproj", "{030ED220-9DA3-4FE8-ACF7-C80C7AF2C40E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2C87699B-C518-471A-9800-C7E656C710BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C87699B-C518-471A-9800-C7E656C710BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C87699B-C518-471A-9800-C7E656C710BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{030ED220-9DA3-4FE8-ACF7-C80C7AF2C40E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{030ED220-9DA3-4FE8-ACF7-C80C7AF2C40E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{030ED220-9DA3-4FE8-ACF7-C80C7AF2C40E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{030ED220-9DA3-4FE8-ACF7-C80C7AF2C40E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
