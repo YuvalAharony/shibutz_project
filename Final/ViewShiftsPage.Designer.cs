@@ -37,6 +37,7 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Name = "ViewShiftsPage";
             this.Text = "ViewShiftsPage";
+            this.CenterToScreen();
             this.ResumeLayout(false);
 
         }

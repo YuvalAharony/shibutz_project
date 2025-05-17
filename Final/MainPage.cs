@@ -40,6 +40,8 @@ namespace EmployeeSchedulingApp
             SetupUI();
 
             LoadBranches();
+            this.CenterToScreen();
+
             LoadEmployees();
         }
 

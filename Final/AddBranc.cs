@@ -46,7 +46,7 @@ namespace EmployeeSchedulingApp
             this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.RightToLeftLayout = true;
             this.Text = "הוספת סניף חדש";
-
+            this.CenterToScreen();
             this.ResumeLayout(false);
         }
 

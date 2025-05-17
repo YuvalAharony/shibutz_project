@@ -38,12 +38,14 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void InitializeComponent()
         {
+
             this.SuspendLayout();
             // 
             // EditEmployeePage
             // 
             this.ClientSize = new System.Drawing.Size(400, 750);
             this.Name = "EditEmployeePage";
+            this.CenterToScreen();
             this.ResumeLayout(false);
 
         }
@@ -53,8 +55,9 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            
             this.Text = "עריכת עובד";
-            this.Size = new System.Drawing.Size(450, 700);
+            this.Size = new System.Drawing.Size(450, 800);
             this.RightToLeft = RightToLeft.Yes;
             this.RightToLeftLayout = true;
 

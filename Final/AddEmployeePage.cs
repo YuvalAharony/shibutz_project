@@ -38,6 +38,8 @@ namespace Final
             currentUserName = userName;
             SetupUI();
             LoadAvaliableBranches();
+            this.CenterToScreen();
+
         }
 
         // מגדיר את ממשק המשתמש של הטופס
@@ -45,6 +47,8 @@ namespace Final
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.AutoSize = true;
+            this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             this.Text = "הוספת עובד חדש";
             this.Size = new System.Drawing.Size(400, 600); // הקטנת הגובה כי אין משמרות
 

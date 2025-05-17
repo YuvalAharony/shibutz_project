@@ -22,6 +22,7 @@ namespace EmployeeSchedulingApp
         {
             this.Text = "ברוך הבא למערכת ניהול המשמרות";
             this.Size = new System.Drawing.Size(800, 500);
+            this.CenterToScreen();
 
             Label welcomeLabel = new Label()
             {

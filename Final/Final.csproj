@@ -102,6 +102,7 @@
     <Compile Include="RegisterPage.Designer.cs">
       <DependentUpon>RegisterPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="SchedulingAlgorithmTests.cs" />
     <Compile Include="Shift.cs" />
     <Compile Include="ShiftDisplayInfo.cs" />
     <Compile Include="ViewShiftDetailsPage.cs">

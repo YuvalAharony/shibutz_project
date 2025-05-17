@@ -28,6 +28,7 @@ namespace EmployeeSchedulingApp
             this.Text = "התחברות למערכת";
             this.Size = new System.Drawing.Size(400, 300);
             this.RightToLeft = RightToLeft.Yes;
+            this.CenterToScreen();
             this.RightToLeftLayout = true;
 
             // כותרת

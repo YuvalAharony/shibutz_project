@@ -27,6 +27,7 @@ namespace EmployeeSchedulingApp
 
         private void SetupUI()
         {
+            this.CenterToScreen();
             this.Text = "הרשמה למערכת";
             this.Size = new System.Drawing.Size(400, 450);
 

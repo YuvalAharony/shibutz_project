@@ -28,6 +28,7 @@ namespace Final
             this.branch = branch;
             SetupUI();
             LoadRolesAndEmployees();
+            this.CenterToScreen();
         }
 
         // פונקציה להגדרת ממשק המשתמש
