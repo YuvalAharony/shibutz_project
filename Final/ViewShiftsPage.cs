@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -32,6 +33,7 @@ namespace Final
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
             this.Text = $"סידור משמרות - {selectedBranch.Name}";
             this.Size = new System.Drawing.Size(800, 600);
 
@@ -53,6 +55,10 @@ namespace Final
                 AllowUserToDeleteRows = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 RowHeadersVisible = false,
+                BackgroundColor = Color.Tan,  
+
+
+
             };
             shiftsDataGridView.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             // הגדרת מעבר שורה אוטומטי בתוך התאים

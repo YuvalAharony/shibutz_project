@@ -61,6 +61,7 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
             // כותרת
             Label titleLabel = new Label
             {
@@ -96,7 +97,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "הוסף משמרת חדשה",
                 Location = new Point(150, 550),
-                Size = new Size(150, 35)
+                Size = new Size(150, 35),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             addShiftButton.Click += AddShiftButton_Click;
             this.Controls.Add(addShiftButton);
@@ -341,7 +345,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "שמור שינויים",
                 Location = new Point(200, 400),
-                Size = new Size(150, 35)
+                Size = new Size(150, 35),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
 
             saveButton.Click += (s, args) =>
@@ -389,7 +396,9 @@ namespace EmployeeSchedulingApp
                 Text = "מחק משמרת",
                 Location = new Point(50, 400),
                 Size = new Size(120, 35),
-                ForeColor = Color.Red
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
 
             deleteButton.Click += (s, args) =>

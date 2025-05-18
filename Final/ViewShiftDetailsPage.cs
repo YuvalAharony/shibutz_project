@@ -36,10 +36,11 @@ namespace Final
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
             // הגדרת כותרת החלון
             this.Text = $"פרטי משמרת - {branch.Name} - {shift.day} {shift.TimeSlot}";
             // קביעת גודל החלון
-            this.Size = new System.Drawing.Size(600, 400);
+            this.Size = new System.Drawing.Size(620, 400);
             // הגדרת כיוון טקסט מימין לשמאל
             this.RightToLeft = RightToLeft.Yes;
 

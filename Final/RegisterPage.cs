@@ -27,6 +27,7 @@ namespace EmployeeSchedulingApp
 
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
             this.CenterToScreen();
             this.Text = "הרשמה למערכת";
             this.Size = new System.Drawing.Size(400, 450);
@@ -81,10 +82,13 @@ namespace EmployeeSchedulingApp
             // כפתורי פעולה
             Button registerButton = new Button()
             {
-                Text = "הרשם",
+                Text = "הרשמה",
                 Size = new Size(100, 40),
                 Location = new Point(inputX, currentY),
-                RightToLeft = RightToLeft.Yes
+                RightToLeft = RightToLeft.Yes,
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             registerButton.Click += (s, e) => {
                 if (helper.PerformRegistration(
@@ -99,17 +103,8 @@ namespace EmployeeSchedulingApp
                 }
             };
 
-            Button cancelButton = new Button()
-            {
-                Text = "ביטול",
-                Size = new Size(100, 40),
-                Location = new Point(labelX, currentY),
-                RightToLeft = RightToLeft.Yes
-            };
-            cancelButton.Click += (s, e) => {
-                this.DialogResult = DialogResult.Cancel;
-                this.Close();
-            };
+          
+       
 
             // הוספת רכיבים
             this.Controls.Add(titleLabel);
@@ -124,7 +119,6 @@ namespace EmployeeSchedulingApp
             this.Controls.Add(confirmPassLabel);
             this.Controls.Add(confirmPassTextBox);
             this.Controls.Add(registerButton);
-            this.Controls.Add(cancelButton);
         }
 
         // אתחול הרכיבים של הטופס

@@ -55,6 +55,8 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
+
             // יצירת כותרת
             Label titleLabel = new Label
             {
@@ -88,7 +90,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "שמור",
                 Size = new Size(100, 40),
-                Location = new Point(220, 120)
+                Location = new Point(220, 120),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             saveButton.Click += SaveButton_Click;
             this.Controls.Add(saveButton);
@@ -98,7 +103,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "ביטול",
                 Size = new Size(100, 40),
-                Location = new Point(80, 120)
+                Location = new Point(80, 120),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             cancelButton.Click += (sender, e) => { this.Close(); };
             this.Controls.Add(cancelButton);

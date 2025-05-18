@@ -55,7 +55,7 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void SetupUI()
         {
-            
+            this.BackColor = Color.Tan;
             this.Text = "עריכת עובד";
             this.Size = new System.Drawing.Size(450, 800);
             this.RightToLeft = RightToLeft.Yes;
@@ -221,7 +221,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "ביטול",
                 Size = new Size(buttonWidth, buttonHeight),
-                Location = new Point(buttonSpacing, currentY)
+                Location = new Point(buttonSpacing, currentY),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             cancelButton.Click += (sender, e) => { this.Close(); };
 
@@ -229,7 +232,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "שמור",
                 Size = new Size(buttonWidth, buttonHeight),
-                Location = new Point(buttonSpacing + buttonWidth + 20, currentY)
+                Location = new Point(buttonSpacing + buttonWidth + 20, currentY),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             saveButton.Click += SaveEmployeeChanges;
 

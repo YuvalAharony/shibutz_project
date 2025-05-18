@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data.SqlClient;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using System.Drawing;
 
 namespace EmployeeSchedulingApp
 {
@@ -50,13 +51,17 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
             this.Text = "מסך ראשי - ניהול הרשת";
             this.Size = new System.Drawing.Size(800, 600);
             Button generateShiftsButton = new Button()
             {
                 Text = "צור משמרות",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(300, 500)
+                Location = new System.Drawing.Point(50, 20),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             generateShiftsButton.Click += (sender, e) => { Program.createSceduele(currentUserName); };
 
@@ -66,7 +71,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "צור נתונים באופן רנדומלי",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(550, 80)
+                Location = new System.Drawing.Point(550, 80),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             generateRandomDataButton.Click += GenerateRandomDataButton_Click;
             this.Controls.Add(generateRandomDataButton);
@@ -76,14 +84,18 @@ namespace EmployeeSchedulingApp
                 Text = "ניהול רשת המסעדות",
                 AutoSize = true,
                 Font = new System.Drawing.Font("Arial", 16, System.Drawing.FontStyle.Bold),
-                Location = new System.Drawing.Point(300, 20)
+                Location = new System.Drawing.Point(300, 20),
+                ForeColor = Color.Black,
             };
 
             Button addBranchButton = new Button()
             {
                 Text = "הוסף סניף",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(50, 80)
+                Location = new System.Drawing.Point(50, 80),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             addBranchButton.Click += (sender, e) => { OpenAddBranchPage(); };
 
@@ -91,7 +103,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "הוסף עובד",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(220, 80)
+                Location = new System.Drawing.Point(220, 80),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             addEmployeeButton.Click += (sender, e) => { OpenAddEmployeePage(); };
 
@@ -100,7 +115,10 @@ namespace EmployeeSchedulingApp
             {
                 Text = "ערוך משמרות סניף",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(390, 80)
+                Location = new System.Drawing.Point(390, 80),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             editBranchShiftsButton.Click += EditBranchShiftsButton_Click;
             this.Controls.Add(editBranchShiftsButton);
@@ -110,7 +128,11 @@ namespace EmployeeSchedulingApp
             {
                 Text = "מחק סניף",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(50, 460)
+                Location = new System.Drawing.Point(50, 460),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
+
             };
             deleteBranchButton.Click += DeleteBranchButton_Click;
             this.Controls.Add(deleteBranchButton);
@@ -119,7 +141,11 @@ namespace EmployeeSchedulingApp
             {
                 Text = "מחק עובד",
                 Size = new System.Drawing.Size(150, 40),
-                Location = new System.Drawing.Point(400, 460)
+                Location = new System.Drawing.Point(400, 460),
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
+
             };
             deleteEmployeeButton.Click += DeleteEmployeeButton_Click;
             this.Controls.Add(deleteEmployeeButton);

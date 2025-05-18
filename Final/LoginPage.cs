@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Drawing;
 
 namespace EmployeeSchedulingApp
 {
@@ -25,6 +26,7 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
             this.Text = "התחברות למערכת";
             this.Size = new System.Drawing.Size(400, 300);
             this.RightToLeft = RightToLeft.Yes;
@@ -81,7 +83,10 @@ namespace EmployeeSchedulingApp
                 Text = "התחבר",
                 Size = new System.Drawing.Size(100, 40),
                 Location = new System.Drawing.Point(inputX, currentY),
-                RightToLeft = RightToLeft.Yes
+                RightToLeft = RightToLeft.Yes,
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             loginButton.Click += (sender, e) => {
                 if (helper.PerformLogin(userTextBox.Text, passTextBox.Text))

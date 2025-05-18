@@ -47,6 +47,7 @@ namespace Final
         // ערך מוחזר: אין
         private void SetupUI()
         {
+            this.BackColor = Color.Tan;
             this.AutoSize = true;
             this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             this.Text = "הוספת עובד חדש";
@@ -156,7 +157,10 @@ namespace Final
                 Text = "שמור",
                 Size = new System.Drawing.Size(100, 40),
                 Location = new System.Drawing.Point(controlX, currentY),
-                Name = "saveButton"
+                Name = "saveButton",
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             saveButton.Click += SaveButton_Click;
 
@@ -166,7 +170,10 @@ namespace Final
                 Text = "ביטול",
                 Size = new System.Drawing.Size(100, 40),
                 Location = new System.Drawing.Point(labelX, currentY),
-                Name = "cancelButton"
+                Name = "cancelButton",
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                FlatStyle = FlatStyle.Flat
             };
             cancelButton.Click += (sender, e) => { this.Close(); };
 
