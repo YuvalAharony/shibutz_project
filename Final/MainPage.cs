@@ -171,6 +171,7 @@ namespace EmployeeSchedulingApp
 
             employeesListView.Columns.Add("שם העובד", 150);
 
+
             this.Controls.Add(titleLabel);
             this.Controls.Add(addBranchButton);
             this.Controls.Add(addEmployeeButton);

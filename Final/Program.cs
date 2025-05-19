@@ -30,7 +30,7 @@ namespace Final
         public const int hoursPerWeek = 42;
         public const int hoursPerDay = 9;
         public const int hoursPerShift = 9;
-        public const int maxGenerationsWithoutImprovement = 50;
+        public const int maxGenerationsWithoutImprovement = 100;
 
 
         // קבועים למשקלים של פונקציית הכושר
@@ -61,9 +61,14 @@ namespace Final
         // ערך מוחזר: אין
         public static void createSceduele(string username)
         {
+            Tests.Initialize();
+           Console.WriteLine("התחלת ריצת האלגוריתם הגנטי");
+
             InitializeAlgorithm(username);
             RunGeneticAlgorithm();
             ShowResults();
+
+            Tests.PrintSummary();
         }
 
         // פונקציה לאתחול האלגוריתם הגנטי
@@ -100,6 +105,11 @@ namespace Final
                 // שמירת הכרומוזומים הכי טובים לדור הבא
                 pop.Chromoshomes = pop.Chromoshomes.OrderByDescending(x => x.Fitness).Take(ChromosomesEachGene).ToList();
 
+                if (i % 10 == 0 || i == Generations - 1)
+                {
+                    Tests.TrackGeneration(i, pop);
+                }
+
                 // בדיקה אם יש שיפור בין דורות
                 double currentBestFitness = pop.Chromoshomes.First().Fitness;
                 if (currentBestFitness - previousBestFitness < 0.001)
@@ -123,6 +133,8 @@ namespace Final
 
                 //שיפור הכרומוזומים ע"י מוטציות 
                 Mutation(pop);
+
+
             }
             generationCount = i;
             return;
@@ -135,10 +147,12 @@ namespace Final
         {
             // הצגת הצלחה למשתמש
             MessageBox.Show("נוצר בהצלחה", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Console.WriteLine($"מוטציות מוצלחות: {succefulMutation}");
-            Console.WriteLine($"מוטציות לא מוצלחות: {UnsuccefulMutation}");
-            Console.WriteLine($"מספר דורות: {generationCount}");
+
+            // מעקב אחר הפתרון הטוב ביותר
+            Chromosome bestSolution = GetBestChromosome();
+            Tests.TrackBestSolution(bestSolution);
         }
+
 
         #region InitializeFirstPopulation 
         // פונקציה היוצרת אוכלוסייה ראשונית- שלב ראשון באלגוריתם הגנטי
@@ -896,8 +910,8 @@ namespace Final
             List<Employee> selectedEmployees = new List<Employee>();
 
             // קח חצי מכל הורה כשאפשר
-            int count1 = Math.Min(employees1.Count, employees1.Count / 2 + 1);
-            int count2 = Math.Min(employees2.Count, employees2.Count / 2 + 1);
+            int count1 = Math.Min(employees1.Count, employees1.Count / 2 +1);
+            int count2 = Math.Min(employees2.Count, employees2.Count / 2 );
 
             //הוספת עובדים מהורה 1
             for (int i = 0; i < count1 && i < employees1.Count; i++)
@@ -2038,6 +2052,8 @@ namespace Final
             return bestChromosome;
         }
         #endregion
+
+        
 
         // הפעלת האפליקציה
         // פרמטרים: אין
