@@ -16,9 +16,8 @@ namespace Final
         private static readonly List<double> fitnessHistory = new List<double>();
         private static DateTime startTime;
 
-        /// <summary>
-        /// אתחול מערכת המעקב
-        /// </summary>
+    
+        // אתחול מערכת המעקב
         public static void Initialize()
         {
             // איפוס סטטיסטיקות
@@ -31,9 +30,7 @@ namespace Final
         }
 
 
-        /// <summary>
-        /// מעקב אחר דור באלגוריתם הגנטי
-        /// </summary>
+        // מעקב אחר דור באלגוריתם הגנטי
         public static void TrackGeneration(int currentGeneration, Population population)
         {
             if (population?.Chromoshomes == null || population.Chromoshomes.Count == 0)
@@ -45,7 +42,7 @@ namespace Final
             double maxFitness = population.Chromoshomes.Max(c => c.Fitness);
 
             // שמירת הערך הטוב ביותר
-            if (maxFitness > bestFitness)
+            if (maxFitness >= bestFitness)
             {
                 previousBestFitness = bestFitness;
                 bestFitness = maxFitness;
@@ -56,21 +53,19 @@ namespace Final
 
             // חישוב שיפור באחוזים מהדור הקודם
             double improvementPercent = 0;
-            if (previousBestFitness > double.MinValue && previousBestFitness != 0)
+            if (previousBestFitness > double.MinValue)
             {
                 improvementPercent = (maxFitness - previousBestFitness) / Math.Abs(previousBestFitness) * 100;
             }
 
-            // הדפסת נתוני הדור
+            // הדפסת נתוני הדור הנוכחי
             Console.WriteLine($"דור {currentGeneration}: " +
                 $"ציון הכרומזום הטוב ביותר={maxFitness:F2}, " +
                 $"שיפור={improvementPercent:F2}%");
         }
       
 
-        /// <summary>
-        /// מעקב אחר הפתרון הטוב ביותר
-        /// </summary>
+        // מעקב אחר הפתרון הטוב ביותר
         public static void TrackBestSolution(Chromosome bestSolution)
         {
             if (bestSolution == null)
@@ -78,42 +73,10 @@ namespace Final
 
             Console.WriteLine($"פרטי הפתרון הטוב ביותר:");
             Console.WriteLine($"ציון כושר: {bestSolution.Fitness:F2}");
-
-            // ספירת סניפים ומשמרות
-            int branchCount = bestSolution.Shifts?.Count ?? 0;
-            int totalShifts = 0;
-            int totalAssignedEmployees = 0;
-
-            if (bestSolution.Shifts != null)
-            {
-                foreach (var branchEntry in bestSolution.Shifts)
-                {
-                    if (branchEntry.Value != null)
-                    {
-                        totalShifts += branchEntry.Value.Count;
-
-                        foreach (var shift in branchEntry.Value)
-                        {
-                            if (shift.AssignedEmployees != null)
-                            {
-                                foreach (var roleEmployees in shift.AssignedEmployees.Values)
-                                {
-                                    totalAssignedEmployees += roleEmployees?.Count ?? 0;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Console.WriteLine($"מספר סניפים: {branchCount}");
-            Console.WriteLine($"מספר משמרות: {totalShifts}");
-            Console.WriteLine($"מספר שיבוצי עובדים: {totalAssignedEmployees}");
+ 
         }
 
-        /// <summary>
-        /// הדפסת סיכום ריצת האלגוריתם
-        /// </summary>
+        // הדפסת סיכום ריצת האלגוריתם
         public static void PrintSummary()
         {
             TimeSpan duration = DateTime.Now - startTime;
