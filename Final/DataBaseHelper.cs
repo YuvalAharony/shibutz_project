@@ -801,7 +801,6 @@ public class DataBaseHelper
                 }
             }
 
-            // שימוש בפרמטרים מונע SQL Injection
             string query = @"INSERT INTO Users (Username, Password, FullName, Email, IsActive)
                         VALUES (@Username, @Password, @FullName, @Email, @IsActive);";
             using (SqlCommand command = new SqlCommand(query, connection))

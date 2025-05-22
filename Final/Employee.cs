@@ -13,9 +13,9 @@ namespace Final
         public int ID { get; set; }
         // שם העובד
         public string Name { get; set; }
-        // אוסף התפקידים של העובד
+        //  התפקידים של העובד
         public HashSet<String> roles { get; set; }
-        // אוסף המשמרות המבוקשות על ידי העובד
+        //  המשמרות המבוקשות על ידי העובד
         public HashSet<int> requestedShifts { get; set; }
         // גיבוי למשמרות המבוקשות
         public HashSet<int> backUprequestedShifts { get; set; }
@@ -23,7 +23,7 @@ namespace Final
         public int Rate { get; set; }
         // שכר שעתי של העובד
         public int HourlySalary { get; set; }
-        // האם העובד מנוסה/מנטור
+        // האם העובד מנוסה
         public bool isMentor { get; set; }
         // רשימת הסניפים בהם העובד עובד
         public List<string> Branches { get; set; }

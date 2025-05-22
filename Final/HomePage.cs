@@ -35,7 +35,7 @@ namespace EmployeeSchedulingApp
             };
 
         
-
+            //הרשמה
             Button registerButton = new Button()
             {
                 Text = "הרשמה",
@@ -45,6 +45,8 @@ namespace EmployeeSchedulingApp
                 ForeColor = Color.Black,
                 FlatStyle = FlatStyle.Flat
             };
+
+            //התחברות
             Button loginButton = new Button()
             {
                 Text = "התחברות",

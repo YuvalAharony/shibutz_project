@@ -12,10 +12,6 @@ namespace EmployeeSchedulingApp
     // דף להוספת סניף חדש למערכת
     public partial class AddBranchPage : Form
     {
-        // מחרוזת חיבור לבסיס הנתונים
-        private static string connectionString =
-            "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
-
         // שם המשתמש הנוכחי
         private string currentUserName;
 

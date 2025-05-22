@@ -37,14 +37,13 @@ namespace Final
         private void SetupUI()
         {
             this.BackColor = Color.Tan;
-            // הגדרת כותרת החלון
+            // כותרת החלון  
             this.Text = $"פרטי משמרת - {branch.Name} - {shift.day} {shift.TimeSlot}";
-            // קביעת גודל החלון
             this.Size = new System.Drawing.Size(620, 400);
             // הגדרת כיוון טקסט מימין לשמאל
             this.RightToLeft = RightToLeft.Yes;
 
-            // יצירת כותרת ראשית
+            //  כותרת 
             Label titleLabel = new Label()
             {
                 Text = $"עובדים ותפקידים במשמרת: {branch.Name} - {shift.day} {shift.TimeSlot}",
@@ -52,10 +51,10 @@ namespace Final
                 Font = new System.Drawing.Font("Arial", 14, System.Drawing.FontStyle.Bold),
                 Location = new System.Drawing.Point(20, 20)
             };
-            // הוספת התווית לחלון
+          
             this.Controls.Add(titleLabel);
 
-            // יצירת טבלת תפקידים
+            // יצירת טבלת עובדים
             rolesGridView = new DataGridView()
             {
                 Location = new System.Drawing.Point(20, 60),
@@ -78,7 +77,7 @@ namespace Final
             rolesGridView.Columns.Add("Rate", "דירוג");
             rolesGridView.Columns.Add("IsMentor", "חונך");
 
-            // הוספת הטבלה לחלון
+        
             this.Controls.Add(rolesGridView);
         }
 
@@ -101,7 +100,6 @@ namespace Final
             // אם מצאנו את המשמרת בכרומוזום הטוב ביותר, השתמש בה במקום במשמרת המקורית
             if (bestShift != null && bestShift.AssignedEmployees != null && bestShift.AssignedEmployees.Count > 0)
             {
-                // הקוד המקורי שלך להצגת עובדים, אבל משתמש ב-bestShift במקום shift
                 foreach (var roleEntry in bestShift.RequiredRoles)
                 {
                     string roleName = roleEntry.Key;
@@ -161,7 +159,10 @@ namespace Final
                 }
             }
         }
-
+        // מציאת המשמרת לפי המזהה שלה
+        // פרמטרים
+        // shiftId-מזהה משמרת 
+        // ערך מוחזר: משמרת
         private Shift FindBestShiftById(int shiftId)
         {
             Chromosome bestChromosome = Program.GetBestChromosome();

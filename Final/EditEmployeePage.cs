@@ -15,10 +15,9 @@ namespace EmployeeSchedulingApp
         // העובד הנבחר לעריכה
         private Employee selectedEmployee;
         // שדות טקסט למידע על העובד
-        private TextBox nameTextBox, idTextBox, rateTextBox, salaryTextBox;
-        private TextBox phoneTextBox, emailTextBox;
+        private TextBox nameTextBox, idTextBox, rateTextBox, salaryTextBox, phoneTextBox, emailTextBox;
         // רשימת תפקידים אפשריים לעובד
-        private CheckedListBox rolesCheckedListBox; // שינוי מ-ComboBox ל-CheckedListBox
+        private CheckedListBox rolesCheckedListBox;
         // תיבת סימון האם העובד מנוסה
         private CheckBox isExperiencedCheckBox;
         // רשימות הסניפים והמשמרות
@@ -26,7 +25,7 @@ namespace EmployeeSchedulingApp
         private CheckedListBox shiftsCheckedListBox;
         // כפתורי שמירה וביטול
         private Button saveButton, cancelButton;
-        // אחסון המשמרות לפי סניף
+        // שמירת המשמרות לפי סניף
         private Dictionary<string, List<ShiftDisplayInfo>> branchShifts;
         // שם המשתמש הנוכחי
         string currentUserName;
@@ -40,9 +39,6 @@ namespace EmployeeSchedulingApp
         {
 
             this.SuspendLayout();
-            // 
-            // EditEmployeePage
-            // 
             this.ClientSize = new System.Drawing.Size(400, 750);
             this.Name = "EditEmployeePage";
             this.CenterToScreen();
@@ -61,7 +57,7 @@ namespace EmployeeSchedulingApp
             this.RightToLeft = RightToLeft.Yes;
             this.RightToLeftLayout = true;
 
-            // מרכוז הכותרת
+            // כותרת
             Label titleLabel = new Label()
             {
                 Text = "עריכת פרטי עובד",
@@ -196,7 +192,7 @@ namespace EmployeeSchedulingApp
             branchesCheckedListBox.ItemCheck += BranchesCheckedListBox_ItemCheck;
             currentY += 100;
 
-            // = משמרות מועדפות
+            //  משמרות מועדפות
             Label shiftsLabel = new Label()
             {
                 Text = "משמרות מועדפות:",
@@ -311,7 +307,6 @@ namespace EmployeeSchedulingApp
         {
             shiftsCheckedListBox.Items.Clear();
 
-            // איסוף כל המשמרות מהסניפים שנבחרו
             List<ShiftDisplayInfo> availableShifts = new List<ShiftDisplayInfo>();
 
             foreach (var checkedItem in branchesCheckedListBox.CheckedItems)
@@ -382,7 +377,7 @@ namespace EmployeeSchedulingApp
         {
             // בדיקת שדות חובה
             if (string.IsNullOrWhiteSpace(nameTextBox.Text) ||
-                rolesCheckedListBox.CheckedItems.Count == 0 || // בדיקה שנבחר לפחות תפקיד אחד
+                rolesCheckedListBox.CheckedItems.Count == 0 || 
                 string.IsNullOrWhiteSpace(salaryTextBox.Text) ||
                 string.IsNullOrWhiteSpace(rateTextBox.Text))
             {
@@ -411,7 +406,6 @@ namespace EmployeeSchedulingApp
                 string branchName = branch.ToString();
                 selectedBranchNames.Add(branchName);
 
-                // קבלת האובייקט Branch המתאים
                 Branch matchingBranch = helper.LoadUserBranches(currentUserName)
                     .FirstOrDefault(b => b.Name == branchName);
 

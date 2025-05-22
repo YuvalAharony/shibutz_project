@@ -8,8 +8,6 @@ namespace EmployeeSchedulingApp
     // דף הרשמה למערכת ניהול המשמרות
     public partial class RegisterPage : Form
     {
-        // מחרוזת חיבור לבסיס הנתונים
-        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
         // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
 
@@ -36,7 +34,7 @@ namespace EmployeeSchedulingApp
             this.RightToLeft = RightToLeft.Yes;
             this.RightToLeftLayout = true;
 
-            // כותרת קבועה ומרוכזת
+            // כותרת  
             Label titleLabel = new Label()
             {
                 Text = "צור חשבון חדש",
@@ -47,44 +45,39 @@ namespace EmployeeSchedulingApp
                 Location = new System.Drawing.Point(0, 20)
             };
 
-            int labelX = 50, inputX = 150, gapY = 40, currentY = 70;
+            
 
             // שם מלא
-            Label fullNameLabel = new Label() { Text = "שם מלא:", Location = new Point(labelX, currentY), AutoSize = true };
-            TextBox fullNameTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180 };
+            Label fullNameLabel = new Label() { Text = "שם מלא:", Location = new Point(50, 70), AutoSize = true };
+            TextBox fullNameTextBox = new TextBox() { Location = new Point(150, 70), Width = 180 };
             fullNameTextBox.TextAlign = HorizontalAlignment.Right;
 
-            currentY += gapY;
             // שם משתמש
-            Label userLabel = new Label() { Text = "שם משתמש:", Location = new Point(labelX, currentY), AutoSize = true };
-            TextBox userTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180 };
+            Label userLabel = new Label() { Text = "שם משתמש:", Location = new Point(50, 110), AutoSize = true };
+            TextBox userTextBox = new TextBox() { Location = new Point(150, 110), Width = 180 };
             userTextBox.TextAlign = HorizontalAlignment.Right;
 
-            currentY += gapY;
             // אימייל
-            Label emailLabel = new Label() { Text = "אימייל:", Location = new Point(labelX, currentY), AutoSize = true };
-            TextBox emailTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180 };
+            Label emailLabel = new Label() { Text = "אימייל:", Location = new Point(50, 150), AutoSize = true };
+            TextBox emailTextBox = new TextBox() { Location = new Point(150, 150), Width = 180 };
             emailTextBox.TextAlign = HorizontalAlignment.Right;
 
-            currentY += gapY;
             // סיסמה
-            Label passLabel = new Label() { Text = "סיסמה:", Location = new Point(labelX, currentY), AutoSize = true };
-            TextBox passTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180, PasswordChar = '*' };
+            Label passLabel = new Label() { Text = "סיסמה:", Location = new Point(50, 190), AutoSize = true };
+            TextBox passTextBox = new TextBox() { Location = new Point(150, 190), Width = 180, PasswordChar = '*' };
             passTextBox.TextAlign = HorizontalAlignment.Right;
 
-            currentY += gapY;
             // אימות סיסמה
-            Label confirmPassLabel = new Label() { Text = "אימות סיסמה:", Location = new Point(labelX, currentY), AutoSize = true };
-            TextBox confirmPassTextBox = new TextBox() { Location = new Point(inputX, currentY), Width = 180, PasswordChar = '*' };
+            Label confirmPassLabel = new Label() { Text = "אימות סיסמה:", Location = new Point(50, 230), AutoSize = true };
+            TextBox confirmPassTextBox = new TextBox() { Location = new Point(150, 230), Width = 180, PasswordChar = '*' };
             confirmPassTextBox.TextAlign = HorizontalAlignment.Right;
 
-            currentY += gapY + 10;
             // כפתורי פעולה
             Button registerButton = new Button()
             {
                 Text = "הרשמה",
                 Size = new Size(100, 40),
-                Location = new Point(inputX, currentY),
+                Location = new Point(150, 280),
                 RightToLeft = RightToLeft.Yes,
                 BackColor = Color.White,
                 ForeColor = Color.Black,
@@ -134,7 +127,5 @@ namespace EmployeeSchedulingApp
             this.ResumeLayout(false);
 
         }
-
-   
     }
 }

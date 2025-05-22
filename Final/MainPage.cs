@@ -24,9 +24,7 @@ namespace EmployeeSchedulingApp
         private string currentUserName;
         // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
-        // מחרוזת חיבור לבסיס הנתונים
-        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True;MultipleActiveResultSets=True";
-
+       
         // בנאי המחלקה - יוצר את העמוד הראשי
         // פרמטרים
         // UserName - שם המשתמש המחובר למערכת
@@ -54,6 +52,7 @@ namespace EmployeeSchedulingApp
             this.BackColor = Color.Tan;
             this.Text = "מסך ראשי - ניהול הרשת";
             this.Size = new System.Drawing.Size(800, 600);
+            //כפתור יצרית משמרות
             Button generateShiftsButton = new Button()
             {
                 Text = "צור משמרות",
@@ -67,6 +66,7 @@ namespace EmployeeSchedulingApp
 
             this.Controls.Add(generateShiftsButton);
 
+            //כפתור יצירת נתונים באופן רנדומלי
             Button generateRandomDataButton = new Button()
             {
                 Text = "צור נתונים באופן רנדומלי",
@@ -79,6 +79,7 @@ namespace EmployeeSchedulingApp
             generateRandomDataButton.Click += GenerateRandomDataButton_Click;
             this.Controls.Add(generateRandomDataButton);
 
+            //כותרת
             Label titleLabel = new Label()
             {
                 Text = "ניהול רשת המסעדות",
@@ -88,6 +89,7 @@ namespace EmployeeSchedulingApp
                 ForeColor = Color.Black,
             };
 
+            //כפתור הוספת סניף
             Button addBranchButton = new Button()
             {
                 Text = "הוסף סניף",
@@ -99,6 +101,7 @@ namespace EmployeeSchedulingApp
             };
             addBranchButton.Click += (sender, e) => { OpenAddBranchPage(); };
 
+            //כפתור הוספת עובד
             Button addEmployeeButton = new Button()
             {
                 Text = "הוסף עובד",
@@ -110,7 +113,7 @@ namespace EmployeeSchedulingApp
             };
             addEmployeeButton.Click += (sender, e) => { OpenAddEmployeePage(); };
 
-            // כפתור חדש לעריכת משמרות סניף
+            // כפתור עריכת משמרות סניף
             Button editBranchShiftsButton = new Button()
             {
                 Text = "ערוך משמרות סניף",
@@ -123,7 +126,7 @@ namespace EmployeeSchedulingApp
             editBranchShiftsButton.Click += EditBranchShiftsButton_Click;
             this.Controls.Add(editBranchShiftsButton);
 
-            // הוספת כפתורי מחיקה ליד רשימות הסניפים והעובדים
+            //  כפתורי מחיקה ליד רשימות הסניפים והעובדים
             Button deleteBranchButton = new Button()
             {
                 Text = "מחק סניף",
@@ -150,6 +153,7 @@ namespace EmployeeSchedulingApp
             deleteEmployeeButton.Click += DeleteEmployeeButton_Click;
             this.Controls.Add(deleteEmployeeButton);
 
+            //רשימת הסניפים של המשתמש
             branchesListView = new ListView()
             {
                 Location = new System.Drawing.Point(50, 150),
@@ -160,6 +164,7 @@ namespace EmployeeSchedulingApp
             };
             branchesListView.Columns.Add("שם הסניף", 150);
 
+            //רשימת העובדים של המשתמש
             employeesListView = new ListView()
             {
                 Location = new System.Drawing.Point(400, 150),
@@ -171,22 +176,12 @@ namespace EmployeeSchedulingApp
 
             employeesListView.Columns.Add("שם העובד", 150);
 
-
+            //הוספת רכיבים לטופס
             this.Controls.Add(titleLabel);
             this.Controls.Add(addBranchButton);
             this.Controls.Add(addEmployeeButton);
             this.Controls.Add(branchesListView);
             this.Controls.Add(employeesListView);
-            employeesListView.MouseDoubleClick += EmployeesListView_MouseDoubleClick;
-        }
-
-        // הגדרת אירוע לחיצה כפולה על רשימת העובדים
-        // פרמטרים: אין
-        // ערך מוחזר: אין
-        private void SetupEmployeesListViewDoubleClick()
-        {
-            // וודא שאירוע הלחיצה הכפולה מחובר
-            employeesListView.MouseDoubleClick -= EmployeesListView_MouseDoubleClick; // למנוע חיבור כפול
             employeesListView.MouseDoubleClick += EmployeesListView_MouseDoubleClick;
         }
 
@@ -209,7 +204,7 @@ namespace EmployeeSchedulingApp
                     // פתיחת טופס עריכת העובד
                     EditEmployeePage editPage = new EditEmployeePage(selectedEmployee, currentUserName);
 
-                    // הוספת אירוע שיתרחש כאשר הטופס נסגר - רענון רשימת העובדים
+                    // רענון רשימת העובדים
                     editPage.FormClosed += (s, args) =>
                     {
                         EmployeesList = helper.LoadUserEmployees(currentUserName);
@@ -233,7 +228,6 @@ namespace EmployeeSchedulingApp
             foreach (Employee emp in EmployeesList)
             {
                 ListViewItem item = new ListViewItem(emp.Name);
-                item.SubItems.Add(emp.roles.FirstOrDefault() ?? "לא מוגדר"); // מציג את התפקיד הראשון
                 employeesListView.Items.Add(item);
             }
         }
@@ -345,7 +339,6 @@ namespace EmployeeSchedulingApp
                 //  הצגת הדיאלוג ועיבוד התוצאה 
                 if (inputForm.ShowDialog() == DialogResult.OK)
                 {
-                    Cursor.Current = Cursors.WaitCursor;
                     try
                     {
                         // הרצת יצירת הנתונים האקראיים
@@ -360,10 +353,10 @@ namespace EmployeeSchedulingApp
                         LoadBranches();
                         LoadEmployees();
                     }
-                    finally
-                    {
-                        Cursor.Current = Cursors.Default;
+                    catch (Exception ex) { 
+                         
                     }
+                  
                 }
             }
         }
@@ -414,10 +407,7 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            // 
-            // MainPage
-            // 
+            this.SuspendLayout(); 
             this.ClientSize = new System.Drawing.Size(282, 253);
             this.Name = "MainPage";
             this.ResumeLayout(false);

@@ -43,46 +43,41 @@ namespace EmployeeSchedulingApp
                 Location = new System.Drawing.Point(150, 20)
             };
 
-            int labelX = 50, inputX = 150, gapY = 40;
-            int currentY = 70;
-
             // שם משתמש
             Label userLabel = new Label()
             {
                 Text = "שם משתמש:",
-                Location = new System.Drawing.Point(labelX, currentY),
+                Location = new System.Drawing.Point(50, 70),
                 AutoSize = true
             };
             TextBox userTextBox = new TextBox()
             {
-                Location = new System.Drawing.Point(inputX, currentY),
+                Location = new System.Drawing.Point(150, 70),
                 Width = 180,
                 TextAlign = HorizontalAlignment.Right
             };
-            currentY += gapY;
 
             // סיסמה
             Label passLabel = new Label()
             {
                 Text = "סיסמה:",
-                Location = new System.Drawing.Point(labelX, currentY),
+                Location = new System.Drawing.Point(50, 110),
                 AutoSize = true
             };
             TextBox passTextBox = new TextBox()
             {
-                Location = new System.Drawing.Point(inputX, currentY),
+                Location = new System.Drawing.Point(150, 110),
                 Width = 180,
                 PasswordChar = '*',
                 TextAlign = HorizontalAlignment.Right
             };
-            currentY += gapY + 10;
 
             // כפתור התחבר
             Button loginButton = new Button()
             {
                 Text = "התחבר",
                 Size = new System.Drawing.Size(100, 40),
-                Location = new System.Drawing.Point(inputX, currentY),
+                Location = new System.Drawing.Point(150, 160),
                 RightToLeft = RightToLeft.Yes,
                 BackColor = Color.White,
                 ForeColor = Color.Black,

@@ -12,6 +12,7 @@ namespace Final
         // רשימת הכרומוזומים (פתרונות) באוכלוסייה
         public List<Chromosome> Chromoshomes { get; set; }
 
+        //בנאי המחלקה
         public Population(List<Chromosome> chromoshomes)
         {
             Chromoshomes = chromoshomes;    

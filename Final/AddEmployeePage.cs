@@ -13,17 +13,11 @@ namespace Final
     // דף להוספת עובד חדש למערכת
     public partial class AddEmployeePage : Form
     {
-        // רשימת הסניפים לבחירה
-        private CheckedListBox branchesCheckedListBox;
-
         // שם המשתמש הנוכחי
         private string currentUserName;
 
-        // מחרוזת חיבור לבסיס הנתונים
-        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
-
-        // מילון לשמירת המשמרות לפי סניף
-        private Dictionary<string, List<ShiftDisplayInfo>> branchShifts;
+        // רשימת הסניפים לבחירה
+        private CheckedListBox branchesCheckedListBox;
 
         // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
@@ -51,8 +45,9 @@ namespace Final
             this.AutoSize = true;
             this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             this.Text = "הוספת עובד חדש";
-            this.Size = new System.Drawing.Size(400, 600); // הקטנת הגובה כי אין משמרות
+            this.Size = new System.Drawing.Size(400, 600); 
 
+            //כותרת
             Label titleLabel = new Label()
             {
                 Text = "הוספת עובד חדש",
@@ -63,7 +58,7 @@ namespace Final
 
             // מיקומים מסודרים עם מרווחים עקביים
             int startY = 70;
-            int gap = 40; // מרווח אחיד
+            int gap = 40; 
             int currentY = startY;
             int labelX = 50;
             int controlX = 150;
@@ -240,9 +235,9 @@ namespace Final
             }
         }
 
-        // אוסף את התפקידים שנבחרו ברשימה
+        // קבלת התפקידים שסומנו
         // פרמטרים: אין
-        // ערך מוחזר: אוסף התפקידים שנבחרו
+        // ערך מוחזר: רשימת התפקידים שנבחרו
         private HashSet<string> GetSelectedRoles()
         {
             CheckedListBox rolesCheckedListBox = (CheckedListBox)this.Controls["rolesCheckedListBox"];

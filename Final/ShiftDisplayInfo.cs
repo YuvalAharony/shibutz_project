@@ -18,10 +18,10 @@ namespace Final
         // היום בשבוע בו מתקיימת המשמרת
         public string DayOfWeek { get; set; }
 
-        // משבצת הזמן של המשמרת (בוקר/ערב וכו')
+        // משבצת הזמן של המשמרת בוקר/ערב וכו
         public string TimeSlot { get; set; }
 
-        // סוג המשמרת (רגילה/מיוחדת/חג וכו')
+        // סוג המשמרת רגילה/מיוחדתוכו
         public string ShiftType { get; set; }
 
         // פונקציה ליצירת מחרוזת המייצגת את המשמרת

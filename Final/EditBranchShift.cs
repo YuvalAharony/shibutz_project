@@ -22,8 +22,7 @@ namespace EmployeeSchedulingApp
         private Panel editPanel;
         // מופע של מחלקת העזר לבסיס הנתונים
         private static DataBaseHelper helper = new DataBaseHelper();
-        // מחרוזת חיבור לבסיס הנתונים
-        private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+       
 
         // בנאי המחלקה - יוצר טופס עריכת משמרות לסניף
         // פרמטרים
@@ -43,9 +42,6 @@ namespace EmployeeSchedulingApp
         private void InitializeComponent()
         {
             this.SuspendLayout();
-            // 
-            // EditBranchShift
-            // 
             this.ClientSize = new System.Drawing.Size(1000, 600);
             this.Name = "EditBranchShift";
             this.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -234,7 +230,7 @@ namespace EmployeeSchedulingApp
             };
             editPanel.Controls.Add(editTitleLabel);
 
-            // שדה בחירת יום
+            // יום
             Label dayLabel = new Label
             {
                 Text = "יום:",
@@ -256,7 +252,7 @@ namespace EmployeeSchedulingApp
             dayComboBox.SelectedItem = selectedShift.day;
             editPanel.Controls.Add(dayComboBox);
 
-            // שדה בחירת זמן
+            // זמן
             Label timeLabel = new Label
             {
                 Text = "זמן:",
@@ -278,7 +274,7 @@ namespace EmployeeSchedulingApp
             timeComboBox.SelectedItem = selectedShift.TimeSlot;
             editPanel.Controls.Add(timeComboBox);
 
-            // שדה בחירת סוג אירוע
+            //  סוג אירוע
             Label eventTypeLabel = new Label
             {
                 Text = "סוג אירוע:",
@@ -301,7 +297,7 @@ namespace EmployeeSchedulingApp
             eventTypeComboBox.SelectedItem = selectedShift.EventType;
             editPanel.Controls.Add(eventTypeComboBox);
 
-            // כותרת לדרישות כוח אדם
+            // דרישות כוח אדם
             Label rolesTitle = new Label
             {
                 Text = "דרישות כוח אדם:",

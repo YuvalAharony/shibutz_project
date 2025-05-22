@@ -28,8 +28,7 @@ namespace EmployeeSchedulingApp
         // ערך מוחזר: אין
         public static void GenerateRandomData(int branchCount, int totalEmployees, string username)
         {
-            try
-            {
+           
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
@@ -77,11 +76,7 @@ namespace EmployeeSchedulingApp
                     MessageBox.Show($"נוצרו בהצלחה {branchCount} סניפים עם {totalEmployees} עובדים ברחבי הרשת.",
                     "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"שגיאה ביצירת נתונים אקראיים: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+         
         }
 
         // פונקציה למחיקת נתונים קיימים

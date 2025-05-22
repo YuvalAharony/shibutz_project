@@ -37,15 +37,15 @@ namespace Final
             this.Text = $"סידור משמרות - {selectedBranch.Name}";
             this.Size = new System.Drawing.Size(800, 600);
 
-
+            //כותרת
             Label titleLabel = new Label()
             {
-                Text = $"📌 סידור משמרות עבור {selectedBranch.Name}",
+                Text = $" סידור משמרות עבור {selectedBranch.Name}",
                 AutoSize = true,
                 Font = new System.Drawing.Font("Arial", 14, System.Drawing.FontStyle.Bold),
                 Location = new System.Drawing.Point(150, 20)
             };
-
+            //טבלת סידור העבודה
             shiftsDataGridView = new DataGridView()
             {
                 Location = new System.Drawing.Point(20, 60),
@@ -100,11 +100,10 @@ namespace Final
 
                 // קיבוץ לפי סוג המשמרת
                 var groupedShifts = shifts.GroupBy(s => s.TimeSlot)
-                                          .OrderBy(g => g.Key);
+                                          .OrderByDescending(g => g.Key);
 
                 foreach (var group in groupedShifts)
                 {
-                    // מערך: תא ראשון = סוג המשמרת, תאים 1..n = ימים
                     string[] row = new string[daysOfWeek.Length + 1];
                     row[0] = group.Key;
 

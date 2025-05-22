@@ -1159,24 +1159,26 @@ namespace Final
         // ערך מוחזר: האם העובד משובץ למשמרת חופפת
         private static bool IsEmployeeAssignedToOverlappingShift(Chromosome chromosome, Employee employee, Shift currentShift)
         {
-            // מעבר על כל הסניפים בכרומוזום
+            // מעבר על כל הסניפים בכרומוזוםu
             foreach (var branchEntry in chromosome.Shifts)
             {
                 // מעבר על כל המשמרות בסניף
                 foreach (var shift in branchEntry.Value)
                 {
                     // אם זו אותה משמרת שאנחנו בודקים כרגע, דלג
-                    if (shift == currentShift)
-                        continue;
-
-                    // אם המשמרת חופפת (אותו יום ואותה שעה)
-                    if (shift.day == currentShift.day && shift.TimeSlot == currentShift.TimeSlot)
+                    if (shift != currentShift)
                     {
-                        // בדוק אם העובד משובץ למשמרת זו
-                        foreach (var roleEmployees in shift.AssignedEmployees.Values)
+
+
+                        // אם המשמרת חופפת -אותו יום ואותה שעה
+                        if (shift.day == currentShift.day && shift.TimeSlot == currentShift.TimeSlot)
                         {
-                            if (roleEmployees.Contains(employee))
-                                return true; // העובד משובץ למשמרת חופפת
+                            // בדוק אם העובד משובץ למשמרת זו
+                            foreach (var roleEmployees in shift.AssignedEmployees.Values)
+                            {
+                                if (roleEmployees.Contains(employee))
+                                    return true; // העובד משובץ למשמרת חופפת
+                            }
                         }
                     }
                 }
@@ -1184,6 +1186,7 @@ namespace Final
 
             return false; // העובד לא משובץ למשמרת חופפת
         }
+
 
         // פונקציה הבוחרת אסטרטגיית מוטציה בהתאם לשלב
         // פרמטרים
