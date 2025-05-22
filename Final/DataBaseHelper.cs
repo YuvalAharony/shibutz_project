@@ -51,65 +51,26 @@ public class DataBaseHelper
     }
 
 
-    
+
     // פונקציה לטעינת רשימת הסניפים של המשתמש המחובר למערכת
     // פרמטרים:
     // username - שם המשתמש המחובר למערכת
     // ערך מוחזר: רשימת סניפים של המשתמש
     public List<Branch> LoadUserBranches(string username)
     {
-        //אתחול רשימת סניפים חדשה
         List<Branch> branches = new List<Branch>();
 
         try
         {
-            //יצירת חיבור חדש לבסיס הנתונים
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
 
-                //שאילתה השולפת מבסיס הנתונים את כל המזהיי הסניפים ושמות הסניפים של המשתמש הנוכחי
-                string query = @"
-                   SELECT b.BranchID, b.Name 
-                   FROM Branches b
-                   INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
-                   INNER JOIN Users u ON ub.UserID = u.UserID
-                   WHERE u.Username = @Username";
+                // שליפת נתוני הסניפים הבסיסיים
+                branches = GetUserBranchesBasicData(connection, username);
 
-                //אתחול השאילתה
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    //הוספת הפרמטרים לשאילתה
-                    command.Parameters.AddWithValue("@Username", username);
-
-                    //הרצת השאילתה לתוך הקורא
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        //קריאת תוצאות השאילתה 
-                        while (reader.Read())
-                        {
-                            //חילוץ נתוני הסניף הבסיסיים
-                            int branchId = reader.GetInt32(0);
-                            string branchName = reader.GetString(1);
-
-                            //יצירת אובייקט סניף חדש עם כל המידע
-                            Branch branch = new Branch
-                            {
-                                ID = branchId,
-                                Name = branchName
-                            };
-
-                            //הוספת הסניף לרשימת הסניפים בתוכנית
-                            branches.Add(branch);
-                        }
-                    }
-                }
-
-                //בעבור כל סניף, נטען את המשמרות של הסניף מבסיס הנתונים
-                foreach (Branch branch in branches)
-                {
-                    branch.Shifts = LoadBranchShifts(branch.ID);
-                }
+                // טעינת המשמרות לכל סניף
+                LoadShiftsForBranches(branches);
             }
         }
         catch (Exception ex)
@@ -119,6 +80,60 @@ public class DataBaseHelper
 
         return branches;
     }
+
+    // פונקציה לשליפת נתוני הסניפים הבסיסיים
+    // פרמטרים:
+    // connection - חיבור פתוח למסד הנתונים
+    // username - שם המשתמש
+    // ערך מוחזר: רשימת סניפים עם נתונים בסיסיים
+    private List<Branch> GetUserBranchesBasicData(SqlConnection connection, string username)
+    {
+        List<Branch> branches = new List<Branch>();
+
+        string query = @"
+        SELECT b.BranchID, b.Name 
+        FROM Branches b
+        INNER JOIN UserBranches ub ON b.BranchID = ub.BranchID
+        INNER JOIN Users u ON ub.UserID = u.UserID
+        WHERE u.Username = @Username";
+
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Username", username);
+
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int branchId = reader.GetInt32(0);
+                    string branchName = reader.GetString(1);
+
+                    Branch branch = new Branch
+                    {
+                        ID = branchId,
+                        Name = branchName
+                    };
+
+                    branches.Add(branch);
+                }
+            }
+        }
+
+        return branches;
+    }
+
+    // פונקציה לטעינת המשמרות לכל הסניפים
+    // פרמטרים:
+    // branches - רשימת הסניפים לטעינת המשמרות
+    // ערך מוחזר: אין
+    private void LoadShiftsForBranches(List<Branch> branches)
+    {
+        foreach (Branch branch in branches)
+        {
+            branch.Shifts = LoadBranchShifts(branch.ID);
+        }
+    }
+
 
     // פונקציה לטעינת רשימת העובדים של המשתמש המחובר למערכת
     // פרמטרים:
@@ -269,7 +284,7 @@ public class DataBaseHelper
         //הדפסת שגיאה במקרה שהייתה בעיה בטעינת המשמרות
         catch (Exception ex)
         {
-            Console.WriteLine("Error loading branch shifts: " + ex.Message);
+            Console.WriteLine("שגיאה בטעינת משמרות הסניף " + ex.Message);
         }
 
         return shifts;
@@ -324,7 +339,7 @@ public class DataBaseHelper
         //הצגת הודעת שגיאה למשתשמש אם הייתה שגיאה בטעינת הנתונים מהדאטא בייס
         catch (Exception ex)
         {
-            Console.WriteLine("Error loading shift required roles: " + ex.Message);
+            Console.WriteLine("שגיאה בטעינת התפקידים הנדרשים למשמרת " + ex.Message);
         }
 
         return requiredRoles;
@@ -375,7 +390,7 @@ public class DataBaseHelper
         //הצגת הודעת שגיאה למשתשמש אם הייתה שגיאה בטעינת הנתונים מהדאטא בייס
         catch (Exception ex)
         {
-            Console.WriteLine("Error loading employee roles: " + ex.Message);
+            Console.WriteLine("שגיאה בטעינת תפקידי העובד " + ex.Message);
         }
 
         return roles;
@@ -425,7 +440,7 @@ public class DataBaseHelper
         //הצגת הודעת שגיאה למשתשמש אם הייתה שגיאה בטעינת הנתונים מהדאטא בייס
         catch (Exception ex)
         {
-            Console.WriteLine("Error loading employee preferred shifts: " + ex.Message);
+            Console.WriteLine("שגיאה בטעינת משמרות מועדפות של העובד: " + ex.Message);
         }
 
         return preferredShifts;
@@ -476,7 +491,7 @@ public class DataBaseHelper
         //הצגת הודעת שגיאה למשתשמש אם הייתה שגיאה בטעינת הנתונים מהדאטא בייס
         catch (Exception ex)
         {
-            Console.WriteLine("Error loading employee branches: " + ex.Message);
+            Console.WriteLine("שגיאה בטעינת סניפי העובד " + ex.Message);
         }
 
         return branches;
@@ -956,8 +971,8 @@ public class DataBaseHelper
         }
     }
 
-    // פונקציה להוספת עובד חדש
-    // פרמטרים:
+    // פונקציה להוספת עובד חדש למערכת
+    // פרמטרים
     // employeeId - מזהה עובד (אופציונלי)
     // name - שם העובד
     // phone - מספר טלפון
@@ -969,216 +984,339 @@ public class DataBaseHelper
     // password - סיסמת העובד
     // branchesCheckedListBox - תיבת בחירה של סניפים
     // ערך מוחזר: אמת אם ההוספה הצליחה, שקר אחרת
-    public bool AddEmployee(
-     string employeeId,
-     string name,
-     string phone,
-     string email,
-     string rate,
-     HashSet<string> roles,
-     string salary,
-     bool isExperienced,
-     string password,
-     CheckedListBox branchesCheckedListBox)
+    public bool AddEmployee(string employeeId, string name, string phone, string email,
+        string rate, HashSet<string> roles, string salary, bool isExperienced,
+        string password, CheckedListBox branchesCheckedListBox)
     {
-        // בדיקת תקינות שדות
-        if (string.IsNullOrWhiteSpace(name) ||
-          roles.Count == 0 ||  // בדיקה שנבחר לפחות תפקיד אחד
-          string.IsNullOrWhiteSpace(salary) ||
-          string.IsNullOrWhiteSpace(rate) ||
-          string.IsNullOrWhiteSpace(password))
-        {
-            MessageBox.Show("נא למלא את כל השדות הדרושים ולבחור לפחות תפקיד אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        // בדיקת תקינות נתונים
+        if (!ValidateEmployeeInput(name, roles, salary, rate, password, branchesCheckedListBox))
             return false;
-        }
 
-        int newEmployeeId = 0;
-        bool useCustomId = false;
-
-        // בדיקה אם יש מזהה עובד ספציפי
-        if (!string.IsNullOrWhiteSpace(employeeId))
-        {
-            // וידוא שמזהה העובד הוא מספר
-            if (!int.TryParse(employeeId, out newEmployeeId))
-            {
-                MessageBox.Show("מזהה העובד חייב להיות מספר.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-
-            // בדיקה אם המזהה כבר קיים במערכת
-            using (SqlConnection checkConnection = new SqlConnection(connectionString))
-            {
-                checkConnection.Open();
-                string checkQuery = "SELECT COUNT(*) FROM Employees WHERE EmployeeID = @EmployeeID";
-                using (SqlCommand checkCommand = new SqlCommand(checkQuery, checkConnection))
-                {
-                    checkCommand.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
-                    int count = (int)checkCommand.ExecuteScalar();
-
-                    if (count > 0)
-                    {
-                        MessageBox.Show("מזהה העובד כבר קיים במערכת.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return false;
-                    }
-                }
-            }
-
-            useCustomId = true;
-        }
+        // קביעת מזהה העובד
+        int newEmployeeId = DetermineEmployeeId(employeeId);
+        if (newEmployeeId == -1) return false;
 
         // איסוף הסניפים שנבחרו
+        List<string> branchList = CollectSelectedBranches(branchesCheckedListBox);
+        if (branchList.Count == 0) return false;
+
+        // יצירת העובד במסד הנתונים
+        return CreateEmployeeInDatabase(newEmployeeId, name, phone, email, salary, rate,
+                                       isExperienced, password, roles, branchList);
+    }
+
+    // פונקציה לבדיקת תקינות קלט העובד
+    // פרמטרים
+    // name - שם העובד
+    // roles - תפקידי העובד
+    // salary - שכר שעתי
+    // rate - דירוג העובד
+    // password - סיסמת העובד
+    // branchesCheckedListBox - רשימת הסניפים
+    // ערך מוחזר: אמת אם הקלט תקין, שקר אחרת
+    private bool ValidateEmployeeInput(string name, HashSet<string> roles, string salary,
+                                      string rate, string password, CheckedListBox branchesCheckedListBox)
+    {
+        if (string.IsNullOrWhiteSpace(name) ||
+            roles.Count == 0 ||
+            string.IsNullOrWhiteSpace(salary) ||
+            string.IsNullOrWhiteSpace(rate) ||
+            string.IsNullOrWhiteSpace(password))
+        {
+            MessageBox.Show("נא למלא את כל השדות הדרושים ולבחור לפחות תפקיד אחד.",
+                           "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
+        }
+        return true;
+    }
+
+    // פונקציה לקביעת מזהה העובד
+    // פרמטרים
+    // employeeId - מזהה העובד שהוזן (יכול להיות ריק)
+    // ערך מוחזר: מזהה העובד החדש או -1 במקרה של שגיאה
+    private int DetermineEmployeeId(string employeeId)
+    {
+        int newEmployeeId = 0;
+
+        if (!string.IsNullOrWhiteSpace(employeeId))
+        {
+            if (!int.TryParse(employeeId, out newEmployeeId))
+            {
+                MessageBox.Show("מזהה העובד חייב להיות מספר.", "שגיאה",
+                               MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return -1;
+            }
+
+            // בדיקה אם המזהה כבר קיים
+            if (IsEmployeeIdExists(newEmployeeId))
+            {
+                MessageBox.Show("מזהה העובד כבר קיים במערכת.", "שגיאה",
+                               MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return -1;
+            }
+        }
+
+        return newEmployeeId;
+    }
+
+    // פונקציה לבדיקת קיום מזהה עובד במערכת
+    // פרמטרים
+    // employeeId - מזהה העובד לבדיקה
+    // ערך מוחזר: אמת אם המזהה קיים, שקר אחרת
+    private bool IsEmployeeIdExists(int employeeId)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+            string checkQuery = "SELECT COUNT(*) FROM Employees WHERE EmployeeID = @EmployeeID";
+            using (SqlCommand command = new SqlCommand(checkQuery, connection))
+            {
+                command.Parameters.AddWithValue("@EmployeeID", employeeId);
+                return (int)command.ExecuteScalar() > 0;
+            }
+        }
+    }
+
+    // פונקציה לאיסוף הסניפים שנבחרו מהרשימה
+    // פרמטרים
+    // branchesCheckedListBox - רשימת הסניפים עם תיבות סימון
+    // ערך מוחזר: רשימת שמות הסניפים שנבחרו
+    private List<string> CollectSelectedBranches(CheckedListBox branchesCheckedListBox)
+    {
         List<string> branchList = new List<string>();
+
         foreach (var item in branchesCheckedListBox.CheckedItems)
         {
             branchList.Add(item.ToString());
         }
 
-        // בדיקה שנבחר לפחות סניף אחד
         if (branchList.Count == 0)
         {
-            MessageBox.Show("נא לבחור לפחות סניף אחד.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return false;
+            MessageBox.Show("נא לבחור לפחות סניף אחד.", "שגיאה",
+                           MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+        return branchList;
+    }
+
+    // פונקציה ליצירת העובד במסד הנתונים
+    // פרמטרים
+    // employeeId - מזהה העובד
+    // name - שם העובד
+    // phone - מספר טלפון
+    // email - כתובת דוא"ל
+    // salary - שכר שעתי
+    // rate - דירוג העובד
+    // isExperienced - האם עובד מנוסה
+    // password - סיסמת העובד
+    // roles - תפקידי העובד
+    // branchList - רשימת הסניפים
+    // ערך מוחזר: אמת אם היצירה הצליחה, שקר אחרת
+    private bool CreateEmployeeInDatabase(int employeeId, string name, string phone, string email,
+                                        string salary, string rate, bool isExperienced, string password,
+                                        HashSet<string> roles, List<string> branchList)
+    {
         try
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
 
-                string insertEmployeeQuery;
+                // יצירת רשומת העובד הבסיסית
+                int newEmployeeId = InsertEmployeeRecord(employeeId, name, phone,
+                                                       email, salary, rate, isExperienced, password);
 
-                if (useCustomId)
-                {
-                    // שימוש במזהה מותאם אישית
-                    insertEmployeeQuery = @"
-                SET IDENTITY_INSERT Employees ON;
-                INSERT INTO Employees (EmployeeID, Name, Phone, Email, HourlySalary, Rate, IsMentor, Password)
-                VALUES (@EmployeeID, @Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @Password);
-                SET IDENTITY_INSERT Employees OFF;
-                SELECT @EmployeeID;";
-                }
-                else
-                {
-                    // שימוש במזהה אוטומטי
-                    insertEmployeeQuery = @"
-                INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor, Password)
-                VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @Password);
-                SELECT CAST(SCOPE_IDENTITY() AS INT);";
-                }
+                // הוספת תפקידים לעובד
+                AssignRolesToEmployee(newEmployeeId, roles);
 
-                using (SqlCommand command = new SqlCommand(insertEmployeeQuery, connection))
-                {
-                    if (useCustomId)
-                    {
-                        // הוספת פרמטר מזהה העובד אם משתמשים במזהה מותאם אישית
-                        command.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
-                    }
+                // הוספת סניפים לעובד
+                AssignBranchesToEmployee(newEmployeeId, branchList);
 
-                    // הוספת שאר הפרמטרים לשאילתה
-                    command.Parameters.AddWithValue("@Name", name);
-                    command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
-                    command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
-                    command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salary));
-                    command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rate));
-                    command.Parameters.AddWithValue("@IsMentor", isExperienced);
-                    command.Parameters.AddWithValue("@Password", password);
+                // הוספה לזיכרון המקומי
+                AddEmployeeToLocalMemory(newEmployeeId, name, roles, rate, salary, isExperienced, branchList);
 
-                    // קבלת ה-ID של העובד החדש
-                    newEmployeeId = (int)command.ExecuteScalar();
-                }
-
-                // הוספת התפקידים של העובד לטבלת EmployeeRoles
-                if (roles != null && roles.Count > 0)
-                {
-                    foreach (string roleName in roles)
-                    {
-                        // בדיקה אם התפקיד קיים בטבלת Roles, אם לא - הוספתו
-                        int roleId;
-                        string checkRoleQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
-                        using (SqlCommand command = new SqlCommand(checkRoleQuery, connection))
-                        {
-                            command.Parameters.AddWithValue("@RoleName", roleName);
-                            object result = command.ExecuteScalar();
-
-                            if (result == null) // התפקיד לא קיים
-                            {
-                                // יצירת תפקיד חדש
-                                string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
-                                using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection))
-                                {
-                                    insertCommand.Parameters.AddWithValue("@RoleName", roleName);
-                                    roleId = (int)insertCommand.ExecuteScalar();
-                                }
-                            }
-                            else
-                            {
-                                roleId = (int)result;
-                            }
-                        }
-
-                        // קישור העובד לתפקיד
-                        string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
-                        using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection))
-                        {
-                            command.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
-                            command.Parameters.AddWithValue("@RoleID", roleId);
-                            command.ExecuteNonQuery();
-                        }
-                    }
-                }
-
-                // קישור העובד לסניפים שנבחרו
-                foreach (string branchName in branchList)
-                {
-                    // קבלת ה-ID של הסניף לפי שמו
-                    int branchId;
-                    string getBranchIdQuery = "SELECT BranchID FROM Branches WHERE Name = @BranchName";
-                    using (SqlCommand command = new SqlCommand(getBranchIdQuery, connection))
-                    {
-                        command.Parameters.AddWithValue("@BranchName", branchName);
-                        object result = command.ExecuteScalar();
-
-                        if (result != null) // נמצא סניף עם השם הזה
-                        {
-                            branchId = (int)result;
-
-                            // קישור העובד לסניף
-                            string insertEmployeeBranchQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
-                            using (SqlCommand insertCommand = new SqlCommand(insertEmployeeBranchQuery, connection))
-                            {
-                                insertCommand.Parameters.AddWithValue("@EmployeeID", newEmployeeId);
-                                insertCommand.Parameters.AddWithValue("@BranchID", branchId);
-                                insertCommand.ExecuteNonQuery();
-                            }
-                        }
-                    }
-                }
-
-                // הוספה לרשימת העובדים בזיכרון
-                Employee newEmployee = new Employee(
-                    newEmployeeId,
-                    name,
-                    roles,  // העברת רשימת התפקידים
-                    null,
-                    Convert.ToInt32(rate),
-                    Convert.ToInt32(salary),
-                    isExperienced,
-                    branchList
-                );
-                Program.Employees.Add(newEmployee);
-
-                // הצגת הודעת הצלחה
-                MessageBox.Show($"העובד {name} נוסף בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"העובד {name} נוסף בהצלחה!", "הצלחה",
+                               MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;
             }
         }
         catch (Exception ex)
         {
-            // הצגת הודעת שגיאה
-            MessageBox.Show($"אירעה שגיאה בהוספת העובד: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show($"אירעה שגיאה בהוספת העובד: {ex.Message}", "שגיאה",
+                           MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
+    }
+
+    // פונקציה להוספת רשומת עובד בסיסית למסד הנתונים
+    // פרמטרים
+    // employeeId - מזהה העובד (0 אם אוטומטי)
+    // name - שם העובד
+    // phone - מספר טלפון
+    // email - כתובת דוא"ל
+    // salary - שכר שעתי
+    // rate - דירוג העובד
+    // isExperienced - האם עובד מנוסה
+    // password - סיסמת העובד
+    // ערך מוחזר: מזהה העובד החדש
+    private int InsertEmployeeRecord(int employeeId, string name, string phone, string email,
+                                   string salary, string rate, bool isExperienced, string password)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            string insertQuery = employeeId > 0 ?
+                @"SET IDENTITY_INSERT Employees ON;
+              INSERT INTO Employees (EmployeeID, Name, Phone, Email, HourlySalary, Rate, IsMentor, Password)
+              VALUES (@EmployeeID, @Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @Password);
+              SET IDENTITY_INSERT Employees OFF;
+              SELECT @EmployeeID;" :
+                @"INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor, Password)
+              VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor, @Password);
+              SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+            using (SqlCommand command = new SqlCommand(insertQuery, connection))
+            {
+                if (employeeId > 0)
+                    command.Parameters.AddWithValue("@EmployeeID", employeeId);
+
+                command.Parameters.AddWithValue("@Name", name);
+                command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
+                command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
+                command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salary));
+                command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rate));
+                command.Parameters.AddWithValue("@IsMentor", isExperienced);
+                command.Parameters.AddWithValue("@Password", password);
+
+                return (int)command.ExecuteScalar();
+            }
+        }
+    }
+
+    // פונקציה להקצאת תפקידים לעובד
+    // פרמטרים
+    // employeeId - מזהה העובד
+    // roles - תפקידי העובד
+    // ערך מוחזר: אין
+    private void AssignRolesToEmployee(int employeeId, HashSet<string> roles)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            foreach (string roleName in roles)
+            {
+                int roleId = GetOrCreateRoleId(roleName);
+
+                string insertRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
+                using (SqlCommand command = new SqlCommand(insertRoleQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@EmployeeID", employeeId);
+                    command.Parameters.AddWithValue("@RoleID", roleId);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+    }
+
+    // פונקציה לקבלת מזהה תפקיד או יצירתו אם לא קיים
+    // פרמטרים
+    // roleName - שם התפקיד
+    // ערך מוחזר: מזהה התפקיד
+    private int GetOrCreateRoleId(string roleName)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            string checkRoleQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
+            using (SqlCommand command = new SqlCommand(checkRoleQuery, connection))
+            {
+                command.Parameters.AddWithValue("@RoleName", roleName);
+                object result = command.ExecuteScalar();
+
+                if (result != null)
+                    return (int)result;
+
+                // יצירת תפקיד חדש אם לא קיים
+                string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
+                using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection))
+                {
+                    insertCommand.Parameters.AddWithValue("@RoleName", roleName);
+                    return (int)insertCommand.ExecuteScalar();
+                }
+            }
+        }
+    }
+
+    // פונקציה להקצאת סניפים לעובד
+    // פרמטרים
+    // employeeId - מזהה העובד
+    // branchList - רשימת שמות הסניפים
+    // ערך מוחזר: אין
+    private void AssignBranchesToEmployee(int employeeId, List<string> branchList)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            foreach (string branchName in branchList)
+            {
+                int branchId = GetBranchIdByName(branchName);
+                if (branchId > 0)
+                {
+                    string insertBranchQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
+                    using (SqlCommand command = new SqlCommand(insertBranchQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@EmployeeID", employeeId);
+                        command.Parameters.AddWithValue("@BranchID", branchId);
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
+    }
+
+    // פונקציה לקבלת מזהה סניף לפי שמו
+    // פרמטרים
+    // branchName - שם הסניף
+    // ערך מוחזר: מזהה הסניף או 0 אם לא נמצא
+    private int GetBranchIdByName(string branchName)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            string query = "SELECT BranchID FROM Branches WHERE Name = @BranchName";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@BranchName", branchName);
+                object result = command.ExecuteScalar();
+                return result != null ? (int)result : 0;
+            }
+        }
+    }
+
+    // פונקציה להוספת העובד לזיכרון המקומי של התוכנית
+    // פרמטרים
+    // employeeId - מזהה העובד
+    // name - שם העובד
+    // roles - תפקידי העובד
+    // rate - דירוג העובד
+    // salary - שכר שעתי
+    // isExperienced - האם עובד מנוסה
+    // branchList - רשימת הסניפים
+    // ערך מוחזר: אין
+    private void AddEmployeeToLocalMemory(int employeeId, string name, HashSet<string> roles,
+                                        string rate, string salary, bool isExperienced, List<string> branchList)
+    {
+        Employee newEmployee = new Employee(
+            employeeId, name, roles, null,
+            Convert.ToInt32(rate), Convert.ToInt32(salary),
+            isExperienced, branchList
+        );
+        Program.Employees.Add(newEmployee);
     }
 
     // פונקציה לשמירת שינויים במשמרת לבסיס הנתונים
@@ -1675,150 +1813,31 @@ public class DataBaseHelper
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                // שימוש בטרנזקציה כדי להבטיח שכל העדכונים יתבצעו או יבוטלו יחד
                 using (SqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        // עדכון פרטי העובד
-                        string updateEmployeeQuery = @"
-                        UPDATE Employees 
-                        SET Name = @Name, 
-                            Phone = @Phone, 
-                            Email = @Email, 
-                            HourlySalary = @HourlySalary, 
-                            Rate = @Rate, 
-                            IsMentor = @IsMentor 
-                        WHERE EmployeeID = @EmployeeID";
+                        // עדכון פרטי העובד הבסיסיים
+                        UpdateEmployeeBasicInfo(connection, transaction, selectedEmployee, name, phone, email, salary, rate, isExperienced);
 
-                        using (SqlCommand command = new SqlCommand(updateEmployeeQuery, connection, transaction))
-                        {
-                            // הוספת פרמטרים לעדכון פרטי העובד הבסיסיים
-                            command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                            command.Parameters.AddWithValue("@Name", name);
-                            command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
-                            command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
-                            command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salary));
-                            command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rate));
-                            command.Parameters.AddWithValue("@IsMentor", isExperienced);
+                        // עדכון תפקידי העובד
+                        UpdateEmployeeRoles(connection, transaction, selectedEmployee.ID, roles);
 
-                            command.ExecuteNonQuery();
-                        }
+                        // עדכון סניפי העובד
+                        UpdateEmployeeBranches(connection, transaction, selectedEmployee.ID, branches);
 
-                        // עדכון התפקידים - מחיקת התפקידים הקיימים והוספת התפקידים החדשים
-                        string deleteRolesQuery = "DELETE FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
-                        using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection, transaction))
-                        {
-                            // הוספת פרמטר מזהה העובד
-                            command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                            command.ExecuteNonQuery();
-                        }
-
-                        // הוספת התפקידים הנבחרים
-                        foreach (string roleName in roles)
-                        {
-                            // בדיקה אם התפקיד קיים, אם לא - הוספתו
-                            int roleId;
-                            string getRoleIdQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
-                            using (SqlCommand command = new SqlCommand(getRoleIdQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@RoleName", roleName);
-                                object result = command.ExecuteScalar();
-
-                                if (result == null) // התפקיד לא קיים
-                                {
-                                    // יצירת תפקיד חדש
-                                    string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
-                                    using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection, transaction))
-                                    {
-                                        insertCommand.Parameters.AddWithValue("@RoleName", roleName);
-                                        roleId = (int)insertCommand.ExecuteScalar();
-                                    }
-                                }
-                                else
-                                {
-                                    roleId = (int)result;
-                                }
-                            }
-
-                            // הוספת התפקיד החדש לעובד
-                            string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
-                            using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                command.Parameters.AddWithValue("@RoleID", roleId);
-                                command.ExecuteNonQuery();
-                            }
-                        }
-
-                        // עדכון סניפים - מחיקת כל השיוכים הקיימים והוספת החדשים
-                        string deleteEmployeeBranchesQuery = "DELETE FROM EmployeeBranches WHERE EmployeeID = @EmployeeID";
-                        using (SqlCommand command = new SqlCommand(deleteEmployeeBranchesQuery, connection, transaction))
-                        {
-                            command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                            command.ExecuteNonQuery();
-                        }
-
-                        // הוספת הסניפים החדשים
-                        List<string> newBranches = new List<string>();
-                        foreach (Branch branch in branches)
-                        {
-                            newBranches.Add(branch.Name);
-
-                            // הוספת שיוך עובד-סניף חדש
-                            string insertEmployeeBranchQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
-                            using (SqlCommand insertCommand = new SqlCommand(insertEmployeeBranchQuery, connection, transaction))
-                            {
-                                insertCommand.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                insertCommand.Parameters.AddWithValue("@BranchID", branch.ID);
-                                insertCommand.ExecuteNonQuery();
-                            }
-                        }
-
-                        // עדכון משמרות מועדפות - מחיקת כל ההעדפות הקיימות והוספת החדשות
-                        string deletePreferredShiftsQuery = "DELETE FROM EmployeePreferredShifts WHERE EmployeeID = @EmployeeID";
-                        using (SqlCommand command = new SqlCommand(deletePreferredShiftsQuery, connection, transaction))
-                        {
-                            command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                            command.ExecuteNonQuery();
-                        }
-
-                        // הוספת המשמרות המועדפות החדשות
-                        HashSet<int> newPreferredShifts = new HashSet<int>();
-                        foreach (ShiftDisplayInfo shift in shifts)
-                        {
-                            int shiftId = shift.ShiftID;
-                            newPreferredShifts.Add(shiftId);
-
-                            // הוספת שיוך עובד-משמרת מועדפת
-                            string insertPreferredShiftQuery = "INSERT INTO EmployeePreferredShifts (EmployeeID, ShiftID) VALUES (@EmployeeID, @ShiftID)";
-                            using (SqlCommand command = new SqlCommand(insertPreferredShiftQuery, connection, transaction))
-                            {
-                                command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
-                                command.Parameters.AddWithValue("@ShiftID", shiftId);
-                                command.ExecuteNonQuery();
-                            }
-                        }
+                        // עדכון משמרות מועדפות
+                        UpdateEmployeePreferredShifts(connection, transaction, selectedEmployee.ID, shifts);
 
                         // עדכון האובייקט בזיכרון
-                        selectedEmployee.Name = name;
-                        selectedEmployee.roles = new HashSet<string>(roles);
-                        selectedEmployee.HourlySalary = int.Parse(salary);
-                        selectedEmployee.Rate = int.Parse(rate);
-                        selectedEmployee.isMentor = isExperienced;
-                        selectedEmployee.Branches = newBranches;
-                        selectedEmployee.requestedShifts = newPreferredShifts;
+                        UpdateEmployeeInMemory(selectedEmployee, name, roles, salary, rate, isExperienced, branches, shifts);
 
-                        // אישור העסקה
                         transaction.Commit();
-
-                        // הצגת הודעת הצלחה
                         MessageBox.Show($"פרטי העובד {selectedEmployee.Name} עודכנו בהצלחה!", "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return true;
                     }
                     catch (Exception ex)
                     {
-                        // ביטול העסקה במקרה של שגיאה
                         transaction.Rollback();
                         throw new Exception("אירעה שגיאה בשמירת השינויים: " + ex.Message);
                     }
@@ -1827,10 +1846,182 @@ public class DataBaseHelper
         }
         catch (Exception ex)
         {
-            // הצגת הודעת שגיאה
             MessageBox.Show(ex.Message, "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
+    }
+
+    // פונקציה לעדכון פרטי העובד הבסיסיים
+    // פרמטרים
+    // connection - חיבור למסד הנתונים
+    // transaction - טרנזקציה פעילה
+    // selectedEmployee - העובד לעדכון
+    // name, phone, email, salary, rate, isExperienced - הנתונים החדשים
+    // ערך מוחזר: אין
+    private void UpdateEmployeeBasicInfo(SqlConnection connection, SqlTransaction transaction,
+        Employee selectedEmployee, string name, string phone, string email, string salary, string rate, bool isExperienced)
+    {
+        string updateEmployeeQuery = @"
+        UPDATE Employees 
+        SET Name = @Name, 
+            Phone = @Phone, 
+            Email = @Email, 
+            HourlySalary = @HourlySalary, 
+            Rate = @Rate, 
+            IsMentor = @IsMentor 
+        WHERE EmployeeID = @EmployeeID";
+
+        using (SqlCommand command = new SqlCommand(updateEmployeeQuery, connection, transaction))
+        {
+            command.Parameters.AddWithValue("@EmployeeID", selectedEmployee.ID);
+            command.Parameters.AddWithValue("@Name", name);
+            command.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
+            command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? (object)DBNull.Value : email);
+            command.Parameters.AddWithValue("@HourlySalary", Convert.ToDecimal(salary));
+            command.Parameters.AddWithValue("@Rate", Convert.ToInt32(rate));
+            command.Parameters.AddWithValue("@IsMentor", isExperienced);
+            command.ExecuteNonQuery();
+        }
+    }
+
+    // פונקציה לעדכון תפקידי העובד
+    // פרמטרים
+    // connection - חיבור למסד הנתונים
+    // transaction - טרנזקציה פעילה
+    // employeeId - מזהה העובד
+    // roles - רשימת התפקידים החדשה
+    // ערך מוחזר: אין
+    private void UpdateEmployeeRoles(SqlConnection connection, SqlTransaction transaction, int employeeId, List<string> roles)
+    {
+        // מחיקת תפקידים קיימים
+        string deleteRolesQuery = "DELETE FROM EmployeeRoles WHERE EmployeeID = @EmployeeID";
+        using (SqlCommand command = new SqlCommand(deleteRolesQuery, connection, transaction))
+        {
+            command.Parameters.AddWithValue("@EmployeeID", employeeId);
+            command.ExecuteNonQuery();
+        }
+
+        // הוספת תפקידים חדשים
+        foreach (string roleName in roles)
+        {
+            int roleId = GetOrCreateRole(connection, transaction, roleName);
+
+            string insertEmployeeRoleQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
+            using (SqlCommand command = new SqlCommand(insertEmployeeRoleQuery, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@EmployeeID", employeeId);
+                command.Parameters.AddWithValue("@RoleID", roleId);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
+
+    // פונקציה לקבלת מזהה תפקיד או יצירתו
+    // פרמטרים
+    // connection - חיבור למסד הנתונים
+    // transaction - טרנזקציה פעילה
+    // roleName - שם התפקיד
+    // ערך מוחזר: מזהה התפקיד
+    private int GetOrCreateRole(SqlConnection connection, SqlTransaction transaction, string roleName)
+    {
+        string getRoleIdQuery = "SELECT RoleID FROM Roles WHERE RoleName = @RoleName";
+        using (SqlCommand command = new SqlCommand(getRoleIdQuery, connection, transaction))
+        {
+            command.Parameters.AddWithValue("@RoleName", roleName);
+            object result = command.ExecuteScalar();
+
+            if (result == null)
+            {
+                // יצירת תפקיד חדש
+                string insertRoleQuery = "INSERT INTO Roles (RoleName) VALUES (@RoleName); SELECT CAST(SCOPE_IDENTITY() AS INT)";
+                using (SqlCommand insertCommand = new SqlCommand(insertRoleQuery, connection, transaction))
+                {
+                    insertCommand.Parameters.AddWithValue("@RoleName", roleName);
+                    return (int)insertCommand.ExecuteScalar();
+                }
+            }
+            else
+            {
+                return (int)result;
+            }
+        }
+    }
+
+    // פונקציה לעדכון סניפי העובד
+    // פרמטרים
+    // connection - חיבור למסד הנתונים
+    // transaction - טרנזקציה פעילה
+    // employeeId - מזהה העובד
+    // branches - רשימת הסניפים החדשה
+    // ערך מוחזר: אין
+    private void UpdateEmployeeBranches(SqlConnection connection, SqlTransaction transaction, int employeeId, List<Branch> branches)
+    {
+        // מחיקת סניפים קיימים
+        string deleteEmployeeBranchesQuery = "DELETE FROM EmployeeBranches WHERE EmployeeID = @EmployeeID";
+        using (SqlCommand command = new SqlCommand(deleteEmployeeBranchesQuery, connection, transaction))
+        {
+            command.Parameters.AddWithValue("@EmployeeID", employeeId);
+            command.ExecuteNonQuery();
+        }
+
+        // הוספת סניפים חדשים
+        foreach (Branch branch in branches)
+        {
+            string insertEmployeeBranchQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
+            using (SqlCommand insertCommand = new SqlCommand(insertEmployeeBranchQuery, connection, transaction))
+            {
+                insertCommand.Parameters.AddWithValue("@EmployeeID", employeeId);
+                insertCommand.Parameters.AddWithValue("@BranchID", branch.ID);
+                insertCommand.ExecuteNonQuery();
+            }
+        }
+    }
+
+    // פונקציה לעדכון משמרות מועדפות של העובד
+    // פרמטרים
+    // connection - חיבור למסד הנתונים
+    // transaction - טרנזקציה פעילה
+    // employeeId - מזהה העובד
+    // shifts - רשימת המשמרות המועדפות החדשה
+    // ערך מוחזר: אין
+    private void UpdateEmployeePreferredShifts(SqlConnection connection, SqlTransaction transaction, int employeeId, List<ShiftDisplayInfo> shifts)
+    {
+        // מחיקת משמרות מועדפות קיימות
+        string deletePreferredShiftsQuery = "DELETE FROM EmployeePreferredShifts WHERE EmployeeID = @EmployeeID";
+        using (SqlCommand command = new SqlCommand(deletePreferredShiftsQuery, connection, transaction))
+        {
+            command.Parameters.AddWithValue("@EmployeeID", employeeId);
+            command.ExecuteNonQuery();
+        }
+
+        // הוספת משמרות מועדפות חדשות
+        foreach (ShiftDisplayInfo shift in shifts)
+        {
+            string insertPreferredShiftQuery = "INSERT INTO EmployeePreferredShifts (EmployeeID, ShiftID) VALUES (@EmployeeID, @ShiftID)";
+            using (SqlCommand command = new SqlCommand(insertPreferredShiftQuery, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@EmployeeID", employeeId);
+                command.Parameters.AddWithValue("@ShiftID", shift.ShiftID);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
+
+    // פונקציה לעדכון נתוני העובד בזיכרון
+    // פרמטרים
+    // selectedEmployee - העובד לעדכון
+    // name, roles, salary, rate, isExperienced, branches, shifts - הנתונים החדשים
+    // ערך מוחזר: אין
+    private void UpdateEmployeeInMemory(Employee selectedEmployee, string name, List<string> roles,
+        string salary, string rate, bool isExperienced, List<Branch> branches, List<ShiftDisplayInfo> shifts)
+    {
+        selectedEmployee.Name = name;
+        selectedEmployee.roles = new HashSet<string>(roles);
+        selectedEmployee.HourlySalary = int.Parse(salary);
+        selectedEmployee.Rate = int.Parse(rate);
+        selectedEmployee.isMentor = isExperienced;
+        selectedEmployee.Branches = branches.Select(b => b.Name).ToList();
+        selectedEmployee.requestedShifts = new HashSet<int>(shifts.Select(s => s.ShiftID));
     }
 
     // פונקציה לטעינת מספר הטלפון של עובד מסוים

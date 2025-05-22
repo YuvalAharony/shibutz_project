@@ -10,6 +10,8 @@ namespace EmployeeSchedulingApp
     {
         private static Random random = new Random();
         private static string connectionString = "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=EmployeeScheduling;Integrated Security=True";
+        // מופע של מחלקת העזר לבסיס הנתונים
+        private static DataBaseHelper helper = new DataBaseHelper();
 
         // שמות באנגלית לייצור אקראי
         private static string[] firstNames = { "John", "Michael", "David", "Robert", "James", "William", "Richard", "Thomas", "Joseph", "Daniel", "Matthew", "Anthony", "Mark", "Paul", "Steven", "Andrew", "Kenneth" };
@@ -36,17 +38,16 @@ namespace EmployeeSchedulingApp
                     int userId = GetUserId(connection, username);
                     if (userId == -1)
                     {
-                        MessageBox.Show($"User {username} not found in the system.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"המשתמש {username} לא נמצא במערכת.", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
                     // בקשת אישור מהמשתמש למחיקת נתונים קיימים
                     DialogResult result = MessageBox.Show(
-                        "This will delete all existing branches, employees, and shifts associated with your account. Are you sure you want to continue?",
-                        "Warning",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning);
-
+                    "פעולה זו תמחק את כל הסניפים, העובדים והמשמרות הקשורים לחשבון שלך. האם אתה בטוח שברצונך להמשיך?",
+                    "אזהרה",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
                     if (result != DialogResult.Yes)
                     {
                         return;
@@ -55,11 +56,11 @@ namespace EmployeeSchedulingApp
                     // מחיקת נתונים קיימים במסד הנתונים
                     DeleteExistingData(connection, userId);
 
-                    // יצירת סוגי משמרות אם לא קיימים
-                    EnsureShiftTypesExist(connection);
+                    //// יצירת סוגי משמרות אם לא קיימים
+                    //EnsureShiftTypesExist(connection);
 
-                    // וידוא קיום תפקידים במערכת
-                    EnsureRolesExist(connection);
+                    //// וידוא קיום תפקידים במערכת
+                    //EnsureRolesExist(connection);
 
                     // יצירת סניפים חדשים
                     List<int> branchIds = CreateBranches(connection, branchCount, userId);
@@ -73,13 +74,13 @@ namespace EmployeeSchedulingApp
                     // יצירת עובדים לכל הרשת והקצאתם לסניפים
                     CreateEmployeesForNetwork(connection, totalEmployees, branchIds);
 
-                    MessageBox.Show($"Successfully created {branchCount} branches with {totalEmployees} employees across the network.",
-                        "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"נוצרו בהצלחה {branchCount} סניפים עם {totalEmployees} עובדים ברחבי הרשת.",
+                    "הצלחה", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error generating random data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"שגיאה ביצירת נתונים אקראיים: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -196,7 +197,7 @@ namespace EmployeeSchedulingApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting existing data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"שגיאה במחיקת נתונים קיימים: {ex.Message}", "שגיאה", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 throw; // העברת החריגה הלאה כדי שהפונקציה הקוראת תדע שהייתה בעיה
             }
         }
@@ -279,12 +280,12 @@ namespace EmployeeSchedulingApp
             List<int> branchIds = new List<int>();
 
             // רשימת מיקומים אפשריים לסניפים
-            string[] locations = { "New York", "Chicago", "Los Angeles", "Boston", "Miami", "Seattle", "Denver", "Austin", "Atlanta", "Philadelphia" };
+            string[] locations = { "תל אביב", "חיפה", "ירושלים", "באר שבע", "נתניה", "פתח תקווה", "אשדוד", "ראשון לציון", "רמת גן", "בני ברק" };
 
             for (int i = 0; i < count; i++)
             {
                 string locationName = locations[random.Next(locations.Length)];
-                string branchName = $"{locationName} Branch {random.Next(1, 100)}";
+                string branchName = $"סניף {locationName} {random.Next(1, 100)}";
 
                 string query = "INSERT INTO Branches (Name) VALUES (@Name); SELECT SCOPE_IDENTITY();";
                 using (SqlCommand command = new SqlCommand(query, connection))
@@ -343,6 +344,7 @@ namespace EmployeeSchedulingApp
 
             // בדיקה וטיפול ב-ShiftTypes
             string checkShiftTypesQuery = "SELECT COUNT(*) FROM ShiftTypes";
+            
             using (SqlCommand checkCommand = new SqlCommand(checkShiftTypesQuery, connection))
             {
                 int count = Convert.ToInt32(checkCommand.ExecuteScalar());
@@ -511,100 +513,101 @@ namespace EmployeeSchedulingApp
                 string name = $"{firstName} {lastName}";
 
                 // דילוג אם השם כבר בשימוש
-                if (usedNames.Contains(name))
+                if (!usedNames.Contains(name))
                 {
-                    continue;
-                }
 
-                usedNames.Add(name);
 
-                int hourlySalary = random.Next(30, 70);
-                int rate = random.Next(1, 11);
-                bool isMentor = random.Next(10) < 2; // 20% סיכוי להיות מנטור
-                int assignedHours = random.Next(20, 41);
 
-                string query = @"INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor) 
+                    usedNames.Add(name);
+
+                    int hourlySalary = random.Next(30, 70);
+                    int rate = random.Next(1, 11);
+                    bool isMentor = random.Next(10) < 2; // 20% סיכוי להיות מנטור
+                    int assignedHours = random.Next(20, 41);
+
+                    string query = @"INSERT INTO Employees (Name, Phone, Email, HourlySalary, Rate, IsMentor) 
                        VALUES (@Name, @Phone, @Email, @HourlySalary, @Rate, @IsMentor); 
                        SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Name", name);
-                    command.Parameters.AddWithValue("@Phone", $"{random.Next(100, 1000)}-{random.Next(100, 1000)}-{random.Next(1000, 10000)}");
-                    command.Parameters.AddWithValue("@Email", $"{firstName.ToLower()}.{lastName.ToLower()}@example.com");
-                    command.Parameters.AddWithValue("@HourlySalary", hourlySalary);
-                    command.Parameters.AddWithValue("@Rate", rate);
-                    command.Parameters.AddWithValue("@IsMentor", isMentor);
-
-                    object result = command.ExecuteScalar();
-
-                    if (result != null)
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        employeesCreated++;
-                        int employeeId = Convert.ToInt32(result);
+                        command.Parameters.AddWithValue("@Name", name);
+                        command.Parameters.AddWithValue("@Phone", $"{random.Next(100, 1000)}-{random.Next(100, 1000)}-{random.Next(1000, 10000)}");
+                        command.Parameters.AddWithValue("@Email", $"{firstName.ToLower()}.{lastName.ToLower()}@example.com");
+                        command.Parameters.AddWithValue("@HourlySalary", hourlySalary);
+                        command.Parameters.AddWithValue("@Rate", rate);
+                        command.Parameters.AddWithValue("@IsMentor", isMentor);
 
-                        // עדכון סיסמה זמנית לעובד
-                        string updatePassword = @"UPDATE Employees set Password=@Password where EmployeeID=@EmployeeID ";
-                        using (SqlCommand command2 = new SqlCommand(updatePassword, connection))
+                        object result = command.ExecuteScalar();
+
+                        if (result != null)
                         {
-                            command2.Parameters.AddWithValue("@Password", result.ToString());
-                            command2.Parameters.AddWithValue("@EmployeeID", result);
-                            command2.ExecuteScalar();
-                        }
+                            employeesCreated++;
+                            int employeeId = Convert.ToInt32(result);
 
-                        // קביעת מספר הסניפים שהעובד יעבוד בהם (1-3)
-                        int branchCount = random.Next(1, Math.Min(4, allBranchIds.Count + 1));
-
-                        // ערבוב מזהי הסניפים
-                        var shuffledBranches = new List<int>(allBranchIds);
-                        for (int j = 0; j < shuffledBranches.Count; j++)
-                        {
-                            int k = random.Next(j, shuffledBranches.Count);
-                            int temp = shuffledBranches[j];
-                            shuffledBranches[j] = shuffledBranches[k];
-                            shuffledBranches[k] = temp;
-                        }
-
-                        // בחירת הסניפים הראשונים
-                        var selectedBranches = shuffledBranches.Take(branchCount).ToList();
-
-                        // הקצאת העובד לסניפים שנבחרו
-                        foreach (int branchId in selectedBranches)
-                        {
-                            string branchAssignQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
-                            using (SqlCommand branchAssignCommand = new SqlCommand(branchAssignQuery, connection))
+                            // עדכון סיסמה זמנית לעובד
+                            string updatePassword = @"UPDATE Employees set Password=@Password where EmployeeID=@EmployeeID ";
+                            using (SqlCommand command2 = new SqlCommand(updatePassword, connection))
                             {
-                                branchAssignCommand.Parameters.AddWithValue("@EmployeeID", employeeId);
-                                branchAssignCommand.Parameters.AddWithValue("@BranchID", branchId);
-                                branchAssignCommand.ExecuteNonQuery();
+                                command2.Parameters.AddWithValue("@Password", result.ToString());
+                                command2.Parameters.AddWithValue("@EmployeeID", result);
+                                command2.ExecuteScalar();
                             }
 
-                            // הקצאת משמרות מועדפות לעובד בסניף זה
-                            AssignPreferredShiftsForEmployee(connection, employeeId, branchId);
-                        }
+                            // קביעת מספר הסניפים שהעובד יעבוד בהם (1-3)
+                            int branchCount = random.Next(1, Math.Min(4, allBranchIds.Count + 1));
 
-                        // הקצאת 1-3 תפקידים אקראיים לעובד
-                        int roleCount = random.Next(1, 4);
-                        var shuffledRoles = new List<KeyValuePair<int, string>>(roles);
-
-                        // ערבוב רשימת התפקידים
-                        for (int j = 0; j < shuffledRoles.Count; j++)
-                        {
-                            int k = random.Next(j, shuffledRoles.Count);
-                            var temp = shuffledRoles[j];
-                            shuffledRoles[j] = shuffledRoles[k];
-                            shuffledRoles[k] = temp;
-                        }
-
-                        // הקצאת התפקידים הראשונים מהרשימה המעורבבת
-                        for (int j = 0; j < Math.Min(roleCount, shuffledRoles.Count); j++)
-                        {
-                            string roleAssignQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
-                            using (SqlCommand roleAssignCommand = new SqlCommand(roleAssignQuery, connection))
+                            // ערבוב מזהי הסניפים
+                            var shuffledBranches = new List<int>(allBranchIds);
+                            for (int j = 0; j < shuffledBranches.Count; j++)
                             {
-                                roleAssignCommand.Parameters.AddWithValue("@EmployeeID", employeeId);
-                                roleAssignCommand.Parameters.AddWithValue("@RoleID", shuffledRoles[j].Key);
-                                roleAssignCommand.ExecuteNonQuery();
+                                int k = random.Next(j, shuffledBranches.Count);
+                                int temp = shuffledBranches[j];
+                                shuffledBranches[j] = shuffledBranches[k];
+                                shuffledBranches[k] = temp;
+                            }
+
+                            // בחירת הסניפים הראשונים
+                            var selectedBranches = shuffledBranches.Take(branchCount).ToList();
+
+                            // הקצאת העובד לסניפים שנבחרו
+                            foreach (int branchId in selectedBranches)
+                            {
+                                string branchAssignQuery = "INSERT INTO EmployeeBranches (EmployeeID, BranchID) VALUES (@EmployeeID, @BranchID)";
+                                using (SqlCommand branchAssignCommand = new SqlCommand(branchAssignQuery, connection))
+                                {
+                                    branchAssignCommand.Parameters.AddWithValue("@EmployeeID", employeeId);
+                                    branchAssignCommand.Parameters.AddWithValue("@BranchID", branchId);
+                                    branchAssignCommand.ExecuteNonQuery();
+                                }
+
+                                // הקצאת משמרות מועדפות לעובד בסניף זה
+                                AssignPreferredShiftsForEmployee(connection, employeeId, branchId);
+                            }
+
+                            // הקצאת 1-3 תפקידים אקראיים לעובד
+                            int roleCount = random.Next(1, 4);
+                            var shuffledRoles = new List<KeyValuePair<int, string>>(roles);
+
+                            // ערבוב רשימת התפקידים
+                            for (int j = 0; j < shuffledRoles.Count; j++)
+                            {
+                                int k = random.Next(j, shuffledRoles.Count);
+                                var temp = shuffledRoles[j];
+                                shuffledRoles[j] = shuffledRoles[k];
+                                shuffledRoles[k] = temp;
+                            }
+
+                            // הקצאת התפקידים הראשונים מהרשימה המעורבבת
+                            for (int j = 0; j < Math.Min(roleCount, shuffledRoles.Count); j++)
+                            {
+                                string roleAssignQuery = "INSERT INTO EmployeeRoles (EmployeeID, RoleID) VALUES (@EmployeeID, @RoleID)";
+                                using (SqlCommand roleAssignCommand = new SqlCommand(roleAssignQuery, connection))
+                                {
+                                    roleAssignCommand.Parameters.AddWithValue("@EmployeeID", employeeId);
+                                    roleAssignCommand.Parameters.AddWithValue("@RoleID", shuffledRoles[j].Key);
+                                    roleAssignCommand.ExecuteNonQuery();
+                                }
                             }
                         }
                     }
@@ -614,8 +617,8 @@ namespace EmployeeSchedulingApp
             // אם לא הצלחנו ליצור מספיק עובדים בשל התנגשויות שמות
             if (employeesCreated < count)
             {
-                MessageBox.Show($"Created only {employeesCreated} out of {count} employees due to name uniqueness constraints.",
-                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"נוצרו רק {employeesCreated} מתוך {count} עובדים בשל מגבלות ייחוד שמות.",
+                "אזהרה", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 

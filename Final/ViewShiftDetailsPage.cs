@@ -95,18 +95,7 @@ namespace Final
 
             if (bestChromosome != null)
             {
-                foreach (var branchEntry in bestChromosome.Shifts)
-                {
-                    foreach (var s in branchEntry.Value)
-                    {
-                        if (s.Id == shift.Id)
-                        {
-                            bestShift = s;
-                            break;
-                        }
-                    }
-                    if (bestShift != null) break;
-                }
+                 bestShift = FindBestShiftById(shift.Id);
             }
 
             // אם מצאנו את המשמרת בכרומוזום הטוב ביותר, השתמש בה במקום במשמרת המקורית
@@ -173,7 +162,27 @@ namespace Final
             }
         }
 
+        private Shift FindBestShiftById(int shiftId)
+        {
+            Chromosome bestChromosome = Program.GetBestChromosome();
 
-      
+            if (bestChromosome == null)
+                return null;
+
+            // חיפוש המשמרת בכל הסניפים
+            foreach (var branchEntry in bestChromosome.Shifts)
+            {
+                if (branchEntry.Value != null)
+                {
+                    // חיפוש המשמרת ברשימת המשמרות של הסניף
+                    Shift foundShift = branchEntry.Value.FirstOrDefault(s => s.Id == shiftId);
+                    if (foundShift != null)
+                        return foundShift;
+                }
+            }
+
+            return null;
+        }
+
     }
 }
