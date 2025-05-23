@@ -55,14 +55,14 @@ namespace EmployeeSchedulingApp
                     // מחיקת נתונים קיימים במסד הנתונים
                     DeleteExistingData(connection, userId);
 
-                    //// יצירת סוגי משמרות אם לא קיימים
-                    //EnsureShiftTypesExist(connection);
+                // יצירת סוגי משמרות אם לא קיימים
+                     EnsureShiftTypesExist(connection);
 
-                    //// וידוא קיום תפקידים במערכת
-                    //EnsureRolesExist(connection);
+                // וידוא קיום תפקידים במערכת
+                EnsureRolesExist(connection);
 
-                    // יצירת סניפים חדשים
-                    List<int> branchIds = CreateBranches(connection, branchCount, userId);
+                // יצירת סניפים חדשים
+                List<int> branchIds = CreateBranches(connection, branchCount, userId);
 
                     // יצירת משמרות לכל סניף
                     foreach (int branchId in branchIds)
@@ -275,12 +275,11 @@ namespace EmployeeSchedulingApp
             List<int> branchIds = new List<int>();
 
             // רשימת מיקומים אפשריים לסניפים
-            string[] locations = { "תל אביב", "חיפה", "ירושלים", "באר שבע", "נתניה", "פתח תקווה", "אשדוד", "ראשון לציון", "רמת גן", "בני ברק" };
-
+            string[] locations = { "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose" };
             for (int i = 0; i < count; i++)
             {
                 string locationName = locations[random.Next(locations.Length)];
-                string branchName = $"סניף {locationName} {random.Next(1, 100)}";
+                string branchName = $"Branch {locationName} {random.Next(1, 100)}";
 
                 string query = "INSERT INTO Branches (Name) VALUES (@Name); SELECT SCOPE_IDENTITY();";
                 using (SqlCommand command = new SqlCommand(query, connection))
@@ -724,10 +723,8 @@ namespace EmployeeSchedulingApp
                             // הוספת דרישות התפקידים למשמרת
                             foreach (var role in roles)
                             {
-                                // 70% סיכוי לדרוש את התפקיד הזה
-                                if (random.Next(10) < 7)
-                                {
-                                    int requiredCount = random.Next(1, 4); // 1-3 עובדים נדרשים
+                               
+                                    int requiredCount = random.Next(0, 4); // 1-3 עובדים נדרשים
 
                                     string insertRoleReqQuery = @"INSERT INTO ShiftRequiredRoles (ShiftID, RoleID, RequiredCount) 
                                                            VALUES (@ShiftID, @RoleID, @RequiredCount)";
@@ -739,7 +736,7 @@ namespace EmployeeSchedulingApp
                                         roleCommand.Parameters.AddWithValue("@RequiredCount", requiredCount);
                                         roleCommand.ExecuteNonQuery();
                                     }
-                                }
+                                
                             }
                         }
                     }

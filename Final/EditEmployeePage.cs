@@ -265,7 +265,7 @@ namespace EmployeeSchedulingApp
         {
             branchShifts = new Dictionary<string, List<ShiftDisplayInfo>>();
             List<Branch> branches = helper.LoadUserBranches(currentUserName);
-            List<string> EmployeeBranches = helper.LoademployeeBranches(selectedEmployee);
+            List<string> EmployeeBranches = helper.LoadEmployeeBranches(selectedEmployee.ID);
             foreach (Branch br in branches)
             {
                 branchesCheckedListBox.Items.Add(br.Name);
