@@ -98,7 +98,7 @@ namespace Final
             {
                 var shifts = bestChromosome.Shifts[selectedBranch.Name];
 
-                // קיבוץ לפי סוג המשמרת
+                // קיבוץ לפי זמן המשמרת
                 var groupedShifts = shifts.GroupBy(s => s.TimeSlot)
                                           .OrderByDescending(g => g.Key);
 
@@ -106,12 +106,13 @@ namespace Final
                 {
                     string[] row = new string[daysOfWeek.Length + 1];
                     row[0] = group.Key;
-
+                    //מעבר על כל המשמרות של הזמן הנוכחי
                     foreach (var shift in group)
                     {
                         int dayIndex = Array.IndexOf(daysOfWeek, shift.day);
                         if (dayIndex >= 0)
                         {
+                            //העובדים שעובדים במשמרת
                             string employees = string.Join(Environment.NewLine,
                                 shift.AssignedEmployees.SelectMany(role => role.Value)
                                     .Select(emp => emp?.Name ?? "לא ידוע")
